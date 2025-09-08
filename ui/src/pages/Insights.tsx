@@ -38,10 +38,10 @@ export function Insights() {
   })
   
   const views = [
-    { id: 'cost_score', name: 'Cost vs Score', icon: '💰' },
-    { id: 'bias', name: 'Bias Analysis', icon: '📏' },
-    { id: 'risk', name: 'Risk Analysis', icon: '⚠️' },
-    { id: 'coverage', name: 'Coverage', icon: '📊' }
+    { id: 'cost_score', name: 'Cost vs Score', icon: '$' },
+    { id: 'bias', name: 'Bias Analysis', icon: '|' },
+    { id: 'risk', name: 'Risk Analysis', icon: '!' },
+    { id: 'coverage', name: 'Coverage', icon: '#' }
   ]
 
 
@@ -91,7 +91,7 @@ export function Insights() {
       <div className="space-y-6">
         {selectedView === 'cost_score' && (
           <div className="bg-white shadow rounded-lg p-6">
-            <h3 className="text-lg font-semibold mb-4">💰 Cost vs Quality Analysis</h3>
+            <h3 className="text-lg font-semibold mb-4">Cost vs Quality Analysis</h3>
             <p className="text-gray-600 mb-4">Interactive scatter plot showing cost-performance trade-offs</p>
             <CostQualityChart />
           </div>
@@ -99,7 +99,7 @@ export function Insights() {
 
         {selectedView === 'bias' && (
           <div className="bg-white shadow rounded-lg p-6">
-            <h3 className="text-lg font-semibold mb-4">📏 Length Bias Analysis</h3>
+            <h3 className="text-lg font-semibold mb-4">Length Bias Analysis</h3>
             <p className="text-gray-600 mb-4">FSP vs raw scoring comparison</p>
             <LengthBias />
           </div>
@@ -108,7 +108,7 @@ export function Insights() {
         {selectedView === 'risk' && (
           <div className="space-y-6">
             <div className="bg-white shadow rounded-lg p-6">
-              <h3 className="text-lg font-semibold mb-4">⚠️ Risk Curves Analysis</h3>
+              <h3 className="text-lg font-semibold mb-4">Risk Curves Analysis</h3>
               <p className="text-gray-600 mb-4">
                 Risk awareness and hallucination rates across prompt lengths
               </p>
@@ -116,7 +116,7 @@ export function Insights() {
             </div>
             
             <div className="bg-white shadow rounded-lg p-6">
-              <h3 className="text-lg font-semibold mb-4">🎢 Risk-Cost Frontier</h3>
+              <h3 className="text-lg font-semibold mb-4">Risk-Cost Frontier</h3>
               <p className="text-gray-600 mb-4">
                 Optimal balance between cost efficiency and risk mitigation
               </p>
@@ -127,7 +127,7 @@ export function Insights() {
 
         {selectedView === 'coverage' && (
           <div className="bg-white shadow rounded-lg p-6">
-            <h3 className="text-lg font-semibold mb-4">📊 Prompt Coverage Analysis</h3>
+            <h3 className="text-lg font-semibold mb-4">Prompt Coverage Analysis</h3>
             <p className="text-gray-600 mb-4">
               Track prompt usage across static and adaptive sources by scenario
             </p>

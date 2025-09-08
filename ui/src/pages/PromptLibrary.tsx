@@ -14,7 +14,7 @@ export function PromptLibrary() {
   const { data, isLoading } = useQuery({
     queryKey: ['prompts', sourceFilter, scenarioFilter, searchQuery, page],
     queryFn: () => promptsApi.list({
-      ...(sourceFilter !== 'all' && { source: sourceFilter }),
+      ...(sourceFilter !== 'all' && { prompt_type: sourceFilter }),
       ...(scenarioFilter !== 'all' && { scenario: scenarioFilter }),
       ...(searchQuery && { q: searchQuery }),
       page,
