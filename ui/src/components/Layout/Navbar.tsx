@@ -1,13 +1,13 @@
 import { Link, useLocation } from 'react-router-dom'
 
 const navigation = [
-  { name: 'Overview', href: '/', icon: '🏠', desc: 'System summary' },
-  { name: 'Benchmark Runner', href: '/benchmark', icon: '🛡️', desc: 'Run AI comparisons' },
-  { name: 'Prompt Library', href: '/prompts', icon: '📋', desc: 'Browse prompts' },
-  { name: 'Adaptive Prompting', href: '/adaptive', icon: '🤖', desc: 'Generate prompts' },
-  { name: 'Insights', href: '/insights', icon: '📊', desc: 'Advanced analytics' },
-  { name: 'Results', href: '/results', icon: '📈', desc: 'View outcomes' },
-  { name: 'About', href: '/about', icon: '📚', desc: 'Research info' },
+  { name: 'Overview', href: '/', icon: 'O', desc: 'System summary' },
+  { name: 'Benchmark Runner', href: '/benchmark', icon: 'B', desc: 'Run AI comparisons' },
+  { name: 'Prompt Library', href: '/prompts', icon: 'P', desc: 'Browse prompts' },
+  { name: 'Adaptive Prompting', href: '/adaptive', icon: 'A', desc: 'Generate prompts' },
+  { name: 'Insights', href: '/insights', icon: 'I', desc: 'Advanced analytics' },
+  { name: 'Results', href: '/results', icon: 'R', desc: 'View outcomes' },
+  { name: 'About', href: '/about', icon: '?', desc: 'Research info' },
 ]
 
 export function Navbar() {
