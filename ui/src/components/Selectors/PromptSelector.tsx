@@ -38,7 +38,9 @@ export function PromptSelector({ selectedPrompts, onPromptsChange, scenario, len
 
   const handleSelectAll = () => {
     if (promptsData?.prompts) {
-      const promptIds = promptsData.prompts.map((p: any) => p.prompt_id).filter(Boolean)
+      const promptIds = promptsData.prompts.map((p: any, index: number) => 
+        p.prompt_id || `prompt-${index}`
+      ).filter(Boolean)
       onPromptsChange(promptIds)
     }
   }
@@ -97,15 +99,17 @@ export function PromptSelector({ selectedPrompts, onPromptsChange, scenario, len
             No prompts available. {scenario ? `Try selecting a different scenario.` : 'Import some prompts first.'}
           </div>
         ) : (
-          prompts.map((prompt, index) => (
-            <label key={prompt.prompt_id || index} className="flex items-start space-x-2 cursor-pointer">
+          prompts.map((prompt, index) => {
+            const uniqueKey = prompt.prompt_id || `prompt-${index}`
+            const promptId = prompt.prompt_id || uniqueKey
+            return (
+            <label key={uniqueKey} className="flex items-start space-x-2 cursor-pointer">
               <input
                 type="checkbox"
-                checked={selectedPrompts.includes(prompt.prompt_id)}
+                checked={selectedPrompts.includes(promptId)}
                 onChange={() => {
-                  const id = prompt.prompt_id
-                  console.log('Prompt toggle clicked:', { id, prompt })
-                  handlePromptToggle(id)
+                  console.log('Prompt toggle clicked:', { promptId, prompt })
+                  handlePromptToggle(promptId)
                 }}
                 className="mt-1 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
               />
@@ -146,7 +150,7 @@ export function PromptSelector({ selectedPrompts, onPromptsChange, scenario, len
                 </p>
               </div>
             </label>
-          ))
+          )})}
         )}
       </div>
       
