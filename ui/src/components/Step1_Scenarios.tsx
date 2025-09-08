@@ -70,7 +70,7 @@ export function Step1_Scenarios({ lengthBin, setLengthBin }: Step1Props) {
 
       <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
         <div className="flex items-center">
-          <span className="text-blue-600 mr-2">💡</span>
+          <span className="text-blue-600 mr-2 font-bold">!</span>
           <div className="text-sm text-blue-800">
             <p className="font-medium">Tip:</p>
             <p>Select 10-20 prompts for a comprehensive comparison. More prompts = more reliable results.</p>

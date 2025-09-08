@@ -45,12 +45,21 @@ class ExperimentService:
             
             # Validate prompts exist
             prompts = []
+            invalid_prompt_ids = []
             for prompt_id in plan_request.prompts:
+                if not prompt_id or not isinstance(prompt_id, str):
+                    invalid_prompt_ids.append(f"Invalid prompt ID format: {prompt_id}")
+                    continue
+                    
                 prompt = await self.prompt_repo.get_by_id(prompt_id)
                 if not prompt:
-                    msg = f"Prompt not found: {prompt_id}"
-                    raise ValueError(msg)
-                prompts.append(prompt)
+                    invalid_prompt_ids.append(prompt_id)
+                else:
+                    prompts.append(prompt)
+            
+            if invalid_prompt_ids:
+                msg = f"Invalid prompt IDs: {', '.join(invalid_prompt_ids[:5])}" + (" (and more)" if len(invalid_prompt_ids) > 5 else "")
+                raise ValueError(msg)
 
             # Create run matrix
             for prompt in prompts:

@@ -95,8 +95,18 @@ export function BenchmarkRunner() {
       errors.forEach(error => addLog(error, 'error'))
       return
     }
+    
+    // Validate prompt IDs are not empty or invalid
+    const validPromptIds = selectedPrompts.filter(id => id && typeof id === 'string' && id.trim().length > 0)
+    if (validPromptIds.length === 0) {
+      addLog('No valid prompt IDs selected. Please select prompts first.', 'error')
+      return
+    }
+    if (validPromptIds.length !== selectedPrompts.length) {
+      addLog(`Warning: ${selectedPrompts.length - validPromptIds.length} invalid prompt IDs were filtered out`, 'error')
+    }
 
-    const totalRuns = selectedPrompts.length * selectedModels.length * experimentConfig.repeats
+    const totalRuns = validPromptIds.length * selectedModels.length * experimentConfig.repeats
     
     setExecutionStatus({
       isRunning: true,
@@ -115,7 +125,7 @@ export function BenchmarkRunner() {
     addLog(`Metadata: Hash ${metadata.configHash}, Cost ~$${metadata.estimatedCost.toFixed(4)}`, 'info')
     
     executeBatchMutation.mutate({
-      prompt_ids: selectedPrompts,
+      prompt_ids: validPromptIds,
       model_names: selectedModels,
       bias_controls: {
         fsp: experimentConfig.fspEnabled,
