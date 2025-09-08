@@ -7,26 +7,18 @@ interface PromptSelectorProps {
   onPromptsChange: (prompts: string[]) => void
   scenario?: string | null
   lengthBin?: string
+  sourceFilter?: string
 }
 
-export function PromptSelector({ selectedPrompts, onPromptsChange, scenario, lengthBin }: PromptSelectorProps) {
+export function PromptSelector({ selectedPrompts, onPromptsChange, scenario, lengthBin, sourceFilter }: PromptSelectorProps) {
   const { data: promptsData, isLoading, error } = useQuery({
-    queryKey: ['prompts', scenario, lengthBin],
+    queryKey: ['prompts', scenario, lengthBin, sourceFilter],
     queryFn: () => {
-      console.log('PromptSelector query:', { scenario, lengthBin })
-      // Use research API if length filter is applied
-      if (lengthBin) {
-        return researchApi.filterPrompts({
-          scenario: scenario || undefined,
-          length_bin: lengthBin,
-          sample_size: 50
-        }).then(data => {
-          console.log('Research API result:', data)
-          return { prompts: data.prompts }
-        })
-      }
+      console.log('PromptSelector query:', { scenario, lengthBin, sourceFilter })
       return promptsApi.list({ 
         scenario: scenario || undefined,
+        length_bin: lengthBin || undefined,
+        ...(sourceFilter && sourceFilter !== 'all' && { prompt_type: sourceFilter }),
         limit: 500 // Show all available prompts
       }).then(data => {
         console.log('Prompts API result:', data)
@@ -46,7 +38,7 @@ export function PromptSelector({ selectedPrompts, onPromptsChange, scenario, len
 
   const handleSelectAll = () => {
     if (promptsData?.prompts) {
-      const promptIds = promptsData.prompts.map((p: any) => p.prompt_id || p._id)
+      const promptIds = promptsData.prompts.map((p: any) => p.prompt_id).filter(Boolean)
       onPromptsChange(promptIds)
     }
   }
@@ -106,12 +98,12 @@ export function PromptSelector({ selectedPrompts, onPromptsChange, scenario, len
           </div>
         ) : (
           prompts.map((prompt, index) => (
-            <label key={prompt.prompt_id || prompt._id || index} className="flex items-start space-x-2 cursor-pointer">
+            <label key={prompt.prompt_id || index} className="flex items-start space-x-2 cursor-pointer">
               <input
                 type="checkbox"
-                checked={selectedPrompts.includes(prompt.prompt_id || prompt._id)}
+                checked={selectedPrompts.includes(prompt.prompt_id)}
                 onChange={() => {
-                  const id = prompt.prompt_id || prompt._id
+                  const id = prompt.prompt_id
                   console.log('Prompt toggle clicked:', { id, prompt })
                   handlePromptToggle(id)
                 }}
@@ -122,13 +114,15 @@ export function PromptSelector({ selectedPrompts, onPromptsChange, scenario, len
                   <span className="text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded">
                     {prompt.scenario}
                   </span>
-                  {prompt.metadata?.length_bin && (
+                  {prompt.length_bin && (
                     <span className={`text-xs px-2 py-0.5 rounded ${
-                      prompt.metadata.length_bin === 'short' ? 'bg-green-100 text-green-800' :
-                      prompt.metadata.length_bin === 'medium' ? 'bg-yellow-100 text-yellow-800' :
+                      prompt.length_bin === 'XS' ? 'bg-green-100 text-green-800' :
+                      prompt.length_bin === 'S' ? 'bg-blue-100 text-blue-800' :
+                      prompt.length_bin === 'M' ? 'bg-yellow-100 text-yellow-800' :
+                      prompt.length_bin === 'L' ? 'bg-orange-100 text-orange-800' :
                       'bg-red-100 text-red-800'
                     }`}>
-                      {prompt.metadata.length_bin} ({prompt.metadata.word_count}w)
+                      {prompt.length_bin}
                     </span>
                   )}
                   {prompt.category && (
@@ -136,6 +130,11 @@ export function PromptSelector({ selectedPrompts, onPromptsChange, scenario, len
                       {prompt.category}
                     </span>
                   )}
+                  <span className={`text-xs px-2 py-0.5 rounded ${
+                    prompt.source === 'adaptive' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                  }`}>
+                    {prompt.source === 'adaptive' ? 'Adaptive' : 'Static'}
+                  </span>
                   {prompt.source === 'CySecBench' && (
                     <span className="text-xs bg-purple-100 text-purple-800 px-2 py-0.5 rounded">
                       Research

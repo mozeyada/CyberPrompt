@@ -58,6 +58,7 @@ class PromptRepository:
         length_bin: LengthBin | None = None,
         category: str | None = None,
         source: str | None = None,
+        prompt_type: str | None = None,
         min_words: int | None = None,
         max_words: int | None = None,
         q: str | None = None,
@@ -79,6 +80,8 @@ class PromptRepository:
             filter_query["category"] = category
         if source:
             filter_query["source"] = source
+        if prompt_type:
+            filter_query["prompt_type"] = prompt_type
         if min_words or max_words:
             word_filter = {}
             if min_words:

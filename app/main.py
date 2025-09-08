@@ -4,7 +4,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
-from .api import analytics, documents, prompts, research, runs, stats
+from .api import adaptive, analytics, documents, export, prompts, research, runs, stats
 from .core.config import settings
 from .db.connection import close_mongo_connection, connect_to_mongo
 from .utils.token_meter import CostCalculator
@@ -50,7 +50,12 @@ app = FastAPI(
 # Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
+    allow_origins=[
+        "http://localhost:3000", 
+        "http://127.0.0.1:3000",
+        "http://localhost:5173",  # Vite dev server
+        "http://127.0.0.1:5173"   # Vite dev server
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -63,6 +68,8 @@ app.include_router(analytics.router)
 app.include_router(stats.router)
 app.include_router(research.router)
 app.include_router(documents.router)
+app.include_router(adaptive.router)
+app.include_router(export.router)
 
 
 @app.get("/")

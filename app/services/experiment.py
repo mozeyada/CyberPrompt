@@ -39,6 +39,10 @@ class ExperimentService:
         run_ids = []
 
         try:
+            # Generate experiment ID for this batch
+            experiment_id = f"exp_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{generate_ulid()[:8]}"
+            current_dataset_version = datetime.now().strftime("%Y%m%d")
+            
             # Validate prompts exist
             prompts = []
             for prompt_id in plan_request.prompts:
@@ -62,6 +66,8 @@ class ExperimentService:
                             judge=plan_request.judge,
                             bias_controls=plan_request.bias_controls,
                             status=RunStatus.QUEUED,
+                            dataset_version=current_dataset_version,
+                            experiment_id=experiment_id,
                         )
 
                         await self.run_repo.create(run)
@@ -171,8 +177,17 @@ class ExperimentService:
                         context=prompt.text,
                     )
 
-                    if "scores" in judge_result:
+                    if "scores" in judge_result and "error" not in judge_result:
                         scores = judge_result["scores"]
+                        # Only save scores if they're valid (not all zeros)
+                        if scores.get("composite", 0) > 0:
+                            pass  # Keep the scores
+                        else:
+                            logger.warning(f"Judge returned zero scores for run {run_id}, not saving")
+                            scores = None
+                    else:
+                        logger.warning(f"Judge failed for run {run_id}: {judge_result.get('error', 'Unknown error')}")
+                        scores = None
 
                 except Exception as e:
                     logger.error(f"Judge evaluation failed for run {run_id}: {e}")

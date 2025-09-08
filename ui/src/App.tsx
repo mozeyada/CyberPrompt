@@ -1,10 +1,12 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { Navbar } from './components/Layout/Navbar'
+import { Overview } from './pages/Overview'
+import { BenchmarkRunner } from './pages/BenchmarkRunner'
 import { Results } from './pages/Results'
-import { Analytics } from './pages/Analytics'
-import { Experiments } from './pages/Experiments'
-import { Research } from './pages/Research'
-import { Documents } from './pages/Documents'
+import { Insights } from './pages/Insights'
+import { PromptLibrary } from './pages/PromptLibrary'
+import { AdaptivePrompting } from './pages/AdaptivePrompting'
+import { About } from './pages/About'
 
 function App() {
   return (
@@ -13,12 +15,13 @@ function App() {
       <main className="w-full">
         <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
           <Routes>
-            <Route path="/" element={<Navigate to="/experiments" replace />} />
-            <Route path="/experiments" element={<Experiments />} />
+            <Route path="/" element={<Overview />} />
+            <Route path="/benchmark" element={<BenchmarkRunner />} />
+            <Route path="/prompts" element={<PromptLibrary />} />
+            <Route path="/adaptive" element={<AdaptivePrompting />} />
+            <Route path="/insights" element={<Insights />} />
             <Route path="/results" element={<Results />} />
-            <Route path="/analytics" element={<Analytics />} />
-            <Route path="/research" element={<Research />} />
-            <Route path="/documents" element={<Documents />} />
+            <Route path="/about" element={<About />} />
           </Routes>
         </div>
       </main>

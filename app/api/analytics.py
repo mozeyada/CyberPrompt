@@ -250,3 +250,18 @@ async def best_quality_per_aud(
     except Exception as e:
         logger.error(f"Error in best quality per AUD analysis: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/coverage")
+async def prompt_coverage(
+    x_api_key: str = Header(..., description="API key"),
+) -> dict:
+    """Prompt coverage tracking by source and scenario"""
+    validate_api_key_header(x_api_key)
+    
+    try:
+        return await analytics_service.get_prompt_coverage()
+        
+    except Exception as e:
+        logger.error(f"Error in prompt coverage analysis: {e}")
+        raise HTTPException(status_code=500, detail=str(e))

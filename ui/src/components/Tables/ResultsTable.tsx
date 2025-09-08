@@ -4,14 +4,26 @@ import { runsApi } from '../../api/client'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table'
 import { Badge } from '../ui/badge'
 import { Button } from '../ui/button'
+import { Select } from '../ui/select'
 
-export function ResultsTable() {
+interface ResultsTableProps {
+  experimentId?: string | null
+}
+
+export function ResultsTable({ experimentId }: ResultsTableProps) {
   const [page, setPage] = useState(1)
+  const [sourceFilter, setSourceFilter] = useState<string>('all')
+  const [isDownloading, setIsDownloading] = useState(false)
   const limit = 10
 
   const { data, isLoading, error } = useQuery({
-    queryKey: ['runs', page],
-    queryFn: () => runsApi.list({ page, limit })
+    queryKey: ['runs', page, sourceFilter, experimentId],
+    queryFn: () => runsApi.list({ 
+      page, 
+      limit,
+      ...(sourceFilter !== 'all' && { source: sourceFilter }),
+      ...(experimentId && { experiment_id: experimentId })
+    })
   })
 
   if (isLoading) {
@@ -24,12 +36,84 @@ export function ResultsTable() {
 
   const runs = data?.runs || []
 
+  const handleDownloadCSV = async () => {
+    // Validate data before export
+    if (!runs || runs.length === 0) {
+      alert('No data to export. Please run some experiments first.')
+      return
+    }
+    
+    const validRuns = runs.filter(run => run.status === 'succeeded')
+    if (validRuns.length === 0) {
+      alert('No successful runs to export. Please check your experiment results.')
+      return
+    }
+    
+    setIsDownloading(true)
+    try {
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
+      const API_KEY = import.meta.env.VITE_API_KEY || 'supersecret1'
+      
+      const params = new URLSearchParams()
+      if (sourceFilter !== 'all') {
+        params.append('source', sourceFilter)
+      }
+      params.append('export_timestamp', new Date().toISOString())
+      params.append('total_records', validRuns.length.toString())
+      
+      const response = await fetch(`${API_BASE_URL}/results/export?${params}`, {
+        headers: { 'x-api-key': API_KEY }
+      })
+      
+      if (!response.ok) throw new Error('Export failed')
+      
+      const blob = await response.blob()
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `cybercqbench_results_${new Date().toISOString().split('T')[0]}.csv`
+      document.body.appendChild(a)
+      a.click()
+      window.URL.revokeObjectURL(url)
+      document.body.removeChild(a)
+      
+      console.log(`Exported ${validRuns.length} valid runs out of ${runs.length} total runs`)
+    } catch (error) {
+      console.error('Download failed:', error)
+      alert('Download failed. Please try again.')
+    } finally {
+      setIsDownloading(false)
+    }
+  }
+
   return (
     <div className="space-y-4">
+      <div className="flex justify-between items-center">
+        <div className="flex items-center gap-2">
+          <label className="text-sm font-medium text-gray-700">Source:</label>
+          <Select value={sourceFilter} onChange={(e) => setSourceFilter(e.target.value)} className="w-32">
+            <option value="all">All</option>
+            <option value="static">Static</option>
+            <option value="adaptive">Adaptive</option>
+          </Select>
+        </div>
+        <Button 
+          onClick={handleDownloadCSV}
+          disabled={isDownloading}
+          variant="outline"
+          size="sm"
+        >
+          {isDownloading ? 'Downloading...' : 'Download CSV'}
+        </Button>
+      </div>
+      
       <Table>
         <TableHeader>
           <TableRow>
             <TableHead>Model</TableHead>
+            <TableHead>Source</TableHead>
+            <TableHead>Experiment</TableHead>
+            <TableHead>Dataset</TableHead>
             <TableHead>Status</TableHead>
             <TableHead>Tokens</TableHead>
             <TableHead>Cost (AUD)</TableHead>
@@ -43,13 +127,30 @@ export function ResultsTable() {
                 <Badge variant="secondary">{run.model}</Badge>
               </TableCell>
               <TableCell>
+                <Badge variant={run.source === 'adaptive' ? 'default' : 'outline'}>
+                  {run.source || 'static'}
+                </Badge>
+              </TableCell>
+              <TableCell>
+                <span className="text-xs text-gray-600">
+                  {run.experiment_id ? run.experiment_id.split('_').slice(-1)[0] : 'N/A'}
+                </span>
+              </TableCell>
+              <TableCell>
+                <span className="text-xs text-gray-600">
+                  {run.dataset_version || 'N/A'}
+                </span>
+              </TableCell>
+              <TableCell>
                 <Badge variant={run.status === 'succeeded' ? 'default' : 'destructive'}>
                   {run.status}
                 </Badge>
               </TableCell>
               <TableCell>{run.tokens?.total || 0}</TableCell>
               <TableCell>${run.economics?.aud_cost?.toFixed(4) || '0.0000'}</TableCell>
-              <TableCell>{run.scores?.composite?.toFixed(1) || 'N/A'}/5.0</TableCell>
+              <TableCell>
+                {run.scores?.composite ? `${run.scores.composite.toFixed(1)}/5.0` : 'N/A'}
+              </TableCell>
             </TableRow>
           ))}
         </TableBody>

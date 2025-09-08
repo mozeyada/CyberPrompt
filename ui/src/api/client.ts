@@ -43,6 +43,8 @@ export const promptsApi = {
   list: async (params: {
     scenario?: string;
     length_bin?: string;
+    source?: string;
+    prompt_type?: string;
     q?: string;
     page?: number;
     limit?: number;
@@ -81,6 +83,15 @@ export const runsApi = {
   executeBatch: async (params: {
     prompt_ids: string[];
     model_names: string[];
+    bias_controls?: {
+      fsp: boolean;
+      granularity_demo?: boolean;
+    };
+    settings?: {
+      temperature?: number;
+      max_tokens?: number;
+    };
+    repeats?: number;
   }): Promise<{ results: any[]; summary: any }> => {
     const response = await api.post('/runs/execute/batch', params);
     return response.data;
@@ -90,6 +101,9 @@ export const runsApi = {
     model?: string;
     scenario?: string;
     status?: string;
+    source?: string;
+    experiment_id?: string;
+    dataset_version?: string;
     page?: number;
     limit?: number;
   } = {}): Promise<{ runs: Run[]; page: number; limit: number; count: number }> => {
@@ -102,10 +116,7 @@ export const runsApi = {
     return response.data;
   },
 
-  delete: async (runId: string): Promise<{ message: string }> => {
-    const response = await api.delete(`/runs/${runId}`);
-    return response.data;
-  },
+
 };
 
 // Analytics API
@@ -158,6 +169,16 @@ export const analyticsApi = {
     const response = await api.get('/analytics/best_quality_per_aud', { params });
     return response.data;
   },
+
+  coverage: async (): Promise<Array<{
+    source: string;
+    scenario: string;
+    unique_prompt_count: number;
+    total_runs: number;
+  }>> => {
+    const response = await api.get('/analytics/coverage');
+    return response.data;
+  },
 };
 
 // Research API
@@ -179,93 +200,23 @@ export const researchApi = {
     return response.data;
   },
 
-  promptLengthAnalysis: async (params: {
-    scenario?: string;
-    models?: string[];
-  } = {}): Promise<any> => {
-    const queryParams = new URLSearchParams();
-    if (params.scenario) queryParams.append('scenario', params.scenario);
-    if (params.models && params.models.length > 0) {
-      queryParams.append('models', params.models.join(','));
-    }
-    
-    const response = await api.get(`/research/rq1/prompt-length-analysis?${queryParams}`);
-    return response.data;
-  },
 
-  adaptiveBenchmarkAnalysis: async (params: {
-    scenario?: string;
-  } = {}): Promise<any> => {
-    const queryParams = new URLSearchParams();
-    if (params.scenario) queryParams.append('scenario', params.scenario);
-    
-    const response = await api.get(`/research/rq2/adaptive-benchmarking?${queryParams}`);
-    return response.data;
-  },
-
-  fspBiasAnalysis: async (params: {
-    scenario?: string;
-    models?: string[];
-  } = {}): Promise<any> => {
-    const queryParams = new URLSearchParams();
-    if (params.scenario) queryParams.append('scenario', params.scenario);
-    if (params.models && params.models.length > 0) {
-      queryParams.append('models', params.models.join(','));
-    }
-    
-    const response = await api.get(`/research/fsp-bias-analysis?${queryParams}`);
-    return response.data;
-  },
-
-  costEfficiencyAnalysis: async (params: {
-    scenario?: string;
-    models?: string[];
-  } = {}): Promise<any> => {
-    const queryParams = new URLSearchParams();
-    if (params.scenario) queryParams.append('scenario', params.scenario);
-    if (params.models && params.models.length > 0) {
-      queryParams.append('models', params.models.join(','));
-    }
-    
-    const response = await api.get(`/research/cost-efficiency?${queryParams}`);
-    return response.data;
-  },
 };
 
-// Documents API
-export const documentsApi = {
-  create: async (document: {
-    filename: string;
-    source_type: string;
-    content: string;
-  }): Promise<{ doc_id: string; message: string }> => {
-    const response = await api.post('/documents/', document);
-    return response.data;
-  },
 
-  list: async (): Promise<Array<{
-    doc_id: string;
-    filename: string;
-    source_type: string;
-    created_at: string;
-  }>> => {
-    const response = await api.get('/documents/');
-    return response.data;
-  },
 
-  get: async (docId: string): Promise<{
-    doc_id: string;
-    filename: string;
-    source_type: string;
-    content: string;
-    created_at: string;
+// Adaptive API
+export const adaptiveApi = {
+  generatePrompts: async (params: {
+    document_text: string;
+    task_type: string;
+    model?: string;
+  }): Promise<{
+    prompts: string[];
+    task_type: string;
+    count: number;
   }> => {
-    const response = await api.get(`/documents/${docId}`);
-    return response.data;
-  },
-
-  delete: async (docId: string): Promise<{ message: string }> => {
-    const response = await api.delete(`/documents/${docId}`);
+    const response = await api.post('/adaptive/generate', params);
     return response.data;
   },
 };

@@ -21,11 +21,35 @@ export interface FilterState {
   selectedJudgeType: string | null;
   setSelectedJudgeType: (judgeType: string | null) => void;
   
+  // Experiment state
+  selectedPrompts: string[];
+  setSelectedPrompts: (prompts: string[]) => void;
+  experimentConfig: {
+    repeats: number;
+    temperature: number;
+    maxTokens: number;
+    seed: number;
+    fspEnabled: boolean;
+    experimentName: string;
+  };
+  setExperimentConfig: (config: Partial<FilterState['experimentConfig']>) => void;
+  
+  // Validation
+  validateExperiment: () => string[];
+  
+  // Metadata generation
+  generateExperimentMetadata: () => {
+    configHash: string;
+    timestamp: string;
+    totalRuns: number;
+    estimatedCost: number;
+  };
+  
   // Reset all filters
   resetFilters: () => void;
 }
 
-export const useFilters = create<FilterState>((set) => ({
+export const useFilters = create<FilterState>((set, get) => ({
   selectedModels: [],
   setSelectedModels: (models) => set({ selectedModels: models }),
   
@@ -41,12 +65,64 @@ export const useFilters = create<FilterState>((set) => ({
   selectedJudgeType: null,
   setSelectedJudgeType: (judgeType) => set({ selectedJudgeType: judgeType }),
   
+  selectedPrompts: [],
+  setSelectedPrompts: (prompts) => set({ selectedPrompts: prompts }),
+  
+  experimentConfig: {
+    repeats: 3,
+    temperature: 0.2,
+    maxTokens: 800,
+    seed: 42,
+    fspEnabled: true,
+    experimentName: '',
+  },
+  setExperimentConfig: (config) => set((state) => ({
+    experimentConfig: { ...state.experimentConfig, ...config }
+  })),
+  
+  validateExperiment: () => {
+    const state = get();
+    const errors: string[] = [];
+    
+    if (state.selectedPrompts.length === 0) errors.push("No prompts selected");
+    if (state.selectedModels.length === 0) errors.push("No models selected");
+    if (state.selectedPrompts.some(p => !p || typeof p !== 'string')) errors.push("Invalid prompt IDs");
+    if (state.selectedModels.some(m => !m || typeof m !== 'string')) errors.push("Invalid model names");
+    
+    return errors;
+  },
+  
+  generateExperimentMetadata: () => {
+    const state = get();
+    const configString = JSON.stringify({
+      prompts: state.selectedPrompts.length,
+      models: state.selectedModels,
+      config: state.experimentConfig
+    });
+    
+    return {
+      configHash: btoa(configString).slice(0, 8),
+      timestamp: new Date().toISOString(),
+      totalRuns: state.selectedPrompts.length * state.selectedModels.length * state.experimentConfig.repeats,
+      estimatedCost: state.selectedPrompts.length * state.selectedModels.length * state.experimentConfig.repeats * 0.03
+    };
+  },
+  
   resetFilters: () => set({
     selectedModels: [],
     selectedScenario: null,
     selectedLengthBins: [],
     selectedDimension: 'composite',
     selectedJudgeType: null,
+    selectedPrompts: [],
+    experimentConfig: {
+      repeats: 3,
+      temperature: 0.2,
+      maxTokens: 800,
+      seed: 42,
+      fspEnabled: true,
+      experimentName: '',
+    },
   }),
 }));
 

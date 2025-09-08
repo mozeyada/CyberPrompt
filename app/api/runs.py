@@ -54,13 +54,25 @@ async def execute_batch(
         elif prompt_ids and model_names:
             # Direct execution - plan first
             from app.models import BiasControls, JudgeConfig, JudgeType, RunPlanRequest, RunSettings
+            
+            # Extract configuration from request
+            bias_controls_data = request.get("bias_controls", {})
+            settings_data = request.get("settings", {})
+            repeats = request.get("repeats", 1)
+            
             plan_request = RunPlanRequest(
                 prompts=prompt_ids,
                 models=model_names,
-                repeats=1,
-                settings=RunSettings(),
+                repeats=repeats,
+                settings=RunSettings(
+                    temperature=settings_data.get("temperature", 0.2),
+                    max_tokens=settings_data.get("max_tokens", 800)
+                ),
                 judge=JudgeConfig(type=JudgeType.LLM),
-                bias_controls=BiasControls(),
+                bias_controls=BiasControls(
+                    fsp=bias_controls_data.get("fsp", True),
+                    granularity_demo=bias_controls_data.get("granularity_demo", False)
+                ),
             )
             final_run_ids = await get_experiment_service().plan_runs(plan_request)
         else:
@@ -112,6 +124,51 @@ async def execute_run(
         raise HTTPException(status_code=400, detail=str(e))
 
 
+@router.get("/experiments")
+async def list_experiments(
+    x_api_key: str = Header(..., description="API key"),
+) -> dict:
+    """List all experiments with summary statistics"""
+    validate_api_key_header(x_api_key)
+    
+    try:
+        from app.db.connection import get_database
+        db = get_database()
+        
+        # Aggregate experiments with stats
+        pipeline = [
+            {"$match": {"experiment_id": {"$ne": None}}},
+            {"$group": {
+                "_id": "$experiment_id",
+                "run_count": {"$sum": 1},
+                "models": {"$addToSet": "$model"},
+                "dataset_version": {"$first": "$dataset_version"},
+                "created_at": {"$min": "$created_at"},
+                "completed_runs": {"$sum": {"$cond": [{"$eq": ["$status", "succeeded"]}, 1, 0]}},
+                "avg_cost": {"$avg": "$economics.aud_cost"}
+            }},
+            {"$sort": {"created_at": -1}}
+        ]
+        
+        cursor = db.runs.aggregate(pipeline)
+        experiments = await cursor.to_list(length=None)
+        
+        return {
+            "experiments": [{
+                "experiment_id": exp["_id"],
+                "run_count": exp["run_count"],
+                "models": exp["models"],
+                "dataset_version": exp["dataset_version"],
+                "created_at": exp["created_at"],
+                "completed_runs": exp["completed_runs"],
+                "avg_cost": exp["avg_cost"] or 0.0
+            } for exp in experiments]
+        }
+    except Exception as e:
+        logger.error(f"Error listing experiments: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @router.get("/{run_id}")
 async def get_run(
     run_id: str,
@@ -155,32 +212,69 @@ async def list_runs(
     model: str | None = None,
     scenario: ScenarioType | None = None,
     length_bin: LengthBin | None = None,
+    experiment_id: str | None = None,
+    dataset_version: str | None = None,
     page: int = Query(1, ge=1),
     limit: int = Query(50, ge=1, le=200),
     x_api_key: str = Header(..., description="API key"),
 ) -> dict:
-    """List runs with filters and proper validation"""
+    """List runs with filters and prompt_text included"""
     validate_api_key_header(x_api_key)
 
     try:
-        from app.db.repositories import RunRepository
-
-        run_repo = RunRepository()
-        runs = await run_repo.list_runs(
-            status=status,
-            prompt_id=prompt_id,
-            model=model,
-            scenario=scenario,
-            length_bin=length_bin,
-            page=page,
-            limit=limit,
-        )
-
+        from app.db.connection import get_database
+        
+        db = get_database()
+        
+        # Build filter query
+        filter_query = {}
+        if status:
+            filter_query["status"] = status
+        if prompt_id:
+            filter_query["prompt_id"] = prompt_id
+        if model:
+            filter_query["model"] = model
+        if scenario:
+            filter_query["scenario"] = scenario
+        if length_bin:
+            filter_query["length_bin"] = length_bin
+        if experiment_id:
+            filter_query["experiment_id"] = experiment_id
+        if dataset_version:
+            filter_query["dataset_version"] = dataset_version
+            
+        # Aggregation pipeline to join with prompts
+        pipeline = [
+            {"$match": filter_query},
+            {"$lookup": {
+                "from": "prompts",
+                "localField": "prompt_id",
+                "foreignField": "prompt_id",
+                "as": "prompt"
+            }},
+            {"$unwind": {"path": "$prompt", "preserveNullAndEmptyArrays": True}},
+            {"$addFields": {
+                "prompt_text": "$prompt.text",
+                "prompt_length_bin": "$prompt.length_bin",
+                "prompt_dataset_version": "$prompt.dataset_version"
+            }},
+            {"$sort": {"created_at": -1}},
+            {"$skip": (page - 1) * limit},
+            {"$limit": limit}
+        ]
+        
+        cursor = db.runs.aggregate(pipeline)
+        docs = await cursor.to_list(length=limit)
+        
+        # Convert ObjectIds to strings
+        from app.utils.mongodb import convert_objectid_list
+        docs = convert_objectid_list(docs)
+        
         return {
-            "runs": [run.model_dump() for run in runs],
+            "runs": docs,
             "page": page,
             "limit": limit,
-            "count": len(runs),
+            "count": len(docs),
         }
     except Exception as e:
         logger.error(f"Error listing runs: {e}")

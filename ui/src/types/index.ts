@@ -1,12 +1,13 @@
 export interface Prompt {
   prompt_id: string;
   text: string;
-  source: 'cysecbench' | 'curated' | 'CySecBench';
+  source: 'cysecbench' | 'curated' | 'CySecBench' | 'adaptive' | 'static';
   scenario: 'SOC_INCIDENT' | 'CTI_SUMMARY' | 'GRC_MAPPING';
   length_bin: 'XS' | 'S' | 'M' | 'L' | 'XL';
   complexity?: number;
   safety_tag?: 'SAFE_DOC' | 'REDACTED' | 'BLOCKED';
   category?: string;
+  dataset_version?: string;
   metadata?: {
     word_count: number;
     length_bin: 'short' | 'medium' | 'long';
@@ -51,6 +52,9 @@ export interface Run {
   model: string;
   scenario: string;
   length_bin: string;
+  source: 'static' | 'adaptive';
+  experiment_id?: string;
+  dataset_version?: string;
   settings: {
     temperature: number;
     max_output_tokens: number;

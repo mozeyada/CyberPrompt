@@ -3,18 +3,15 @@ import { useState } from 'react'
 interface Step3Props {
   selectedPrompts: string[]
   selectedModels: string[]
-  repeats: number
-  setRepeats: (repeats: number) => void
-  experimentName: string
-  setExperimentName: (name: string) => void
-  temperature: number
-  setTemperature: (temp: number) => void
-  maxTokens: number
-  setMaxTokens: (tokens: number) => void
-  seed: number
-  setSeed: (seed: number) => void
-  fspEnabled: boolean
-  setFspEnabled: (enabled: boolean) => void
+  experimentConfig: {
+    repeats: number
+    temperature: number
+    maxTokens: number
+    seed: number
+    fspEnabled: boolean
+    experimentName: string
+  }
+  setExperimentConfig: (config: any) => void
   researchMode: boolean
   setResearchMode: (enabled: boolean) => void
   onRunExperiment: () => void
@@ -24,26 +21,16 @@ interface Step3Props {
 export function Step3_Configure({
   selectedPrompts,
   selectedModels,
-  repeats,
-  setRepeats,
-  experimentName,
-  setExperimentName,
-  temperature,
-  setTemperature,
-  maxTokens,
-  setMaxTokens,
-  seed,
-  setSeed,
-  fspEnabled,
-  setFspEnabled,
+  experimentConfig,
+  setExperimentConfig,
   researchMode,
   setResearchMode,
   onRunExperiment,
   isRunning
 }: Step3Props) {
   const [showAdvanced, setShowAdvanced] = useState(false)
-  const estimatedCost = selectedPrompts.length * selectedModels.length * repeats * 0.03
-  const totalRuns = selectedPrompts.length * selectedModels.length * repeats
+  const estimatedCost = selectedPrompts.length * selectedModels.length * experimentConfig.repeats * 0.03
+  const totalRuns = selectedPrompts.length * selectedModels.length * experimentConfig.repeats
 
   return (
     <div className="space-y-6">
@@ -80,8 +67,8 @@ export function Step3_Configure({
             </label>
             <input
               type="text"
-              value={experimentName}
-              onChange={(e) => setExperimentName(e.target.value)}
+              value={experimentConfig.experimentName}
+              onChange={(e) => setExperimentConfig({ experimentName: e.target.value })}
               placeholder="SOC Incident Response Test - Dec 2024"
               className="w-full border border-gray-300 rounded-md px-3 py-2"
             />
@@ -92,8 +79,8 @@ export function Step3_Configure({
               Test Repetitions
             </label>
             <select
-              value={repeats}
-              onChange={(e) => setRepeats(parseInt(e.target.value))}
+              value={experimentConfig.repeats}
+              onChange={(e) => setExperimentConfig({ repeats: parseInt(e.target.value) })}
               className="w-full border border-gray-300 rounded-md px-3 py-2"
             >
               <option value={1}>1 run (quick test)</option>
@@ -109,8 +96,8 @@ export function Step3_Configure({
           <label className="flex items-center">
             <input
               type="checkbox"
-              checked={fspEnabled}
-              onChange={(e) => setFspEnabled(e.target.checked)}
+              checked={experimentConfig.fspEnabled}
+              onChange={(e) => setExperimentConfig({ fspEnabled: e.target.checked })}
               className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
             />
             <span className="ml-2 text-sm text-gray-700">
@@ -152,8 +139,8 @@ export function Step3_Configure({
                   </label>
                   <input
                     type="number"
-                    value={maxTokens}
-                    onChange={(e) => setMaxTokens(parseInt(e.target.value))}
+                    value={experimentConfig.maxTokens}
+                    onChange={(e) => setExperimentConfig({ maxTokens: parseInt(e.target.value) })}
                     min="100"
                     max="4000"
                     step="100"
@@ -169,8 +156,8 @@ export function Step3_Configure({
                       </label>
                       <input
                         type="number"
-                        value={temperature}
-                        onChange={(e) => setTemperature(parseFloat(e.target.value))}
+                        value={experimentConfig.temperature}
+                        onChange={(e) => setExperimentConfig({ temperature: parseFloat(e.target.value) })}
                         min="0"
                         max="1"
                         step="0.1"
@@ -184,8 +171,8 @@ export function Step3_Configure({
                       </label>
                       <input
                         type="number"
-                        value={seed}
-                        onChange={(e) => setSeed(parseInt(e.target.value))}
+                        value={experimentConfig.seed}
+                        onChange={(e) => setExperimentConfig({ seed: parseInt(e.target.value) })}
                         className="w-full border border-gray-300 rounded-md px-3 py-2"
                       />
                     </div>

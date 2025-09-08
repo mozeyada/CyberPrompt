@@ -367,6 +367,50 @@ class AnalyticsService:
             logger.error(f"Error in best quality per AUD analysis: {e}")
             return []
 
+    async def get_prompt_coverage(self) -> dict[str, Any]:
+        """Count total prompts used by source and scenario"""
+        try:
+            # Pipeline to join runs with prompts and count coverage
+            pipeline = [
+                {"$lookup": {
+                    "from": "prompts",
+                    "localField": "prompt_id",
+                    "foreignField": "prompt_id",
+                    "as": "prompt"
+                }},
+                {"$unwind": "$prompt"},
+                {"$group": {
+                    "_id": {
+                        "source": "$source",
+                        "scenario": "$prompt.scenario"
+                    },
+                    "unique_prompts": {"$addToSet": "$prompt.text"},
+                    "total_runs": {"$sum": 1}
+                }},
+                {"$project": {
+                    "source": "$_id.source",
+                    "scenario": "$_id.scenario",
+                    "unique_prompt_count": {"$size": "$unique_prompts"},
+                    "total_runs": 1,
+                    "_id": 0
+                }}
+            ]
+            
+            cursor = self.db.runs.aggregate(pipeline)
+            results = await cursor.to_list(length=None)
+            
+            return {
+                "coverage": results,
+                "summary": {
+                    "total_unique_prompts": sum(r["unique_prompt_count"] for r in results),
+                    "total_runs": sum(r["total_runs"] for r in results)
+                }
+            }
+            
+        except Exception as e:
+            logger.error(f"Error in prompt coverage analysis: {e}")
+            return {"error": str(e)}
+
 
 # Global service instance
 analytics_service = AnalyticsService()

@@ -8,8 +8,14 @@ def convert_objectid(doc: dict[str, Any] | None) -> dict[str, Any] | None:
     if not doc:
         return None
 
-    if "_id" in doc and isinstance(doc["_id"], ObjectId):
-        doc["_id"] = str(doc["_id"])
+    # Convert all ObjectId fields to strings
+    for key, value in doc.items():
+        if isinstance(value, ObjectId):
+            doc[key] = str(value)
+        elif isinstance(value, dict):
+            doc[key] = convert_objectid(value)
+        elif isinstance(value, list):
+            doc[key] = [convert_objectid(item) if isinstance(item, dict) else str(item) if isinstance(item, ObjectId) else item for item in value]
 
     return doc
 

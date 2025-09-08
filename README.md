@@ -1,19 +1,21 @@
 # CyberCQBench
 
-**The most cost-effective and trustworthy AI models for high-stakes security and compliance tasks.**
+**Cost-effective and research-compliant AI evaluation for cybersecurity operations.**
 
-CyberCQBench is a groundbreaking platform that enables Security Operations Center (SOC) analysts, compliance professionals, and cybersecurity researchers to identify which AI models provide the best value for money while staying compliant.
+CyberCQBench is a research platform that enables Security Operations Center (SOC) analysts, compliance professionals, and cybersecurity researchers to evaluate AI models for security tasks with full reproducibility and cost tracking.
 
 ## 🎯 Why CyberCQBench?
 
 As organizations adopt Large Language Models (LLMs) like GPT-4, Claude, and Gemini for incident analysis, compliance mapping, and threat intelligence reporting, one question remains unanswered: **Which AI is the most reliable, and at what cost?**
 
-CyberCQBench solves this by:
-1. **Cost-Quality Trade-offs**: Interactive analytics showing which models provide the best value per dollar
-2. **7-Dimension SOC/GRC Rubric**: Evaluating accuracy, compliance alignment, risk awareness, and clarity
-3. **Bias Mitigation with FSP**: Fair evaluation regardless of verbosity or token inflation
-4. **Reproducible Pipelines**: Fixed seeds, dataset versioning, and transparent scoring
-5. **Real-time Cost Tracking**: Token-level cost analysis for budget-conscious decisions
+## Key Features
+
+- **Research Compliance**: Full experiment tracking with dataset versioning and reproducible pipelines
+- **Cost-Quality Analytics**: Interactive dashboards showing model performance vs API costs
+- **7-Dimension SOC/GRC Rubric**: Technical accuracy, actionability, completeness, compliance alignment, risk awareness, relevance, clarity
+- **Bias Mitigation**: Focus Sentence Prompting (FSP) for fair evaluation
+- **Experiment Grouping**: Track and compare experiments with metadata
+- **Export Functionality**: CSV export with full research metadata
 
 ## 🏗️ Architecture
 
@@ -110,25 +112,28 @@ Fixed seeds, dataset versioning, and transparent scoring allow repeatable resear
 ### 🔗 Strong Data Relationships
 Direct linking between experiment runs and LLM outputs for easy debugging and analysis.
 
-## 🛠️ API Endpoints
+## API Endpoints
 
 ### Prompts
 - `POST /prompts/import` - Import prompt collections
-- `GET /prompts` - List/search prompts with filters
+- `GET /prompts` - List prompts with scenario, length_bin, prompt_type filters
 - `GET /prompts/{id}` - Get specific prompt
 
 ### Runs  
 - `POST /runs/plan` - Plan experiment matrix
-- `POST /runs/execute/{id}` - Execute single run
 - `POST /runs/execute/batch` - Execute multiple runs
-- `GET /runs/{id}` - Get run results with output
-- `GET /runs` - List runs with filters
+- `GET /runs` - List runs with experiment_id, dataset_version filters
+- `GET /runs/experiments` - List experiments with summary stats
+- `GET /runs/{id}` - Get run details with output
 
 ### Analytics
-- `GET /analytics/cost_quality` - Cost vs quality data
-- `GET /analytics/length_bias` - Length bias analysis  
-- `GET /analytics/risk_curves` - Risk metrics vs length
-- `GET /analytics/adaptive_relevance` - Derived relevance slopes
+- `GET /analytics/cost_quality` - Cost vs quality scatter data
+- `GET /analytics/length_bias` - Length bias analysis
+- `GET /analytics/coverage` - Prompt coverage statistics
+
+### Export
+- `GET /export/runs.csv` - Export runs with full metadata
+- `GET /export/experiments.csv` - Export experiment summaries
 
 ## 🧪 Development
 
@@ -169,39 +174,31 @@ cd ui && npm test
 make test
 ```
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 /app/
-  /api/               # FastAPI routers
-  /core/              # Config, logging, security  
-  /models/            # Pydantic schemas
-  /db/                # MongoDB connection & repositories
-  /services/          # Business logic (consolidated)
-    analytics_service.py  # Cost-quality analytics
-    background_jobs.py    # Background task processing
-    base.py              # Judge implementations
-    composite.py         # Rubric score calculations
+  /api/               # FastAPI routers (runs, prompts, analytics, export)
+  /core/              # Configuration and security
+  /models/            # Pydantic data models
+  /db/                # MongoDB connection and repositories
+  /services/          # Business logic
     experiment.py        # Experiment orchestration
-    fsp.py              # Focus Sentence Prompting
+    analytics_service.py # Cost-quality analytics
     llm_client.py       # LLM API integrations
-    prompt_generator.py # Dynamic prompt creation
-    prompts.py          # Evaluation prompt templates
-    risk.py             # Risk assessment metrics
-  /utils/             # Token counting, cost calculation, ULID
+    base.py             # Judge implementations
+    composite.py        # Rubric calculations
+  /utils/             # Utilities (tokens, costs, IDs)
 
-/ui/                  # React/Vite frontend
+/ui/                  # React frontend
   /src/
-    /components/      # Reusable UI components
-    /pages/           # Route components  
+    /components/      # UI components
+    /pages/           # Main pages (Overview, BenchmarkRunner, Results)
     /api/             # API client
-    /state/           # Zustand stores
     /types/           # TypeScript definitions
 
-/tests/               # Backend tests
-/ui-tests/            # Frontend tests  
-/docker/              # Docker configuration
-/scripts/             # Utility scripts (seeding, etc.)
+/scripts/             # Data migration and utility scripts
+/cysecbench-data/     # Research dataset
 ```
 
 ## ❓ FAQ

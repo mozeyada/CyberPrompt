@@ -58,7 +58,7 @@ export function LengthBias({ className = "" }: LengthBiasProps) {
           <YAxis domain={[0, 5]} />
           <Tooltip />
           <Legend />
-          {data.models?.map((model: any, index: number) => (
+          {data.slopes?.map((model: any, index: number) => (
             <Line 
               key={model.model}
               type="monotone" 

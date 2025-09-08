@@ -32,30 +32,24 @@ async def get_overview(
         cost_result = await db.runs.aggregate(cost_pipeline).to_list(length=1)
         total_cost_aud = cost_result[0]["total"] if cost_result else 0.0
 
-        # Get average quality (average of scores.composite where exists)
+        # Get average quality (average of scores.composite where exists and > 0)
         quality_pipeline = [
-            {"$match": {"scores.composite": {"$exists": True, "$ne": None}}},
+            {"$match": {"scores.composite": {"$exists": True, "$ne": None, "$gt": 0}}},
             {"$group": {"_id": None, "avg": {"$avg": "$scores.composite"}}},
         ]
         quality_result = await db.runs.aggregate(quality_pipeline).to_list(length=1)
         avg_quality_overall = quality_result[0]["avg"] if quality_result else None
 
-        # Get last 5 runs with prompt details
+        # Get last 5 runs with prompt details (only successful runs with scores)
         last_runs_pipeline = [
-            {"$lookup": {
-                "from": "prompts",
-                "localField": "prompt_id",
-                "foreignField": "prompt_id",
-                "as": "prompt",
-            }},
-            {"$unwind": "$prompt"},
+            {"$match": {"scores.composite": {"$exists": True, "$gt": 0}}},
             {"$sort": {"created_at": -1}},
             {"$limit": 5},
             {"$project": {
-                "_id": 0,  # Exclude ObjectId
+                "_id": 0,
                 "run_id": 1,
-                "model_id": "$model",  # Use model field
-                "scenario": "$prompt.scenario",
+                "model_id": "$model",
+                "scenario": "SOC_INCIDENT",  # Default scenario
                 "fsp_enabled": {"$ifNull": ["$bias_controls.fsp", False]},
                 "overall": "$scores.composite",
                 "aud_cost": {"$ifNull": ["$economics.aud_cost", 0.0]},

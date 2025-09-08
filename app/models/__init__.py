@@ -1,6 +1,6 @@
 from datetime import datetime
 from enum import Enum
-from typing import Any
+from typing import Any, Literal
 
 from pydantic import BaseModel, Field, field_validator
 
@@ -9,6 +9,7 @@ class SourceType(str, Enum):
     CYSECBENCH = "cysecbench"
     CURATED = "curated"
     CYBENCH = "CySecBench"  # Research data
+    ADAPTIVE = "adaptive"  # Generated from SOC/GRC docs and CTI
 
 
 class DocumentSourceType(str, Enum):
@@ -58,6 +59,7 @@ class Prompt(BaseModel):
     prompt_id: str | None = Field(None, description="ULID identifier")
     text: str
     source: SourceType | None = None
+    prompt_type: Literal["static", "adaptive"] = "static"  # Classification for research
     scenario: ScenarioType
     context: ContextType | None = None
     length_bin: LengthBin | None = None
@@ -123,6 +125,7 @@ class Run(BaseModel):
     model_id: str | None = None  # Specific model version/ID
     settings: RunSettings
     status: RunStatus = RunStatus.QUEUED
+    source: Literal["static", "adaptive"] = "static"
     tokens: TokenMetrics | None = None
     economics: EconomicsMetrics | None = None
     output_blob_id: str | None = Field(None, description="Reference to OutputBlob.blob_id")
@@ -132,6 +135,7 @@ class Run(BaseModel):
     bias_controls: BiasControls = BiasControls()
     fsp_enabled: bool = True  # Track which scoring path was used
     dataset_version: str | None = None
+    experiment_id: str | None = None  # Group runs from same experiment
     seed: int | None = None
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)

@@ -78,7 +78,8 @@ Example format: ["prompt 1", "prompt 2", "prompt 3", "prompt 4", "prompt 5"]"""
                 prompt = Prompt(
                     prompt_id=generate_ulid(),
                     text=prompt_text.strip(),
-                    source=SourceType.CURATED,
+                    source=SourceType.ADAPTIVE,
+                    prompt_type="adaptive",
                     scenario=scenario,
                     complexity=3,
                     tags=[f"adaptive_{document.source_type.value.lower()}", f"doc_{doc_id}"],

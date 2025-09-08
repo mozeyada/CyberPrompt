@@ -1,11 +1,13 @@
 import { Link, useLocation } from 'react-router-dom'
 
 const navigation = [
-  { name: 'Test AI Models', href: '/experiments', icon: '🛡️', desc: 'SOC/GRC AI comparison' },
-  { name: 'Evaluation Results', href: '/results', icon: '📈', desc: 'Security task outcomes' },
-  { name: 'Budget Optimizer', href: '/analytics', icon: '💰', desc: 'Best value AI models' },
-  { name: 'Compliance Docs', href: '/documents', icon: '📋', desc: 'Policy & CTI sources' },
-  { name: 'Research Hub', href: '/research', icon: '🔬', desc: 'Academic insights' },
+  { name: 'Overview', href: '/', icon: '🏠', desc: 'System summary' },
+  { name: 'Benchmark Runner', href: '/benchmark', icon: '🛡️', desc: 'Run AI comparisons' },
+  { name: 'Prompt Library', href: '/prompts', icon: '📋', desc: 'Browse prompts' },
+  { name: 'Adaptive Prompting', href: '/adaptive', icon: '🤖', desc: 'Generate prompts' },
+  { name: 'Insights', href: '/insights', icon: '📊', desc: 'Advanced analytics' },
+  { name: 'Results', href: '/results', icon: '📈', desc: 'View outcomes' },
+  { name: 'About', href: '/about', icon: '📚', desc: 'Research info' },
 ]
 
 export function Navbar() {
