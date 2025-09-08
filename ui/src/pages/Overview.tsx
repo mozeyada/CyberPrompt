@@ -286,7 +286,7 @@ export function Overview() {
                 <XAxis dataKey="model" angle={-45} textAnchor="end" height={80} />
                 <YAxis />
                 <Tooltip formatter={(value, name) => [`${value} runs`, 'Count']} />
-                <Bar dataKey="count" fill={(entry) => getModelColor(entry.model)}>
+                <Bar dataKey="count">
                   {modelChartData.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={getModelColor(entry.model)} />
                   ))}
