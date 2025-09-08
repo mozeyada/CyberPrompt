@@ -10,7 +10,8 @@ from app.services.base import create_judge
 from app.models import EconomicsMetrics, RiskMetrics, Run, RunPlanRequest, RunStatus, TokenMetrics
 from app.services.llm_client import ModelRunner
 from app.utils.token_meter import CostCalculator
-from app.utils.ulid_gen import generate_blob_id, generate_ulid
+from app.utils.ulid_gen import generate_blob_id
+from app.utils.simple_ids import get_next_run_id, get_next_experiment_id
 
 logger = logging.getLogger(__name__)
 
@@ -39,8 +40,8 @@ class ExperimentService:
         run_ids = []
 
         try:
-            # Generate experiment ID for this batch
-            experiment_id = f"exp_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{generate_ulid()[:8]}"
+            # Generate simple experiment ID
+            experiment_id = await get_next_experiment_id()
             current_dataset_version = datetime.now().strftime("%Y%m%d")
             
             # Validate prompts exist
@@ -65,7 +66,7 @@ class ExperimentService:
             for prompt in prompts:
                 for model in plan_request.models:
                     for _repeat in range(plan_request.repeats):
-                        run_id = generate_ulid()
+                        run_id = await get_next_run_id()
 
                         # Ensure judge has a valid model
                         judge_config = plan_request.judge.model_copy()
