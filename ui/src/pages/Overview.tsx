@@ -174,7 +174,7 @@ export function Overview() {
                 {isLoading ? '...' : totalRuns.toLocaleString()}
               </p>
             </div>
-            <div className="text-3xl font-bold text-blue-600">#</div>
+
           </div>
         </div>
 
@@ -187,7 +187,7 @@ export function Overview() {
                 {isLoading ? '...' : `$${avgTokenCost.toFixed(4)}`}
               </p>
             </div>
-            <div className="text-3xl font-bold text-green-600">$</div>
+
           </div>
         </div>
 
@@ -207,7 +207,7 @@ export function Overview() {
                 )}
               </div>
             </div>
-            <div className="text-3xl font-bold text-yellow-600">*</div>
+
           </div>
         </div>
 

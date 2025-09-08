@@ -1,13 +1,13 @@
 import { Link, useLocation } from 'react-router-dom'
 
 const navigation = [
-  { name: 'Overview', href: '/', icon: 'O', desc: 'System summary' },
-  { name: 'Benchmark Runner', href: '/benchmark', icon: 'B', desc: 'Run AI comparisons' },
-  { name: 'Prompt Library', href: '/prompts', icon: 'P', desc: 'Browse prompts' },
-  { name: 'Adaptive Prompting', href: '/adaptive', icon: 'A', desc: 'Generate prompts' },
-  { name: 'Insights', href: '/insights', icon: 'I', desc: 'Advanced analytics' },
-  { name: 'Results', href: '/results', icon: 'R', desc: 'View outcomes' },
-  { name: 'About', href: '/about', icon: '?', desc: 'Research info' },
+  { name: 'Overview', href: '/', desc: 'System summary' },
+  { name: 'Benchmark Runner', href: '/benchmark', desc: 'Run AI comparisons' },
+  { name: 'Prompt Library', href: '/prompts', desc: 'Browse prompts' },
+  { name: 'Adaptive Prompting', href: '/adaptive', desc: 'Generate prompts' },
+  { name: 'Insights', href: '/insights', desc: 'Advanced analytics' },
+  { name: 'Results', href: '/results', desc: 'View outcomes' },
+  { name: 'About', href: '/about', desc: 'Research info' },
 ]
 
 export function Navbar() {
@@ -50,7 +50,6 @@ export function Navbar() {
                     }
                   `}
                 >
-                  <span className="mr-2">{item.icon}</span>
                   {item.name}
                 </Link>
               )
@@ -88,7 +87,6 @@ export function Navbar() {
                     }
                   `}
                 >
-                  <span className="mr-3">{item.icon}</span>
                   {item.name}
                 </Link>
               )
