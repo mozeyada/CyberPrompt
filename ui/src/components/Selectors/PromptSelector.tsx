@@ -150,7 +150,8 @@ export function PromptSelector({ selectedPrompts, onPromptsChange, scenario, len
                 </p>
               </div>
             </label>
-          )})}
+            )
+          })
         )}
       </div>
       
