@@ -4,7 +4,7 @@
 
 CyberCQBench is a research platform that enables Security Operations Center (SOC) analysts, compliance professionals, and cybersecurity researchers to evaluate AI models for security tasks with full reproducibility and cost tracking.
 
-## 🎯 Why CyberCQBench?
+## Why CyberCQBench?
 
 As organizations adopt Large Language Models (LLMs) like GPT-4, Claude, and Gemini for incident analysis, compliance mapping, and threat intelligence reporting, one question remains unanswered: **Which AI is the most reliable, and at what cost?**
 
@@ -17,7 +17,7 @@ As organizations adopt Large Language Models (LLMs) like GPT-4, Claude, and Gemi
 - **Experiment Grouping**: Track and compare experiments with metadata
 - **Export Functionality**: CSV export with full research metadata
 
-## 🏗️ Architecture
+## Architecture
 
 ### Backend (Python 3.11 + FastAPI)
 - **API**: FastAPI with automatic OpenAPI docs
@@ -40,7 +40,7 @@ As organizations adopt Large Language Models (LLMs) like GPT-4, Claude, and Gemi
 - **Environment**: 12-factor .env configuration
 - **Development**: Hot-reload for both frontend and backend
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Prerequisites
 - Docker & docker-compose
@@ -82,21 +82,21 @@ make seed
 3. Select models to compare (GPT-4, Claude, etc.)
 4. Execute and view cost-quality results
 
-## 📊 Key Innovations
+## Key Innovations
 
-### 🎯 Bias Mitigation with FSP (Focus Sentence Prompting)
+### Bias Mitigation with FSP (Focus Sentence Prompting)
 Ensures fair evaluation regardless of verbosity or token inflation. No more penalizing concise, high-quality responses.
 
-### 📈 Cost-Quality Dashboards
+### Cost-Quality Dashboards
 Interactive analytics show which models provide the best value for money. Make data-driven decisions for your SOC budget.
 
-### ⚡ Scalable Background Processing
+### Scalable Background Processing
 Large experiments (>10 runs) execute in background to prevent timeouts. Small experiments get immediate feedback.
 
-### 🔄 Adaptive Benchmarking
+### Adaptive Benchmarking
 Prompts evolve with new threats, compliance updates, and live CTI feeds – keeping evaluations relevant to current cybersecurity landscape.
 
-### 🛡️ 7-Dimension SOC/GRC Rubric
+### 7-Dimension SOC/GRC Rubric
 Every LLM output is evaluated across:
 1. **Technical Accuracy**: Factual correctness in SOC/GRC context
 2. **Actionability**: Can analysts act on it without extra steps?
@@ -106,10 +106,10 @@ Every LLM output is evaluated across:
 6. **Relevance**: Stays on-task with no digressions  
 7. **Clarity**: Clear, structured, unambiguous writing
 
-### 🔍 Reproducible Pipelines
+### Reproducible Pipelines
 Fixed seeds, dataset versioning, and transparent scoring allow repeatable research and audits.
 
-### 🔗 Strong Data Relationships
+### Strong Data Relationships
 Direct linking between experiment runs and LLM outputs for easy debugging and analysis.
 
 ## API Endpoints
@@ -135,7 +135,7 @@ Direct linking between experiment runs and LLM outputs for easy debugging and an
 - `GET /export/runs.csv` - Export runs with full metadata
 - `GET /export/experiments.csv` - Export experiment summaries
 
-## 🧪 Development
+## Development
 
 ### Backend Development
 ```bash
@@ -201,7 +201,7 @@ make test
 /cysecbench-data/     # Research dataset
 ```
 
-## ❓ FAQ
+## FAQ
 
 **Q: Who is CyberCQBench for?**  
 A: SOC analysts, compliance auditors, cybersecurity researchers, and enterprise AI teams evaluating LLMs for security operations.
@@ -222,7 +222,7 @@ A: Each evaluation logs tokens, API pricing, and 7-dimension rubric scores. Dash
 **Q: Why is this important now?**  
 A: AI adoption in SOC and GRC is exploding, but without transparent benchmarking, organizations risk overspending and failing compliance checks. CyberCQBench ensures responsible, cost-effective use.
 
-## 🔧 Configuration
+## Configuration
 
 ### Environment Variables (.env)
 ```bash
@@ -248,7 +248,7 @@ PRICE_OUTPUT.claude35=0.075
 - **Google**: gemini-2.5-flash (coming soon)
 - **Extensible**: Add new providers via LLM client adapters
 
-## 📈 Usage Examples
+## Usage Examples
 
 ### 1. Plan and Execute Experiments
 ```python
@@ -285,7 +285,7 @@ curl -H "x-api-key: your_key" \
      "http://localhost:8000/exports/runs.csv" > results.csv
 ```
 
-## 🤝 Contributing
+## Contributing
 
 1. Fork the repository
 2. Create feature branch (`git checkout -b feature/amazing-feature`)
@@ -298,21 +298,21 @@ curl -H "x-api-key: your_key" \
 - **TypeScript**: eslint + prettier
 - **Commits**: Conventional commits preferred
 
-## 📜 License
+## License
 
 MIT License - see [LICENSE](LICENSE) file for details.
 
-## 🎆 Impact Statement
+## Impact Statement
 
 *"CyberCQBench makes cost–performance benchmarking as critical as penetration testing in modern SOC and compliance workflows. It's not just about which AI is smarter – it's about which AI is smarter per dollar while staying compliant."*
 
-## 📅 Availability
+## Availability
 
 CyberCQBench is available as:
 - **Open Research Tool**: This repository (MIT License)
 - **Enterprise Service**: Contact for scalable, AWS-hosted version with Amazon Bedrock integration
 
-## 🙏 Acknowledgments
+## Acknowledgments
 
 - Inspired by CySecBench for cybersecurity rubric structure
 - Built on FastAPI, React, and MongoDB for production reliability
@@ -321,7 +321,7 @@ CyberCQBench is available as:
 - Interactive charts powered by Recharts
 - Research collaboration with QUT School of Information Systems
 
-## 📞 Support
+## Support
 
 - **Issues**: GitHub Issues
 - **Research Collaboration**: Dr. Gowri Ramachandran (g.ramachandran@qut.edu.au)
@@ -330,4 +330,4 @@ CyberCQBench is available as:
 
 ---
 
-**CyberCQBench** - Cost-effective AI for SOC & Compliance 🛡️💰
+**CyberCQBench** - Cost-effective AI for SOC & Compliance
