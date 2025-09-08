@@ -256,7 +256,8 @@ async def list_runs(
             {"$addFields": {
                 "prompt_text": "$prompt.text",
                 "prompt_length_bin": "$prompt.length_bin",
-                "prompt_dataset_version": "$prompt.dataset_version"
+                "prompt_dataset_version": "$prompt.dataset_version",
+                "length_bin": "$prompt.length_bin"  # Add this for easier access
             }},
             {"$sort": {"created_at": -1}},
             {"$skip": (page - 1) * limit},

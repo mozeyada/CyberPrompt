@@ -36,6 +36,9 @@ export function Overview() {
     ? (statsOverview.total_cost_aud / statsOverview.total_runs) 
     : 0
   const avgScore = statsOverview?.avg_quality_overall || 0
+  
+  // Show message when no runs exist
+  const hasNoRuns = totalRuns === 0
 
   // Prompt type breakdown from actual prompt data
   const promptBreakdown = allPrompts?.prompts?.reduce((acc, prompt) => {
@@ -78,7 +81,8 @@ export function Overview() {
   }
 
   const scatterData = allRuns?.runs?.map(run => {
-    const lengthBin = run.prompt_length_bin || null
+    // Get length_bin from the joined prompt data or prompt_length_bin field
+    const lengthBin = run.prompt_length_bin || run.length_bin || null
     const selectedScore = selectedDimension === 'composite' 
       ? run.scores?.composite || 0
       : run.scores?.[selectedDimension] || 0
@@ -397,8 +401,10 @@ export function Overview() {
           <div className="text-center py-8 text-gray-400">Loading recent runs...</div>
         ) : recentRunsError ? (
           <div className="text-center py-8 text-red-600">Error loading recent runs</div>
-        ) : !statsOverview?.last_runs?.length ? (
-          <div className="text-center py-8 text-gray-400">No runs found</div>
+        ) : !statsOverview?.last_runs?.length || hasNoRuns ? (
+          <div className="text-center py-8 text-gray-400">
+            {hasNoRuns ? 'No benchmark runs yet. Go to Benchmark Runner to create your first experiment!' : 'No runs found'}
+          </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full">
