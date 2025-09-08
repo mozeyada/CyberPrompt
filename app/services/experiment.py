@@ -173,6 +173,9 @@ class ExperimentService:
                 try:
                     # Get the appropriate LLM client for the judge model
                     judge_model = run.judge.judge_model or "gpt-4o-mini"
+                    # Ensure we have a valid model name
+                    if not judge_model or judge_model == "":
+                        judge_model = "gpt-4o-mini"
                     judge_client = self.model_runner._get_client(judge_model)
 
                     judge = create_judge(run.judge.model_dump(), judge_client)
