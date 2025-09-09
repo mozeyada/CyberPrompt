@@ -14,7 +14,7 @@ export function About() {
 
       {/* Methodology */}
       <div className="bg-white rounded-lg shadow p-8">
-        <h2 className="text-2xl font-bold text-gray-900 mb-6">🔬 Methodology</h2>
+        <h2 className="text-2xl font-bold text-gray-900 mb-6">Methodology</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <h3 className="text-lg font-semibold text-gray-800 mb-3">FSP vs Raw Scoring</h3>
@@ -54,31 +54,31 @@ export function About() {
 
       {/* Key Features */}
       <div className="bg-white rounded-lg shadow p-8">
-        <h2 className="text-2xl font-bold text-gray-900 mb-6">⚡ Key Features</h2>
+        <h2 className="text-2xl font-bold text-gray-900 mb-6">Key Features</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="flex items-start space-x-3">
-            <div className="text-2xl">📊</div>
+            <div className="text-2xl font-bold text-blue-600">C</div>
             <div>
               <h3 className="font-semibold text-gray-800">Prompt Coverage Analysis</h3>
               <p className="text-gray-600">Track prompt usage across scenarios and sources with comprehensive coverage metrics.</p>
             </div>
           </div>
           <div className="flex items-start space-x-3">
-            <div className="text-2xl">📏</div>
+            <div className="text-2xl font-bold text-green-600">L</div>
             <div>
               <h3 className="font-semibold text-gray-800">Length Bias Detection</h3>
               <p className="text-gray-600">Statistical analysis identifying verbosity bias with confidence intervals and significance testing.</p>
             </div>
           </div>
           <div className="flex items-start space-x-3">
-            <div className="text-2xl">⚠️</div>
+            <div className="text-2xl font-bold text-red-600">R</div>
             <div>
               <h3 className="font-semibold text-gray-800">Risk vs Cost Visualization</h3>
               <p className="text-gray-600">Interactive frontiers showing optimal balance between cost efficiency and risk mitigation.</p>
             </div>
           </div>
           <div className="flex items-start space-x-3">
-            <div className="text-2xl">🔄</div>
+            <div className="text-2xl font-bold text-purple-600">A</div>
             <div>
               <h3 className="font-semibold text-gray-800">Adaptive Prompting</h3>
               <p className="text-gray-600">Dynamic benchmark generation from live CTI feeds and evolving GRC policy documents.</p>
@@ -89,7 +89,7 @@ export function About() {
 
       {/* Technical Stack */}
       <div className="bg-white rounded-lg shadow p-8">
-        <h2 className="text-2xl font-bold text-gray-900 mb-6">🛠️ Technical Stack</h2>
+        <h2 className="text-2xl font-bold text-gray-900 mb-6">Technical Stack</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <div>
             <h3 className="text-lg font-semibold text-gray-800 mb-3">Backend</h3>
@@ -121,11 +121,11 @@ export function About() {
 
       {/* Authors & Affiliations */}
       <div className="bg-white rounded-lg shadow p-8">
-        <h2 className="text-2xl font-bold text-gray-900 mb-6">👥 Authors & Affiliations</h2>
+        <h2 className="text-2xl font-bold text-gray-900 mb-6">Authors & Affiliations</h2>
         <div className="space-y-6">
           <div className="flex items-start space-x-4">
             <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center text-2xl">
-              👨‍💻
+              MZ
             </div>
             <div>
               <h3 className="text-lg font-semibold text-gray-800">Mohamed Zeyada</h3>
@@ -135,7 +135,7 @@ export function About() {
           </div>
           <div className="flex items-start space-x-4">
             <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center text-2xl">
-              👩‍🏫
+              GR
             </div>
             <div>
               <h3 className="text-lg font-semibold text-gray-800">Dr. Gowri Ramachandran</h3>
@@ -145,7 +145,7 @@ export function About() {
           </div>
           <div className="flex items-start space-x-4">
             <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center text-2xl">
-              🏛️
+              QUT
             </div>
             <div>
               <h3 className="text-lg font-semibold text-gray-800">Queensland University of Technology</h3>
@@ -158,7 +158,7 @@ export function About() {
 
       {/* Citation */}
       <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg shadow p-8">
-        <h2 className="text-2xl font-bold text-gray-900 mb-6">📚 Citation</h2>
+        <h2 className="text-2xl font-bold text-gray-900 mb-6">Citation</h2>
         <div className="bg-white rounded-lg p-6 border-l-4 border-blue-500">
           <p className="text-gray-800 font-mono text-sm leading-relaxed">
             Zeyada, M., & Ramachandran, G. (2025). <em>CyberCQBench: Benchmarking LLMs for SOC and GRC Operations</em>. 
