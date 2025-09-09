@@ -53,7 +53,7 @@ export function Results() {
               <p className="text-sm font-medium text-gray-600">Total Runs</p>
               <p className="text-2xl font-bold text-gray-900">{statsData?.total_successful_runs || 0}</p>
             </div>
-            <div className="text-3xl">📊</div>
+            <div className="text-3xl font-bold text-blue-600">#</div>
           </div>
         </div>
         
@@ -63,7 +63,7 @@ export function Results() {
               <p className="text-sm font-medium text-gray-600">Avg Cost</p>
               <p className="text-2xl font-bold text-gray-900">${statsData?.avg_cost_per_run?.toFixed(4) || '0.0000'}</p>
             </div>
-            <div className="text-3xl">💰</div>
+            <div className="text-3xl font-bold text-green-600">$</div>
           </div>
         </div>
         
@@ -73,7 +73,7 @@ export function Results() {
               <p className="text-sm font-medium text-gray-600">Models Tested</p>
               <p className="text-2xl font-bold text-gray-900">{statsData?.models_tested || 0}</p>
             </div>
-            <div className="text-3xl">🤖</div>
+            <div className="text-3xl font-bold text-purple-600">M</div>
           </div>
         </div>
         
@@ -83,7 +83,7 @@ export function Results() {
               <p className="text-sm font-medium text-gray-600">Scenarios</p>
               <p className="text-2xl font-bold text-gray-900">{statsData?.scenarios_covered || 0}</p>
             </div>
-            <div className="text-3xl">🛡️</div>
+            <div className="text-3xl font-bold text-red-600">S</div>
           </div>
         </div>
       </div>

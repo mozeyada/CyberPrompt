@@ -38,10 +38,10 @@ export function Insights() {
   })
   
   const views = [
-    { id: 'cost_score', name: 'Cost vs Score', icon: '$' },
-    { id: 'bias', name: 'Bias Analysis', icon: '|' },
-    { id: 'risk', name: 'Risk Analysis', icon: '!' },
-    { id: 'coverage', name: 'Coverage', icon: '#' }
+    { id: 'cost_score', name: 'Cost vs Score' },
+    { id: 'bias', name: 'Bias Analysis' },
+    { id: 'risk', name: 'Risk Analysis' },
+    { id: 'coverage', name: 'Coverage' }
   ]
 
 
@@ -69,7 +69,6 @@ export function Insights() {
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
               }`}
             >
-              <span className="mr-2">{view.icon}</span>
               {view.name}
             </button>
           ))}

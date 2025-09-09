@@ -12,7 +12,9 @@ const MODEL_COLORS = {
 export function useCostQualityData() {
   return useQuery({
     queryKey: ['cost-quality-scatter'],
-    queryFn: analyticsApi.costQualityScatter
+    queryFn: analyticsApi.costQualityScatter,
+    retry: 1,
+    staleTime: 30000
   })
 }
 
