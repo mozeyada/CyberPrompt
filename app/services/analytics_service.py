@@ -58,11 +58,11 @@ class AnalyticsService:
                 model_data[model]["scores"].append(result["composite_score"])
                 model_data[model]["length_bins"].append(result.get("prompt_length_bin", "unknown"))
             
-            # Calculate averages
+            # Calculate averages with zero-division protection
             formatted_results = []
             for model, data in model_data.items():
-                avg_cost = sum(data["costs"]) / len(data["costs"])
-                avg_score = sum(data["scores"]) / len(data["scores"])
+                avg_cost = sum(data["costs"]) / len(data["costs"]) if data["costs"] else 0
+                avg_score = sum(data["scores"]) / len(data["scores"]) if data["scores"] else 0
                 formatted_results.append({
                     "model": model,
                     "length_bin": "all",
@@ -147,8 +147,9 @@ class AnalyticsService:
             slopes_data = []
             for model, bins in model_data.items():
                 if len(bins) >= 3:  # Need at least 3 points for meaningful slope
-                    x_vals = [length_bin_order[bin_name] for bin_name in bins]
-                    y_vals = [bin_data["avg_score"] for bin_data in bins.values()]
+                    sorted_bins = sorted(bins.items())
+                    x_vals = [length_bin_order[bin_name] for bin_name, _ in sorted_bins]
+                    y_vals = [bin_data["avg_score"] for _, bin_data in sorted_bins]
 
                     # Linear regression
                     slope, intercept, r_value, p_value, std_err = stats.linregress(x_vals, y_vals)
@@ -219,7 +220,7 @@ class AnalyticsService:
                     },
                     "avg_risk_awareness": {"$avg": "$scores.risk_awareness"},
                     "avg_hallucination_rate": {"$avg": {
-                        "$divide": ["$risk_metrics.hallucination_flags", {"$max": [1, "$tokens.output"]}],
+                        "$divide": ["$risk_metrics.hallucination_flags", {"$ifNull": ["$tokens.output", 1]}],
                     }},
                     "count": {"$sum": 1},
                 }},

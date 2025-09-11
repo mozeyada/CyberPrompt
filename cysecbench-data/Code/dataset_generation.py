@@ -1,5 +1,6 @@
 import base64
 import csv
+import os
 import re
 
 from openai import OpenAI
@@ -297,6 +298,9 @@ def save_prompts_to_csv(category, prompts, filename="data_gen_output.csv"):
     Saves the generated prompts to a CSV file along with the associated category (keyword).
     If the file is empty, write a header row first. Appends new rows for each prompt.
     """
+    # Prevent path traversal by removing any path components
+    filename = os.path.basename(filename)
+    
     # Open or create a CSV file in append mode
     with open(filename, mode="a", newline="", encoding="utf-8") as csvfile:
         writer = csv.writer(csvfile)

@@ -4,10 +4,10 @@ Migration script to update prompt classification from word-count to token-count.
 
 Updates:
 - Adds token_count field to all prompts
-- Reclassifies prompts using token-based bins:
-  - S: 150-200 tokens
-  - M: 400-600 tokens  
-  - L: >1000 tokens
+- Reclassifies prompts using continuous token-based bins:
+  - S: ≤300 tokens
+  - M: 301-800 tokens  
+  - L: >800 tokens
 - Removes XS classification entirely
 """
 

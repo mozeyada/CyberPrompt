@@ -30,9 +30,9 @@ class ContextType(str, Enum):
 
 
 class LengthBin(str, Enum):
-    S = "S"    # ≤16 tokens (Short)
-    M = "M"    # 17-20 tokens (Medium)
-    L = "L"    # >20 tokens (Long)
+    S = "S"    # ≤300 tokens (Short SOC/GRC prompts)
+    M = "M"    # 301-800 tokens (Medium SOC/GRC prompts)
+    L = "L"    # >800 tokens (Long SOC/GRC prompts)
 
 
 class SafetyTag(str, Enum):
@@ -142,7 +142,7 @@ class Run(BaseModel):
     @field_validator("model_id", mode="before")
     @classmethod
     def set_model_id(cls, v, info):
-        if v is None and info.data and "model" in info.data:
+        if v is None and info and hasattr(info, 'data') and info.data and "model" in info.data:
             return info.data["model"]
         return v
 

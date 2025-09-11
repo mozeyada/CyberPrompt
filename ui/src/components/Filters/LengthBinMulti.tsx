@@ -1,9 +1,9 @@
 import { useFilters } from '../../state/useFilters'
 
 const LENGTH_BINS = [
-  { value: 'S', label: 'S (&le;16 tokens)' },
-  { value: 'M', label: 'M (17-20 tokens)' },
-  { value: 'L', label: 'L (&gt;20 tokens)' }
+  { value: 'S', label: 'S (≤300 tokens)' },
+  { value: 'M', label: 'M (301-800 tokens)' },
+  { value: 'L', label: 'L (>800 tokens)' }
 ]
 
 export function LengthBinMulti() {

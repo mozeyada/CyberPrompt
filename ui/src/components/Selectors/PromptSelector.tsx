@@ -8,17 +8,19 @@ interface PromptSelectorProps {
   scenario?: string | null
   lengthBin?: string
   sourceFilter?: string
+  includeVariants?: boolean
 }
 
-export function PromptSelector({ selectedPrompts, onPromptsChange, scenario, lengthBin, sourceFilter }: PromptSelectorProps) {
+export function PromptSelector({ selectedPrompts, onPromptsChange, scenario, lengthBin, sourceFilter, includeVariants }: PromptSelectorProps) {
   const { data: promptsData, isLoading, error } = useQuery({
-    queryKey: ['prompts', scenario, lengthBin, sourceFilter],
+    queryKey: ['prompts', scenario, lengthBin, sourceFilter, includeVariants],
     queryFn: () => {
-      console.log('PromptSelector query:', { scenario, lengthBin, sourceFilter })
+      console.log('PromptSelector query:', { scenario, lengthBin, sourceFilter, includeVariants })
       return promptsApi.list({ 
         scenario: scenario || undefined,
         length_bin: lengthBin || undefined,
         ...(sourceFilter && sourceFilter !== 'all' && { prompt_type: sourceFilter }),
+        include_variants: includeVariants || false,
         limit: 500 // Show all available prompts
       }).then(data => {
         console.log('Prompts API result:', data)
@@ -100,8 +102,8 @@ export function PromptSelector({ selectedPrompts, onPromptsChange, scenario, len
           </div>
         ) : (
           prompts.map((prompt, index) => {
-            const uniqueKey = prompt.prompt_id || `prompt-${index}`
-            const promptId = prompt.prompt_id || uniqueKey
+            const uniqueKey = `${prompt.prompt_id || `prompt-${index}`}-${index}`
+            const promptId = prompt.prompt_id || `prompt-${index}`
             return (
             <label key={uniqueKey} className="flex items-start space-x-2 cursor-pointer">
               <input
@@ -137,12 +139,13 @@ export function PromptSelector({ selectedPrompts, onPromptsChange, scenario, len
                     prompt.source === 'adaptive' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
                   }`}>
                     {prompt.source === 'adaptive' ? 'Adaptive' : 'Static'}
-                  </span>
-                  {prompt.source === 'CySecBench' && (
-                    <span className="text-xs bg-purple-100 text-purple-800 px-2 py-0.5 rounded">
-                      Research
+                  {includeVariants && !prompt.metadata?.variant_of && (
+                    <span className="text-xs bg-purple-100 text-purple-800 px-1 py-0.5 rounded ml-1">
+                      +M+L
                     </span>
                   )}
+                  </span>
+
                 </div>
                 <p className="text-sm text-gray-700 line-clamp-2">
                   {prompt.text.substring(0, 150)}...
@@ -155,7 +158,10 @@ export function PromptSelector({ selectedPrompts, onPromptsChange, scenario, len
       </div>
       
       <div className="text-xs text-gray-500">
-        {selectedPrompts.length} prompt{selectedPrompts.length !== 1 ? 's' : ''} selected
+        {includeVariants 
+          ? `${selectedPrompts.length} prompt group${selectedPrompts.length !== 1 ? 's' : ''} selected (${selectedPrompts.length * 3} total prompts including variants)`
+          : `${selectedPrompts.length} prompt${selectedPrompts.length !== 1 ? 's' : ''} selected`
+        }
       </div>
     </div>
   )

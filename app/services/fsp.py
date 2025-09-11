@@ -111,7 +111,7 @@ class GranularityMatcher:
     def __init__(self):
         self.demos = {
             LengthBin.S: {
-                "description": "Short analysis (≤16 tokens)",
+                "description": "Short analysis (≤300 tokens)",
                 "example": """
 Example for short response:
 - Direct, concise answer
@@ -120,7 +120,7 @@ Example for short response:
 """,
             },
             LengthBin.M: {
-                "description": "Medium analysis (17-20 tokens)",
+                "description": "Medium analysis (301-800 tokens)",
                 "example": """
 Example for medium response:
 - 2-3 key points with brief explanations
@@ -129,7 +129,7 @@ Example for medium response:
 """,
             },
             LengthBin.L: {
-                "description": "Long analysis (>20 tokens)",
+                "description": "Long analysis (>800 tokens)",
                 "example": """
 Example for long response:
 - Comprehensive coverage of multiple aspects

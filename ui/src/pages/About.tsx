@@ -7,8 +7,9 @@ export function About() {
       <div className="text-center">
         <h1 className="text-4xl font-bold text-gray-900 mb-4">About This Research</h1>
         <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-          CyberCQBench provides cost-effective and trustworthy AI model evaluation for high-stakes 
-          Security Operations Center (SOC) and Governance, Risk, and Compliance (GRC) tasks.
+          CyberCQBench enables systematic study of prompt length effects on LLM cost-quality trade-offs 
+          in cybersecurity operations. With 952 research-grade prompts across controlled length variants, 
+          it provides cost-effective and reproducible AI evaluation for SOC and GRC tasks.
         </p>
       </div>
 
@@ -17,14 +18,14 @@ export function About() {
         <h2 className="text-2xl font-bold text-gray-900 mb-6">Methodology</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <h3 className="text-lg font-semibold text-gray-800 mb-3">FSP vs Raw Scoring</h3>
+            <h3 className="text-lg font-semibold text-gray-800 mb-3">Length Variant Analysis</h3>
             <p className="text-gray-600">
-              Focus Sentence Prompting (FSP) mitigates verbosity bias by evaluating content segments 
-              while preserving full context, ensuring fair comparison across response lengths.
+              Controlled S+M+L prompt groups (≤300, 301-800, &gt;800 tokens) enable systematic 
+              studies of how prompt length affects LLM quality and cost efficiency in cybersecurity tasks.
             </p>
           </div>
           <div>
-            <h3 className="text-lg font-semibold text-gray-800 mb-3">7-Dimension Rubric</h3>
+            <h3 className="text-lg font-semibold text-gray-800 mb-3">7-Dimension SOC/GRC Rubric</h3>
             <ul className="text-gray-600 space-y-1">
               <li>• Technical Accuracy</li>
               <li>• Actionability</li>
@@ -36,17 +37,17 @@ export function About() {
             </ul>
           </div>
           <div>
-            <h3 className="text-lg font-semibold text-gray-800 mb-3">Static vs Adaptive Prompts</h3>
+            <h3 className="text-lg font-semibold text-gray-800 mb-3">Bias Mitigation (FSP)</h3>
             <p className="text-gray-600">
-              Compares curated static prompts against dynamically generated prompts from live 
-              CTI feeds and compliance policy updates.
+              Focus Sentence Prompting mitigates verbosity bias by evaluating content quality 
+              rather than response length, ensuring fair comparison across different prompt lengths.
             </p>
           </div>
           <div>
-            <h3 className="text-lg font-semibold text-gray-800 mb-3">Cost/Quality Analysis</h3>
+            <h3 className="text-lg font-semibold text-gray-800 mb-3">Research Dataset</h3>
             <p className="text-gray-600">
-              Token-level cost tracking with statistical analysis to identify optimal 
-              cost-performance trade-offs for budget-conscious SOC/GRC operations.
+              952 total prompts: 318 originals + 317 medium + 317 long variants with perfect 
+              traceability and controlled token classification for academic analysis.
             </p>
           </div>
         </div>
@@ -78,10 +79,10 @@ export function About() {
             </div>
           </div>
           <div className="flex items-start space-x-3">
-            <div className="text-2xl font-bold text-purple-600">A</div>
+            <div className="text-2xl font-bold text-purple-600">V</div>
             <div>
-              <h3 className="font-semibold text-gray-800">Adaptive Prompting</h3>
-              <p className="text-gray-600">Dynamic benchmark generation from live CTI feeds and evolving GRC policy documents.</p>
+              <h3 className="font-semibold text-gray-800">Variant Group Selection</h3>
+              <p className="text-gray-600">Select original prompts to automatically include Medium and Long variants for controlled length studies.</p>
             </div>
           </div>
         </div>
@@ -168,7 +169,12 @@ export function About() {
         <div className="mt-4 text-sm text-gray-600">
           <p className="mb-2"><strong>Research Context:</strong> Assessment 2 - Scoping a Research Problem Report</p>
           <p className="mb-2"><strong>Project Title:</strong> Benchmarking Generative AI Token Use in Cybersecurity Operations</p>
-          <p><strong>Cluster:</strong> 8</p>
+          <p className="mb-2"><strong>Research Questions:</strong></p>
+          <ul className="ml-4 space-y-1">
+            <li>• RQ1: How does prompt length influence LLM output quality and cost efficiency in SOC/GRC tasks?</li>
+            <li>• RQ2: Can adaptive generative benchmarking improve evaluation coverage over static datasets?</li>
+          </ul>
+          <p className="mt-2"><strong>Cluster:</strong> 8</p>
         </div>
       </div>
 

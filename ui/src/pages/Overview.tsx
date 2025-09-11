@@ -47,11 +47,7 @@ export function Overview() {
     return acc
   }, { static: 0, adaptive: 0, unknown: 0 }) || { static: 0, adaptive: 0, unknown: 0 }
 
-  // Chart data aggregation
-  const sourceChartData = [
-    { name: 'Static', value: promptBreakdown.static, color: '#3B82F6' },
-    { name: 'Adaptive', value: promptBreakdown.adaptive, color: promptBreakdown.adaptive === 0 ? '#D1D5DB' : '#F59E0B' }
-  ].filter(item => item.value > 0)
+
 
   const modelChartData = allRuns?.runs?.reduce((acc, run) => {
     const existing = acc.find(item => item.model === run.model)
@@ -65,9 +61,9 @@ export function Overview() {
 
   const getLengthBinColor = (lengthBin: string | null) => {
     switch (lengthBin) {
-      case 'S': return '#10B981' // green (≤16 tokens)
-      case 'M': return '#3B82F6'  // blue (17-20 tokens)
-      case 'L': return '#EF4444'  // red (>20 tokens)
+      case 'S': return '#10B981' // green (≤300 tokens)
+      case 'M': return '#3B82F6'  // blue (301-800 tokens)
+      case 'L': return '#EF4444'  // red (>800 tokens)
       case null:
       case undefined:
       default: return '#6B7280'  // gray for null/unknown
@@ -243,36 +239,8 @@ export function Overview() {
       </div>
 
       {/* Charts Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Chart 1: Prompt Source Distribution */}
-        <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-lg font-semibold mb-4">Prompt Source Distribution</h3>
-          {isLoading ? (
-            <div className="h-64 flex items-center justify-center text-gray-400">Loading...</div>
-          ) : sourceChartData.length > 0 ? (
-            <ResponsiveContainer width="100%" height={250}>
-              <PieChart>
-                <Pie
-                  data={sourceChartData}
-                  cx="50%"
-                  cy="50%"
-                  outerRadius={80}
-                  dataKey="value"
-                  label={({ name, value, percent }) => `${name}: ${value} (${(percent * 100).toFixed(0)}%)`}
-                >
-                  {sourceChartData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Pie>
-                <Tooltip formatter={(value, name) => [`${value} runs`, name]} />
-              </PieChart>
-            </ResponsiveContainer>
-          ) : (
-            <div className="h-64 flex items-center justify-center text-gray-400">No data available</div>
-          )}
-        </div>
-
-        {/* Chart 2: Model Usage */}
+      <div className="grid grid-cols-1 gap-8">
+        {/* Model Usage */}
         <div className="bg-white rounded-lg shadow p-6">
           <h3 className="text-lg font-semibold mb-4">Model Usage</h3>
           {isLoading ? (
@@ -441,7 +409,9 @@ export function Overview() {
                       <span title="Auto-scored by LLM judge" className="text-gray-400 cursor-help">ℹ️</span>
                     </div>
                   </th>
-                  <th className="text-left py-3 px-4 font-medium text-gray-600">Token Cost</th>
+                  <th className="text-left py-3 px-4 font-medium text-gray-600">Tokens</th>
+                  <th className="text-left py-3 px-4 font-medium text-gray-600">Cost</th>
+                  <th className="text-left py-3 px-4 font-medium text-gray-600">FSP</th>
                   <th className="text-left py-3 px-4 font-medium text-gray-600">Run Time</th>
                 </tr>
               </thead>
@@ -477,7 +447,21 @@ export function Overview() {
                         </td>
                         <td className="py-3 px-4">
                           <span className="text-sm text-gray-900">
+                            {(run.tokens?.total || 0).toLocaleString()}
+                          </span>
+                        </td>
+                        <td className="py-3 px-4">
+                          <span className="text-sm text-gray-900">
                             ${(run.economics?.aud_cost || 0).toFixed(4)}
+                          </span>
+                        </td>
+                        <td className="py-3 px-4">
+                          <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+                            run.bias_controls?.fsp 
+                              ? 'bg-green-100 text-green-800' 
+                              : 'bg-gray-100 text-gray-600'
+                          }`}>
+                            {run.bias_controls?.fsp ? 'Yes' : 'No'}
                           </span>
                         </td>
                         <td className="py-3 px-4">

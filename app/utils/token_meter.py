@@ -38,6 +38,10 @@ class TokenMeter:
 
     def count_tokens(self, text: str, model: str) -> int:
         """Count tokens in text for given model"""
+        # Simple approximation for Claude models (4 chars per token)
+        if "claude" in model.lower():
+            return len(text) // 4
+            
         try:
             encoder = self._get_encoder(model)
             return len(encoder.encode(text))

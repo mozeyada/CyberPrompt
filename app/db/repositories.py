@@ -61,6 +61,7 @@ class PromptRepository:
         prompt_type: str | None = None,
         min_tokens: int | None = None,
         max_tokens: int | None = None,
+        include_variants: bool = False,
         q: str | None = None,
         page: int = 1,
         limit: int = 50,
@@ -101,6 +102,35 @@ class PromptRepository:
             except Exception as e:
                 logger.warning(f"Skipping invalid prompt document: {e}")
                 continue
+
+        # If include_variants is True, expand original prompts to include their variants
+        if include_variants:
+            expanded_prompts = []
+            original_ids = set()
+            
+            for prompt in validated_prompts:
+                expanded_prompts.append(prompt)
+                
+                # If this is an original prompt (no variant_of), find its variants
+                if not prompt.metadata or not prompt.metadata.get('variant_of'):
+                    original_ids.add(prompt.prompt_id)
+            
+            # Find all variants for the original prompts
+            if original_ids:
+                variant_cursor = self.collection.find({
+                    'metadata.variant_of': {'$in': list(original_ids)}
+                })
+                variant_docs = await variant_cursor.to_list(length=None)
+                variant_docs = convert_objectid_list(variant_docs)
+                
+                for doc in variant_docs:
+                    try:
+                        expanded_prompts.append(Prompt(**doc))
+                    except Exception as e:
+                        logger.warning(f"Skipping invalid variant document: {e}")
+                        continue
+            
+            return expanded_prompts
 
         return validated_prompts
 

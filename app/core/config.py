@@ -12,7 +12,7 @@ class Settings(BaseSettings):
     )
 
     app_env: str = "dev"
-    api_keys: str | list[str] = []
+    api_keys: str | list[str] = "supersecret1,supersecret2,supersecret3"
     mongo_uri: str = "mongodb://localhost:27017"
     mongo_db: str = "genai_bench"
 

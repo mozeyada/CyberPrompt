@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import React, { useState } from 'react'
 import { ScenarioSelect } from './Filters/ScenarioSelect'
 import { PromptSelector } from './Selectors/PromptSelector'
 import { useFilters } from '../state/useFilters'
@@ -11,6 +11,14 @@ interface Step1Props {
 export function Step1_Scenarios({ lengthBin, setLengthBin }: Step1Props) {
   const { selectedScenario, selectedPrompts, setSelectedPrompts } = useFilters()
   const [sourceFilter, setSourceFilter] = useState('all')
+  const [includeVariants, setIncludeVariants] = useState(false)
+  
+  // Reset includeVariants when switching to adaptive prompts
+  React.useEffect(() => {
+    if (sourceFilter === 'adaptive') {
+      setIncludeVariants(false)
+    }
+  }, [sourceFilter])
 
   return (
     <div className="space-y-6">
@@ -35,9 +43,9 @@ export function Step1_Scenarios({ lengthBin, setLengthBin }: Step1Props) {
               className="w-full border border-gray-300 rounded-md px-3 py-2"
             >
               <option value="">All lengths</option>
-              <option value="S">S (&le;16 tokens)</option>
-              <option value="M">M (17-20 tokens)</option>
-              <option value="L">L (&gt;20 tokens)</option>
+              <option value="S">S (≤300 tokens)</option>
+              <option value="M">M (301-800 tokens)</option>
+              <option value="L">L (&gt;800 tokens)</option>
             </select>
           </div>
           
@@ -57,12 +65,38 @@ export function Step1_Scenarios({ lengthBin, setLengthBin }: Step1Props) {
           </div>
         </div>
 
+        <div className="mb-4">
+          <label className="flex items-center space-x-2">
+            <input
+              type="checkbox"
+              checked={includeVariants}
+              onChange={(e) => setIncludeVariants(e.target.checked)}
+              disabled={sourceFilter === 'adaptive'}
+              className={`rounded border-gray-300 text-blue-600 focus:ring-blue-500 ${
+                sourceFilter === 'adaptive' ? 'opacity-50 cursor-not-allowed' : ''
+              }`}
+            />
+            <span className={`text-sm font-medium ${
+              sourceFilter === 'adaptive' ? 'text-gray-400' : 'text-gray-700'
+            }`}>
+              Include length variants (S+M+L groups)
+            </span>
+            <span className="text-xs text-gray-500">
+              {sourceFilter === 'adaptive' 
+                ? 'Only available for static prompts - adaptive prompts don\'t have variants'
+                : 'Select original prompts to automatically include their Medium and Long variants'
+              }
+            </span>
+          </label>
+        </div>
+
         <PromptSelector 
           selectedPrompts={selectedPrompts}
           onPromptsChange={setSelectedPrompts}
           scenario={selectedScenario}
           lengthBin={lengthBin}
           sourceFilter={sourceFilter}
+          includeVariants={includeVariants}
         />
       </div>
 

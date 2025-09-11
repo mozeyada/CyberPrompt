@@ -23,7 +23,7 @@ export function PromptCoverageChart() {
     return <div className="text-red-600 p-4">Error loading coverage data</div>
   }
 
-  console.log('PromptCoverageChart data:', data)
+  // Debug: console.log('PromptCoverageChart data:', data)
   
   if (!data || !data.length) {
     return (

@@ -14,6 +14,8 @@ As organizations adopt Large Language Models (LLMs) like GPT-4, Claude, and Gemi
 - **Cost-Quality Analytics**: Interactive dashboards showing model performance vs API costs
 - **7-Dimension SOC/GRC Rubric**: Technical accuracy, actionability, completeness, compliance alignment, risk awareness, relevance, clarity
 - **Bias Mitigation**: Focus Sentence Prompting (FSP) for fair evaluation
+- **Length Variant Analysis**: Automatic S+M+L prompt groups for controlled length studies
+- **Academic Dataset**: 952 research-grade prompts with proper token classification (≤300, 301-800, >800)
 - **Experiment Grouping**: Track and compare experiments with metadata
 - **Export Functionality**: CSV export with full research metadata
 
@@ -77,10 +79,12 @@ make seed
 - **Database Admin**: http://localhost:8081
 
 ### 5. Run Your First Experiment
-1. Navigate to **Experiments** tab
-2. Configure your SOC/GRC evaluation
-3. Select models to compare (GPT-4, Claude, etc.)
-4. Execute and view cost-quality results
+1. Navigate to **Benchmark Runner** tab
+2. Choose security scenarios and configure evaluation settings
+3. **Optional**: Enable "Include length variants" for S+M+L prompt groups
+4. Select models to compare (GPT-4, Claude, etc.)
+5. Configure bias controls (FSP recommended for fair scoring)
+6. Execute and view cost-quality results in real-time
 
 ## Key Innovations
 
@@ -92,6 +96,9 @@ Interactive analytics show which models provide the best value for money. Make d
 
 ### Scalable Background Processing
 Large experiments (>10 runs) execute in background to prevent timeouts. Small experiments get immediate feedback.
+
+### Length Variant Analysis
+Select original prompts to automatically include Medium and Long variants, enabling controlled studies of how prompt length affects LLM quality and cost efficiency.
 
 ### Adaptive Benchmarking
 Prompts evolve with new threats, compliance updates, and live CTI feeds – keeping evaluations relevant to current cybersecurity landscape.
@@ -112,11 +119,24 @@ Fixed seeds, dataset versioning, and transparent scoring allow repeatable resear
 ### Strong Data Relationships
 Direct linking between experiment runs and LLM outputs for easy debugging and analysis.
 
+### Research-Grade Dataset
+**952 Total Prompts** structured for academic analysis:
+- **318 Original Prompts**: Base CySecBench prompts across 10 attack categories
+- **317 Medium Variants**: SOC incident context expansion (301-800 tokens)
+- **317 Long Variants**: Comprehensive analysis framework (>800 tokens)
+- **Perfect Traceability**: Each variant linked to original via metadata
+- **Controlled Length Distribution**: Enables systematic prompt length studies
+
+**Token Classification**:
+- **Short (S)**: ≤300 tokens - Concise security questions
+- **Medium (M)**: 301-800 tokens - SOC incident analysis context
+- **Long (L)**: >800 tokens - Comprehensive GRC analysis framework
+
 ## API Endpoints
 
 ### Prompts
 - `POST /prompts/import` - Import prompt collections
-- `GET /prompts` - List prompts with scenario, length_bin, prompt_type filters
+- `GET /prompts` - List prompts with scenario, length_bin, prompt_type, include_variants filters
 - `GET /prompts/{id}` - Get specific prompt
 
 ### Runs  
@@ -198,7 +218,9 @@ make test
     /types/           # TypeScript definitions
 
 /scripts/             # Data migration and utility scripts
-/cysecbench-data/     # Research dataset
+  create_academic_variants.py  # Generate S+M+L prompt variants
+  fix_token_counts.py         # Recalculate token classifications
+/cysecbench-data/     # Original research dataset (330 prompts)
 ```
 
 ## FAQ
@@ -214,13 +236,16 @@ A:
 - **CySecBench** → Provided the rubric baseline, but static & cost-blind
 - **DefenderBench** → Added SOC-like diversity, but no GRC scoring or token analysis  
 - **Chroma** → Inspired adaptive query generation, but not tuned for cybersecurity
-- **CyberCQBench** → Unifies all three with FSP bias mitigation + cost analytics for real-world SOC/GRC
+- **CyberCQBench** → Unifies all three with FSP bias mitigation + cost analytics + length variant analysis for comprehensive SOC/GRC research
 
 **Q: How does it track cost vs quality?**  
 A: Each evaluation logs tokens, API pricing, and 7-dimension rubric scores. Dashboards visualize cost–quality trade-offs per model, scenario, and task length.
 
 **Q: Why is this important now?**  
-A: AI adoption in SOC and GRC is exploding, but without transparent benchmarking, organizations risk overspending and failing compliance checks. CyberCQBench ensures responsible, cost-effective use.
+A: AI adoption in SOC and GRC is exploding, but without transparent benchmarking, organizations risk overspending and failing compliance checks. CyberCQBench ensures responsible, cost-effective use with academic-grade reproducibility.
+
+**Q: What makes the dataset special?**  
+A: 952 research-grade prompts with controlled length variants (Short ≤300, Medium 301-800, Long >800 tokens) enabling systematic studies of prompt length effects on LLM performance and cost efficiency.
 
 ## Configuration
 
@@ -252,17 +277,16 @@ PRICE_OUTPUT.claude35=0.075
 
 ### 1. Plan and Execute Experiments
 ```python
-# Plan runs
+# Plan runs with length variants
 plan = {
-    "prompts": ["prompt_id_1", "prompt_id_2"], 
-    "models": ["gpt-4o", "claude-3-5-sonnet"],
+    "prompt_ids": ["prompt_001"],  # Original prompt
+    "model_names": ["gpt-4o", "claude-3-5-sonnet"],
     "repeats": 3,
-    "bias_controls": {"fsp": True, "granularity_demo": True}
+    "bias_controls": {"fsp": True}  # Enable fair scoring
 }
 
-# Execute
-run_ids = await experiment_service.plan_runs(plan)
-results = await experiment_service.execute_batch(run_ids)
+# Execute (automatically includes S+M+L variants if enabled)
+results = await runsApi.executeBatch(plan)
 ```
 
 ### 2. Analyze Results
@@ -281,8 +305,13 @@ length_bias = await analytics_service.length_bias_analysis(
 
 ### 3. Export Data
 ```bash
+# Export all runs with full metadata
 curl -H "x-api-key: your_key" \
-     "http://localhost:8000/exports/runs.csv" > results.csv
+     "http://localhost:8000/export/runs.csv" > results.csv
+
+# Export experiment summaries
+curl -H "x-api-key: your_key" \
+     "http://localhost:8000/export/experiments.csv" > experiments.csv
 ```
 
 ## Contributing
@@ -302,9 +331,15 @@ curl -H "x-api-key: your_key" \
 
 MIT License - see [LICENSE](LICENSE) file for details.
 
-## Impact Statement
+## Research Impact
 
-*"CyberCQBench makes cost–performance benchmarking as critical as penetration testing in modern SOC and compliance workflows. It's not just about which AI is smarter – it's about which AI is smarter per dollar while staying compliant."*
+*"CyberCQBench enables the first systematic study of prompt length effects on LLM cost-quality trade-offs in cybersecurity operations. With 952 research-grade prompts across controlled length variants, it makes cost–performance benchmarking as rigorous as penetration testing in modern SOC and compliance workflows."*
+
+### Academic Applications
+- **RQ1**: Analyze how prompt length influences LLM output quality and cost efficiency
+- **RQ2**: Compare static vs adaptive benchmarking effectiveness
+- **Bias Studies**: Quantify and mitigate verbosity bias in LLM evaluation
+- **Reproducible Research**: Fixed seeds, dataset versioning, transparent scoring
 
 ## Availability
 
@@ -314,12 +349,12 @@ CyberCQBench is available as:
 
 ## Acknowledgments
 
-- Inspired by CySecBench for cybersecurity rubric structure
-- Built on FastAPI, React, and MongoDB for production reliability
-- Uses OpenAI and Anthropic APIs for LLM inference
-- Statistical analysis powered by SciPy
-- Interactive charts powered by Recharts
-- Research collaboration with QUT School of Information Systems
+- **Research Foundation**: CySecBench (Wahréus, Hussain, & Papadimitratos, 2025) for cybersecurity rubric structure
+- **Methodological Inspiration**: DefenderBench (Zhang et al., 2025) for SOC-like task diversity
+- **Bias Mitigation**: "Same Evaluation, More Tokens" (Domhan & Zhu, 2025) for FSP implementation
+- **Adaptive Benchmarking**: Chroma Generative Benchmarking (Hong et al., 2025) for query generation
+- **Technical Stack**: FastAPI, React, MongoDB, OpenAI/Anthropic APIs, SciPy, Recharts
+- **Academic Collaboration**: QUT School of Information Systems, Dr. Gowri Ramachandran
 
 ## Support
 

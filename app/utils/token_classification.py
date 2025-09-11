@@ -11,20 +11,17 @@ def classify_by_tokens(token_count: int) -> LengthBin:
         token_count: Number of tokens in the prompt
         
     Returns:
-        LengthBin enum value based on token ranges for research comparison:
-        - S: ≤16 tokens (Short prompts - ~33% of dataset)
-        - M: 17-20 tokens (Medium prompts - ~33% of dataset)  
-        - L: >20 tokens (Long prompts - ~33% of dataset)
+        LengthBin enum value based on continuous cybersecurity prompt ranges:
+        - S: ≤300 tokens (Short SOC/GRC prompts)
+        - M: 301-800 tokens (Medium SOC/GRC prompts)  
+        - L: >800 tokens (Long SOC/GRC prompts)
     """
-    if token_count <= 16:
+    if token_count <= 300:
         return LengthBin.S
-    elif 17 <= token_count <= 20:
+    elif 301 <= token_count <= 800:
         return LengthBin.M
-    elif token_count > 20:
+    else:  # > 800
         return LengthBin.L
-    else:
-        # Should not happen with current logic
-        return None
 
 
 def get_token_count_and_bin(text: str, model: str = "gpt-4o") -> tuple[int, LengthBin | None]:

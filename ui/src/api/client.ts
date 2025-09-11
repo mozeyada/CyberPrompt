@@ -45,6 +45,7 @@ export const promptsApi = {
     length_bin?: string;
     source?: string;
     prompt_type?: string;
+    include_variants?: boolean;
     q?: string;
     page?: number;
     limit?: number;
