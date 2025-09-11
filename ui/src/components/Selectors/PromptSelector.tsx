@@ -120,11 +120,10 @@ export function PromptSelector({ selectedPrompts, onPromptsChange, scenario, len
                   </span>
                   {prompt.length_bin && (
                     <span className={`text-xs px-2 py-0.5 rounded ${
-                      prompt.length_bin === 'XS' ? 'bg-green-100 text-green-800' :
-                      prompt.length_bin === 'S' ? 'bg-blue-100 text-blue-800' :
-                      prompt.length_bin === 'M' ? 'bg-yellow-100 text-yellow-800' :
-                      prompt.length_bin === 'L' ? 'bg-orange-100 text-orange-800' :
-                      'bg-red-100 text-red-800'
+                      prompt.length_bin === 'S' ? 'bg-green-100 text-green-800' :
+                      prompt.length_bin === 'M' ? 'bg-blue-100 text-blue-800' :
+                      prompt.length_bin === 'L' ? 'bg-red-100 text-red-800' :
+                      'bg-gray-100 text-gray-800'
                     }`}>
                       {prompt.length_bin}
                     </span>

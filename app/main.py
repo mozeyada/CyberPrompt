@@ -4,7 +4,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
-from .api import adaptive, analytics, documents, export, prompts, research, runs, stats
+from .api import adaptive, analytics, documents, export, prompts, research, runs, stats, validation
 from .core.config import settings
 from .db.connection import close_mongo_connection, connect_to_mongo
 from .utils.token_meter import CostCalculator
@@ -70,6 +70,7 @@ app.include_router(research.router)
 app.include_router(documents.router)
 app.include_router(adaptive.router)
 app.include_router(export.router)
+app.include_router(validation.router)
 
 
 @app.get("/")

@@ -106,10 +106,10 @@ export function AdaptivePrompting() {
                  taskType.includes('compliance') || taskType.includes('grc') ? 'GRC_MAPPING' : 'CTI_SUMMARY',
         source: 'adaptive',
         prompt_type: 'adaptive',
-        length_bin: text.length <= 200 ? 'XS' as const :
-                   text.length <= 500 ? 'S' as const :
-                   text.length <= 1000 ? 'M' as const :
-                   text.length <= 2000 ? 'L' as const : 'XL' as const,
+        // Token count will be calculated by backend during import
+        // Backend will use proper tiktoken and assign correct length_bin
+        token_count: undefined, // Let backend calculate
+        length_bin: undefined, // Let backend classify
         safety_tag: 'SAFE_DOC',
         complexity: 3
       }))

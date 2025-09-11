@@ -38,6 +38,14 @@ async def import_prompts(
                 # Create prompt object
                 if "prompt_id" not in prompt_data:
                     prompt_data["prompt_id"] = generate_ulid()
+                
+                # Auto-calculate token count and length bin if not provided
+                if "token_count" not in prompt_data or prompt_data["token_count"] is None:
+                    from app.utils.token_classification import get_token_count_and_bin
+                    token_count, length_bin = get_token_count_and_bin(prompt_data["text"])
+                    prompt_data["token_count"] = token_count
+                    if "length_bin" not in prompt_data or prompt_data["length_bin"] is None:
+                        prompt_data["length_bin"] = length_bin.value if length_bin else None
 
                 prompt = Prompt(**prompt_data)
                 prompt_id = await prompt_repo.upsert(prompt)
@@ -90,8 +98,8 @@ async def list_prompts(
     category: str | None = Query(None, description="Original CySecBench category"),
     source: str | None = Query(None, description="Data source (e.g., CySecBench)"),
     prompt_type: str | None = Query(None, description="Prompt type (static/adaptive)"),
-    min_words: int | None = Query(None, ge=1, description="Minimum word count"),
-    max_words: int | None = Query(None, ge=1, description="Maximum word count"),
+    min_tokens: int | None = Query(None, ge=1, description="Minimum token count"),
+    max_tokens: int | None = Query(None, ge=1, description="Maximum token count"),
     q: str | None = None,
     page: int = Query(1, ge=1),
     limit: int = Query(50, ge=1, le=500),
@@ -110,8 +118,8 @@ async def list_prompts(
             category=category,
             source=source,
             prompt_type=prompt_type,
-            min_words=min_words,
-            max_words=max_words,
+            min_tokens=min_tokens,
+            max_tokens=max_tokens,
             q=q,
             page=page,
             limit=limit,

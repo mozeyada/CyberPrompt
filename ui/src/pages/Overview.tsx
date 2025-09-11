@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { runsApi, statsApi } from '../api/client'
+import { runsApi, statsApi, promptsApi } from '../api/client'
 import { Badge } from '../components/ui/badge'
 
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ScatterChart, Scatter } from 'recharts'
@@ -20,15 +20,10 @@ export function Overview() {
 
   const { data: allPrompts, isLoading: promptsLoading, error: promptsError } = useQuery({
     queryKey: ['all-prompts'],
-    queryFn: () => fetch('http://localhost:8000/prompts/?limit=500', {
-      headers: { 'x-api-key': 'supersecret1' }
-    }).then(res => res.json())
+    queryFn: () => promptsApi.list({ limit: 500 })
   })
 
-  const { data: recentRuns, isLoading: recentRunsLoading, error: recentRunsError } = useQuery({
-    queryKey: ['recent-runs'],
-    queryFn: () => runsApi.list({ limit: 5 })
-  })
+  // Remove unused recentRuns - we use allRuns.runs.slice(0,5) instead
 
   // Client-side aggregation
   const totalRuns = allRuns?.runs?.length || 0
@@ -70,10 +65,9 @@ export function Overview() {
 
   const getLengthBinColor = (lengthBin: string | null) => {
     switch (lengthBin) {
-      case 'XS': return '#10B981' // green
-      case 'S': return '#3B82F6'  // blue
-      case 'M': return '#F59E0B'  // yellow
-      case 'L': return '#EF4444'  // red
+      case 'S': return '#10B981' // green (≤16 tokens)
+      case 'M': return '#3B82F6'  // blue (17-20 tokens)
+      case 'L': return '#EF4444'  // red (>20 tokens)
       case null:
       case undefined:
       default: return '#6B7280'  // gray for null/unknown
@@ -81,8 +75,8 @@ export function Overview() {
   }
 
   const scatterData = allRuns?.runs?.map(run => {
-    // Get length_bin from the joined prompt data or prompt_length_bin field
-    const lengthBin = run.prompt_length_bin || run.length_bin || null
+    // Use prompt_length_bin directly from run data
+    const lengthBin = run.prompt_length_bin || null
     const selectedScore = selectedDimension === 'composite' 
       ? run.scores?.composite || 0
       : run.scores?.[selectedDimension] || 0
@@ -138,7 +132,7 @@ export function Overview() {
   }
 
   const formatDateTime = (dateStr: string) => {
-    const date = new Date(dateStr)
+    const date = new Date(dateStr + 'Z') // Add Z to indicate UTC
     return date.toLocaleDateString('en-US', { 
       month: 'short', 
       day: 'numeric', 
@@ -303,9 +297,9 @@ export function Overview() {
 
       {/* Chart 3: Enhanced Score vs Token Usage - Full Width */}
       <div className="bg-white rounded-lg shadow p-6">
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
-            <h3 className="text-lg font-semibold">Score vs Token Usage</h3>
+            <h3 className="text-lg font-semibold">Cost Efficiency Analysis</h3>
             {allScoresZero && !isLoading && (
               <span title="Scores may be disabled" className="text-yellow-500">⚠️</span>
             )}
@@ -324,12 +318,13 @@ export function Overview() {
             </select>
           </div>
         </div>
+        <p className="text-sm text-gray-600 mb-4">Top-left = most efficient (high quality, low cost). Group by model to compare performance.</p>
         
         {/* Legend */}
         <div className="flex flex-wrap gap-4 mb-4 text-xs">
           <div className="flex items-center gap-2">
             <span className="font-medium">Length:</span>
-            {['XS', 'S', 'M', 'L'].map(bin => (
+            {['S', 'M', 'L'].map(bin => (
               <div key={bin} className="flex items-center gap-1">
                 <div 
                   className="w-3 h-3 rounded-full" 
@@ -365,30 +360,57 @@ export function Overview() {
           <ResponsiveContainer width="100%" height={350}>
             <ScatterChart>
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="tokens" name="Tokens" />
-              <YAxis dataKey="score" name="Score" domain={[0, 5]} />
+              <XAxis 
+                dataKey="tokens" 
+                name="Tokens" 
+                label={{ value: 'Tokens Used', position: 'insideBottom', offset: -5 }}
+              />
+              <YAxis 
+                dataKey="score" 
+                name="Score" 
+                domain={[0, 5]}
+                label={{ value: 'Quality Score', angle: -90, position: 'insideLeft' }}
+              />
               <Tooltip 
                 content={({ active, payload }) => {
                   if (active && payload && payload[0]) {
                     const data = payload[0].payload
+                    const efficiency = data.tokens > 0 ? (data.score / data.tokens * 1000).toFixed(1) : '0'
                     return (
-                      <div className="bg-white p-3 border rounded shadow">
-                        <p className="font-medium">{data.model}</p>
-                        <p>Length: {data.lengthBin || 'Unknown'}</p>
-                        <p>Tokens: {data.tokens}</p>
-                        <p>Score: {data.score.toFixed(1)}/5.0 ({selectedDimension})</p>
-                        <p>Cost: ${data.cost.toFixed(4)} AUD</p>
-                        <p>FSP: {data.fsp ? 'Enabled' : 'Disabled'}</p>
+                      <div className="bg-white p-3 border rounded shadow-lg">
+                        <div className="font-medium text-lg mb-2">{data.model}</div>
+                        <div className="grid grid-cols-2 gap-2 text-sm">
+                          <div>Quality: <strong>{data.score.toFixed(1)}/5</strong></div>
+                          <div>Tokens: <strong>{data.tokens.toLocaleString()}</strong></div>
+                          <div>Cost: <strong>${data.cost.toFixed(4)}</strong></div>
+                          <div>Length: <strong>{data.lengthBin || '?'}</strong></div>
+                        </div>
+                        <div className="mt-2 pt-2 border-t">
+                          <div className="text-xs text-gray-600">Efficiency: {efficiency} pts/1K tokens</div>
+                          <div className="text-xs text-gray-600">FSP: {data.fsp ? 'Yes' : 'No'}</div>
+                        </div>
                       </div>
                     )
                   }
                   return null
                 }}
               />
-              <Scatter 
-                data={scatterData.filter(d => d.tokens > 0)} 
-                fillOpacity={0.7}
-              />
+              {/* Group by model for better comparison */}
+              {['gpt-4', 'claude', 'gpt-3.5', 'gemini'].map(modelType => {
+                const modelData = scatterData.filter(d => 
+                  d.tokens > 0 && d.model.toLowerCase().includes(modelType)
+                )
+                if (modelData.length === 0) return null
+                
+                return (
+                  <Scatter 
+                    key={modelType}
+                    data={modelData}
+                    fillOpacity={0.8}
+                    name={modelType.toUpperCase()}
+                  />
+                )
+              })}
             </ScatterChart>
           </ResponsiveContainer>
         )}
@@ -397,11 +419,11 @@ export function Overview() {
       {/* Recent Benchmark Runs Table */}
       <div className="bg-white rounded-lg shadow p-6">
         <h3 className="text-lg font-semibold mb-4">Recent Benchmark Runs</h3>
-        {recentRunsLoading ? (
+        {isLoading ? (
           <div className="text-center py-8 text-gray-400">Loading recent runs...</div>
-        ) : recentRunsError ? (
+        ) : hasError ? (
           <div className="text-center py-8 text-red-600">Error loading recent runs</div>
-        ) : !statsOverview?.last_runs?.length || hasNoRuns ? (
+        ) : !allRuns?.runs?.length || hasNoRuns ? (
           <div className="text-center py-8 text-gray-400">
             {hasNoRuns ? 'No benchmark runs yet. Go to Benchmark Runner to create your first experiment!' : 'No runs found'}
           </div>
@@ -424,44 +446,48 @@ export function Overview() {
                 </tr>
               </thead>
               <tbody>
-                {statsOverview.last_runs.map((run, index) => {
-                  const scoreBadge = getScoreBadge(run.overall || 0)
-                  
-                  return (
-                    <tr key={run.run_id || index} className={index % 2 === 0 ? 'bg-gray-50' : 'bg-white'}>
-                      <td className="py-3 px-4">
-                        <div className="text-sm text-gray-900 max-w-xs truncate">
-                          {run.run_id.substring(0, 8)}...
-                        </div>
-                      </td>
-                      <td className="py-3 px-4">
-                        <span className="text-sm font-medium text-gray-900">{run.model_id}</span>
-                      </td>
-                      <td className="py-3 px-4">
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                          {run.scenario}
-                        </span>
-                      </td>
-                      <td className="py-3 px-4">
-                        <div className="flex items-center gap-2">
-                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${scoreBadge.color}`}>
-                            {scoreBadge.label}
+                {allRuns.runs
+                  .filter(run => run.status === 'succeeded')
+                  .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+                  .slice(0, 5)
+                  .map((run, index) => {
+                    const scoreBadge = getScoreBadge(run.scores?.composite || 0)
+                    
+                    return (
+                      <tr key={run.run_id} className={index % 2 === 0 ? 'bg-gray-50' : 'bg-white'}>
+                        <td className="py-3 px-4">
+                          <div className="text-sm text-gray-900 max-w-xs truncate">
+                            {run.run_id.substring(0, 8)}...
+                          </div>
+                        </td>
+                        <td className="py-3 px-4">
+                          <span className="text-sm font-medium text-gray-900">{run.model}</span>
+                        </td>
+                        <td className="py-3 px-4">
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                            {run.prompt?.scenario || 'Unknown'}
                           </span>
-                        </div>
-                      </td>
-                      <td className="py-3 px-4">
-                        <span className="text-sm text-gray-900">
-                          ${(run.aud_cost || 0).toFixed(4)}
-                        </span>
-                      </td>
-                      <td className="py-3 px-4">
-                        <span className="text-sm text-gray-500">
-                          {formatDateTime(run.created_at)}
-                        </span>
-                      </td>
-                    </tr>
-                  )
-                })}
+                        </td>
+                        <td className="py-3 px-4">
+                          <div className="flex items-center gap-2">
+                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${scoreBadge.color}`}>
+                              {scoreBadge.label}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="py-3 px-4">
+                          <span className="text-sm text-gray-900">
+                            ${(run.economics?.aud_cost || 0).toFixed(4)}
+                          </span>
+                        </td>
+                        <td className="py-3 px-4">
+                          <span className="text-sm text-gray-500">
+                            {formatDateTime(run.created_at)}
+                          </span>
+                        </td>
+                      </tr>
+                    )
+                  })}
               </tbody>
             </table>
           </div>

@@ -14,7 +14,7 @@ class FSPProcessor:
 
     def should_use_fsp(self, text: str, length_bin: LengthBin) -> bool:
         """Determine if FSP should be used based on length"""
-        return length_bin in [LengthBin.M, LengthBin.L, LengthBin.XL]
+        return length_bin in [LengthBin.L]  # Only use FSP for long prompts
 
     def split_into_segments(self, text: str) -> list[dict[str, Any]]:
         """
@@ -110,39 +110,33 @@ class GranularityMatcher:
 
     def __init__(self):
         self.demos = {
-            LengthBin.M: {
-                "description": "Medium-length analysis (500-1000 words)",
+            LengthBin.S: {
+                "description": "Short analysis (≤16 tokens)",
                 "example": """
-Example for medium-length response:
-- Provide 3-4 key points with brief explanations
-- Include specific actionable recommendations
-- Address main compliance considerations
-- Acknowledge key risks and limitations
+Example for short response:
+- Direct, concise answer
+- Key point with minimal explanation
+- Essential action only
+""",
+            },
+            LengthBin.M: {
+                "description": "Medium analysis (17-20 tokens)",
+                "example": """
+Example for medium response:
+- 2-3 key points with brief explanations
+- Specific actionable recommendations
+- Main compliance considerations
 """,
             },
             LengthBin.L: {
-                "description": "Long-form analysis (1000-2000 words)",
+                "description": "Long analysis (>20 tokens)",
                 "example": """
-Example for long-form response:
-- Comprehensive coverage of 5-7 major aspects
+Example for long response:
+- Comprehensive coverage of multiple aspects
 - Detailed explanations with supporting evidence
 - Structured recommendations with implementation steps
 - Thorough compliance and regulatory considerations
 - Risk assessment with mitigation strategies
-- Clear next steps and monitoring requirements
-""",
-            },
-            LengthBin.XL: {
-                "description": "Extended analysis (2000+ words)",
-                "example": """
-Example for extended response:
-- Complete analysis covering all relevant dimensions
-- In-depth explanations with multiple perspectives
-- Comprehensive action plans with timelines
-- Detailed compliance mapping and gap analysis
-- Extensive risk analysis with multiple scenarios
-- Implementation roadmap with success metrics
-- Stakeholder considerations and communication plans
 """,
             },
         }

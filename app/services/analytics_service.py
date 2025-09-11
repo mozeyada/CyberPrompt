@@ -13,8 +13,8 @@ logger = logging.getLogger(__name__)
 class AnalyticsService:
     """Service for generating analytics and insights"""
 
-    def __init__(self, db: AsyncIOMotorDatabase = None):
-        self.db = db or get_database()
+    def __init__(self, db: AsyncIOMotorDatabase):
+        self.db = db
 
     async def cost_quality_analysis(
         self,
@@ -25,84 +25,51 @@ class AnalyticsService:
     ) -> list[dict[str, Any]]:
         """Generate cost vs quality frontier analysis"""
         try:
-            # Build aggregation pipeline
-            match_stage = {
-                "status": "succeeded",
-                "economics.aud_cost": {"$exists": True, "$gt": 0},
-                "scores.composite": {"$exists": True},
-            }
-
-            if scenario:
-                # Join with prompts to get scenario
-                pipeline = [
-                    {"$lookup": {
-                        "from": "prompts",
-                        "localField": "prompt_id",
-                        "foreignField": "prompt_id",
-                        "as": "prompt",
-                    }},
-                    {"$unwind": "$prompt"},
-                    {"$match": {**match_stage, "prompt.scenario": scenario.value}},
-                ]
-            else:
-                pipeline = [{"$match": match_stage}]
-
-            if models:
-                pipeline.append({"$match": {"model": {"$in": models}}})
-
-            if length_bins:
-                if not scenario:  # Add lookup if not already done
-                    pipeline.extend([
-                        {"$lookup": {
-                            "from": "prompts",
-                            "localField": "prompt_id",
-                            "foreignField": "prompt_id",
-                            "as": "prompt",
-                        }},
-                        {"$unwind": "$prompt"},
-                    ])
-                pipeline.append({"$match": {"prompt.length_bin": {"$in": [lb.value for lb in length_bins]}}})
-
-            if judge_type:
-                pipeline.append({"$match": {"judge.type": judge_type.value}})
-
-            # Group and calculate metrics
-            pipeline.extend([
-                {"$group": {
-                    "_id": {
-                        "model": "$model",
-                        "length_bin": "$prompt.length_bin" if scenario or length_bins else None,
-                        "scenario": "$prompt.scenario" if not scenario else scenario.value,
+            # Use exact working pipeline from cost-quality-scatter
+            pipeline = [
+                {
+                    "$match": {
+                        "status": "succeeded",
+                        "economics.aud_cost": {"$exists": True, "$gt": 0},
+                        "scores.composite": {"$exists": True},
                     },
-                    "avg_cost_per_1k": {"$avg": {
-                        "$divide": [
-                            {"$multiply": ["$economics.aud_cost", 1000]},
-                            "$tokens.total",
-                        ],
-                    }},
-                    "avg_composite": {"$avg": "$scores.composite"},
-                    "count": {"$sum": 1},
-                    "cost_std": {"$stdDevPop": "$economics.aud_cost"},
-                    "composite_std": {"$stdDevPop": "$scores.composite"},
-                }},
-                {"$match": {"count": {"$gte": 3}}},  # Minimum runs for statistical significance
-            ])
+                },
+                {
+                    "$project": {
+                        "run_id": 1,
+                        "model": 1,
+                        "aud_cost": "$economics.aud_cost",
+                        "composite_score": "$scores.composite",
+                        "prompt_length_bin": 1,
+                    },
+                },
+            ]
 
             cursor = self.db.runs.aggregate(pipeline)
             results = await cursor.to_list(length=None)
 
-            # Format results
-            formatted_results = []
+            # Group by model and calculate averages
+            model_data = {}
             for result in results:
+                model = result["model"]
+                if model not in model_data:
+                    model_data[model] = {"costs": [], "scores": [], "length_bins": []}
+                model_data[model]["costs"].append(result["aud_cost"])
+                model_data[model]["scores"].append(result["composite_score"])
+                model_data[model]["length_bins"].append(result.get("prompt_length_bin", "unknown"))
+            
+            # Calculate averages
+            formatted_results = []
+            for model, data in model_data.items():
+                avg_cost = sum(data["costs"]) / len(data["costs"])
+                avg_score = sum(data["scores"]) / len(data["scores"])
                 formatted_results.append({
-                    "model": result["_id"]["model"],
-                    "length_bin": result["_id"]["length_bin"],
-                    "scenario": result["_id"]["scenario"],
-                    "x": round(result["avg_cost_per_1k"], 6),  # AUD per 1k tokens
-                    "y": round(result["avg_composite"], 3),    # Composite score
-                    "count": result["count"],
-                    "cost_std": result.get("cost_std", 0),
-                    "composite_std": result.get("composite_std", 0),
+                    "model": model,
+                    "length_bin": "all",
+                    "scenario": "all",
+                    "x": round(avg_cost, 6),
+                    "y": round(avg_score, 3),
+                    "count": len(data["costs"]),
                 })
 
             return formatted_results
@@ -153,7 +120,6 @@ class AnalyticsService:
                     "count": {"$sum": 1},
                     "scores": {"$push": f"$scores.{dimension}"},
                 }},
-                {"$match": {"count": {"$gte": 3}}},
             ])
 
             cursor = self.db.runs.aggregate(pipeline)
@@ -257,7 +223,6 @@ class AnalyticsService:
                     }},
                     "count": {"$sum": 1},
                 }},
-                {"$match": {"count": {"$gte": 3}}},
             ])
 
             cursor = self.db.runs.aggregate(pipeline)
@@ -412,5 +377,4 @@ class AnalyticsService:
             return {"error": str(e)}
 
 
-# Global service instance
-analytics_service = AnalyticsService()
+

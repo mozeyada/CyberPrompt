@@ -5,6 +5,7 @@ import { LengthBias } from '../components/Charts/LengthBias'
 import { RiskCurves } from '../components/Charts/RiskCurves'
 import { RiskCostFrontier } from '../components/Charts/RiskCostFrontier'
 import { PromptCoverageChart } from '../components/Charts/PromptCoverageChart'
+import { KLDivergenceChart } from '../components/Charts/KLDivergenceChart'
 import { ModelSelect } from '../components/Filters/ModelSelect'
 import { ScenarioSelect } from '../components/Filters/ScenarioSelect'
 import { LengthBinMulti } from '../components/Filters/LengthBinMulti'
@@ -125,12 +126,22 @@ export function Insights() {
         )}
 
         {selectedView === 'coverage' && (
-          <div className="bg-white shadow rounded-lg p-6">
-            <h3 className="text-lg font-semibold mb-4">Prompt Coverage Analysis</h3>
-            <p className="text-gray-600 mb-4">
-              Track prompt usage across static and adaptive sources by scenario
-            </p>
-            <PromptCoverageChart />
+          <div className="space-y-6">
+            <div className="bg-white shadow rounded-lg p-6">
+              <h3 className="text-lg font-semibold mb-4">Prompt Coverage Analysis</h3>
+              <p className="text-gray-600 mb-4">
+                Track prompt usage across static and adaptive sources by scenario
+              </p>
+              <PromptCoverageChart />
+            </div>
+            
+            <div className="bg-white shadow rounded-lg p-6">
+              <h3 className="text-lg font-semibold mb-4">KL Divergence Validation</h3>
+              <p className="text-gray-600 mb-4">
+                Statistical validation of adaptive vs static benchmark representativeness
+              </p>
+              <KLDivergenceChart />
+            </div>
           </div>
         )}
 

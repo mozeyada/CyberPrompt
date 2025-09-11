@@ -30,11 +30,9 @@ class ContextType(str, Enum):
 
 
 class LengthBin(str, Enum):
-    XS = "XS"  # ≤200
-    S = "S"    # 201-500
-    M = "M"    # 501-1000
-    L = "L"    # 1001-2000
-    XL = "XL"  # >2000
+    S = "S"    # ≤16 tokens (Short)
+    M = "M"    # 17-20 tokens (Medium)
+    L = "L"    # >20 tokens (Long)
 
 
 class SafetyTag(str, Enum):
@@ -63,6 +61,7 @@ class Prompt(BaseModel):
     scenario: ScenarioType
     context: ContextType | None = None
     length_bin: LengthBin | None = None
+    token_count: int | None = None  # Token count for classification
     complexity: int | None = Field(None, ge=1, le=5)
     safety_tag: SafetyTag | None = None
     category: str | None = None  # Research category

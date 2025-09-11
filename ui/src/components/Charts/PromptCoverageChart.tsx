@@ -26,7 +26,12 @@ export function PromptCoverageChart() {
   console.log('PromptCoverageChart data:', data)
   
   if (!data || !data.length) {
-    return <div className="text-gray-500 p-4">No coverage data available</div>
+    return (
+      <div className="text-center p-8">
+        <div className="text-gray-500 mb-2">No coverage data available</div>
+        <div className="text-sm text-gray-400">Import prompts and run experiments to see coverage analysis</div>
+      </div>
+    )
   }
 
   // Calculate summary stats

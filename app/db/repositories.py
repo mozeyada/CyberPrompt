@@ -59,8 +59,8 @@ class PromptRepository:
         category: str | None = None,
         source: str | None = None,
         prompt_type: str | None = None,
-        min_words: int | None = None,
-        max_words: int | None = None,
+        min_tokens: int | None = None,
+        max_tokens: int | None = None,
         q: str | None = None,
         page: int = 1,
         limit: int = 50,
@@ -71,24 +71,20 @@ class PromptRepository:
         if scenario:
             filter_query["scenario"] = scenario
         if length_bin:
-            # Support both direct field and metadata field
-            filter_query["$or"] = [
-                {"length_bin": length_bin},
-                {"metadata.length_bin": length_bin.value.lower()}
-            ]
+            filter_query["length_bin"] = length_bin
         if category:
             filter_query["category"] = category
         if source:
             filter_query["source"] = source
         if prompt_type:
             filter_query["prompt_type"] = prompt_type
-        if min_words or max_words:
-            word_filter = {}
-            if min_words:
-                word_filter["$gte"] = min_words
-            if max_words:
-                word_filter["$lte"] = max_words
-            filter_query["metadata.word_count"] = word_filter
+        if min_tokens or max_tokens:
+            token_filter = {}
+            if min_tokens:
+                token_filter["$gte"] = min_tokens
+            if max_tokens:
+                token_filter["$lte"] = max_tokens
+            filter_query["token_count"] = token_filter
         if q:
             filter_query["$text"] = {"$search": q}
 

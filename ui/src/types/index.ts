@@ -3,16 +3,18 @@ export interface Prompt {
   text: string;
   source: 'cysecbench' | 'curated' | 'CySecBench' | 'adaptive' | 'static';
   scenario: 'SOC_INCIDENT' | 'CTI_SUMMARY' | 'GRC_MAPPING';
-  length_bin: 'XS' | 'S' | 'M' | 'L' | 'XL';
+  length_bin: 'S' | 'M' | 'L';
+  token_count?: number;
   complexity?: number;
   safety_tag?: 'SAFE_DOC' | 'REDACTED' | 'BLOCKED';
   category?: string;
   dataset_version?: string;
   metadata?: {
-    word_count: number;
-    length_bin: 'short' | 'medium' | 'long';
-    original_category: string;
-    dataset_version: string;
+    word_count?: number;
+    token_count?: number;
+    length_bin?: 'short' | 'medium' | 'long';
+    original_category?: string;
+    dataset_version?: string;
   };
   tags?: string[];
   created_at?: string;

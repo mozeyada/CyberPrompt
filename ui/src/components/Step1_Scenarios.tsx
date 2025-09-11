@@ -35,11 +35,9 @@ export function Step1_Scenarios({ lengthBin, setLengthBin }: Step1Props) {
               className="w-full border border-gray-300 rounded-md px-3 py-2"
             >
               <option value="">All lengths</option>
-              <option value="XS">XS (1-20 words)</option>
-              <option value="S">S (21-80 words)</option>
-              <option value="M">M (81-200 words)</option>
-              <option value="L">L (201-400 words)</option>
-              <option value="XL">XL (401+ words)</option>
+              <option value="S">S (&le;16 tokens)</option>
+              <option value="M">M (17-20 tokens)</option>
+              <option value="L">L (&gt;20 tokens)</option>
             </select>
           </div>
           

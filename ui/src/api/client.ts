@@ -192,8 +192,8 @@ export const researchApi = {
     scenario?: string;
     length_bin?: string;
     category?: string;
-    min_words?: number;
-    max_words?: number;
+    min_tokens?: number;
+    max_tokens?: number;
     sample_size?: number;
   } = {}): Promise<any> => {
     const response = await api.get('/research/prompts/filter', { params });

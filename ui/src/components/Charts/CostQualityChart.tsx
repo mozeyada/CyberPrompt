@@ -30,7 +30,12 @@ export function CostQualityChart() {
   }
 
   if (!data || data.length === 0) {
-    return <div className="text-gray-500 p-4">No data available</div>
+    return (
+      <div className="text-center p-8">
+        <div className="text-gray-500 mb-2">No cost-quality data available</div>
+        <div className="text-sm text-gray-400">Run some experiments first to see analytics</div>
+      </div>
+    )
   }
 
   // Group data by model

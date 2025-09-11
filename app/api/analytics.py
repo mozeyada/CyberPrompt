@@ -2,7 +2,8 @@ import logging
 
 from fastapi import APIRouter, Header, HTTPException, Query
 
-from app.services.analytics_service import analytics_service
+from app.services.analytics_service import AnalyticsService
+from app.db.repositories import RunRepository
 from app.core.security import validate_api_key_header
 from app.models import JudgeType, LengthBin, ScenarioType
 
@@ -66,6 +67,9 @@ async def cost_quality(
     validate_api_key_header(x_api_key)
 
     try:
+        from app.db.repositories import RunRepository
+        run_repo = RunRepository()
+        analytics_service = AnalyticsService(run_repo.db)
         results = await analytics_service.cost_quality_analysis(
             scenario=scenario,
             models=model,
@@ -99,6 +103,9 @@ async def length_bias(
     validate_api_key_header(x_api_key)
 
     try:
+        from app.db.repositories import RunRepository
+        run_repo = RunRepository()
+        analytics_service = AnalyticsService(run_repo.db)
         return await analytics_service.length_bias_analysis(
             scenario=scenario,
             models=model,
@@ -121,6 +128,9 @@ async def risk_curves(
     validate_api_key_header(x_api_key)
 
     try:
+        from app.db.repositories import RunRepository
+        run_repo = RunRepository()
+        analytics_service = AnalyticsService(run_repo.db)
         return await analytics_service.risk_curves_analysis(
             scenario=scenario,
             models=model,
@@ -143,6 +153,9 @@ async def risk_cost(
 
     try:
         # Get cost-quality data
+        from app.db.repositories import RunRepository
+        run_repo = RunRepository()
+        analytics_service = AnalyticsService(run_repo.db)
         cost_quality_data = await analytics_service.cost_quality_analysis(
             scenario=scenario,
             models=model,
@@ -213,6 +226,9 @@ async def adaptive_relevance(
     validate_api_key_header(x_api_key)
 
     try:
+        from app.db.repositories import RunRepository
+        run_repo = RunRepository()
+        analytics_service = AnalyticsService(run_repo.db)
         return await analytics_service.adaptive_relevance_analysis(
             scenario=scenario,
             models=model,
@@ -234,6 +250,9 @@ async def best_quality_per_aud(
     validate_api_key_header(x_api_key)
 
     try:
+        from app.db.repositories import RunRepository
+        run_repo = RunRepository()
+        analytics_service = AnalyticsService(run_repo.db)
         results = await analytics_service.best_quality_per_aud(
             scenario=scenario,
             length_bins=length_bin,
@@ -260,6 +279,9 @@ async def prompt_coverage(
     validate_api_key_header(x_api_key)
     
     try:
+        from app.db.repositories import RunRepository
+        run_repo = RunRepository()
+        analytics_service = AnalyticsService(run_repo.db)
         return await analytics_service.get_prompt_coverage()
         
     except Exception as e:

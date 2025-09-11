@@ -95,7 +95,7 @@ export function PromptLibrary() {
                   )}
                 </div>
                 <div className="text-sm text-gray-500">
-                  {prompt.metadata?.word_count && `${prompt.metadata.word_count} words`}
+                  {prompt.token_count && `${prompt.token_count} tokens`}
                 </div>
               </div>
               

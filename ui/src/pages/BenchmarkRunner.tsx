@@ -40,7 +40,7 @@ export function BenchmarkRunner() {
 
   const addLog = (message: string, type: 'info' | 'success' | 'error' = 'info') => {
     const log = {
-      id: Date.now().toString(),
+      id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
       message,
       type,
       timestamp: new Date().toLocaleTimeString()
