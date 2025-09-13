@@ -88,20 +88,21 @@ make seed
 
 ## Key Innovations
 
-### Bias Mitigation with FSP (Focus Sentence Prompting)
-Ensures fair evaluation regardless of verbosity or token inflation. No more penalizing concise, high-quality responses.
+### Fixed FSP Implementation Bug ⚠️
+**CRITICAL FIX**: Focus Sentence Prompting (FSP) code existed but wasn't properly integrated into judge evaluation. Now correctly implements sentence-based evaluation with full context for true length-invariant scoring.
 
-### Cost-Quality Dashboards
-Interactive analytics show which models provide the best value for money. Make data-driven decisions for your SOC budget.
-
-### Scalable Background Processing
-Large experiments (>10 runs) execute in background to prevent timeouts. Small experiments get immediate feedback.
+### Research-Grade Analytics
+**Overview Page**: Real-time cost efficiency analysis with FSP indicators (circles vs diamonds) and 15-row recent runs table with length classification.
+**Advanced Analytics Page**: Statistical significance testing with confidence intervals, p-values, and research validation for RQ1 & RQ2.
 
 ### Length Variant Analysis
-Select original prompts to automatically include Medium and Long variants, enabling controlled studies of how prompt length affects LLM quality and cost efficiency.
+Controlled S+M+L prompt groups (≤300, 301-800, >800 tokens) with perfect traceability. 952 research-grade prompts: 318 originals + 317 medium + 317 long variants.
 
-### Adaptive Benchmarking
-Prompts evolve with new threats, compliance updates, and live CTI feeds – keeping evaluations relevant to current cybersecurity landscape.
+### KL Divergence Validation
+Proper implementation validates adaptive prompts from CTI/policy documents against CySecBench baseline for RQ2 research validation.
+
+### Streamlined UX
+Removed verbose research explanations while maintaining statistical rigor. Clean, actionable insights with essential interpretation guides.
 
 ### 7-Dimension SOC/GRC Rubric
 Every LLM output is evaluated across:
@@ -122,10 +123,11 @@ Direct linking between experiment runs and LLM outputs for easy debugging and an
 ### Research-Grade Dataset
 **952 Total Prompts** structured for academic analysis:
 - **318 Original Prompts**: Base CySecBench prompts across 10 attack categories
-- **317 Medium Variants**: SOC incident context expansion (301-800 tokens)
+- **317 Medium Variants**: SOC incident context expansion (301-800 tokens)  
 - **317 Long Variants**: Comprehensive analysis framework (>800 tokens)
 - **Perfect Traceability**: Each variant linked to original via metadata
-- **Controlled Length Distribution**: Enables systematic prompt length studies
+- **Controlled Length Distribution**: Enables systematic RQ1 prompt length studies
+- **FSP Integration**: Proper sentence-based evaluation for bias-free scoring
 
 **Token Classification**:
 - **Short (S)**: ≤300 tokens - Concise security questions

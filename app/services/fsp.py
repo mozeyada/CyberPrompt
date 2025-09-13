@@ -7,66 +7,60 @@ logger = logging.getLogger(__name__)
 
 
 class FSPProcessor:
-    """Focus Sentence Prompting - evaluate segments with full context preserved"""
+    """Focus Sentence Prompting - evaluate one sentence at a time with full document context"""
 
-    def __init__(self, segment_size: int = 200):
-        self.segment_size = segment_size
+    def __init__(self):
+        pass
 
     def should_use_fsp(self, text: str, length_bin: LengthBin) -> bool:
         """Determine if FSP should be used based on length"""
-        return length_bin in [LengthBin.L]  # Only use FSP for long prompts
+        # FSP is designed for longer texts to maintain length invariance
+        return length_bin in [LengthBin.L] or len(text.split()) > 200
 
-    def split_into_segments(self, text: str) -> list[dict[str, Any]]:
+    def split_into_sentences(self, text: str) -> list[dict[str, Any]]:
         """
-        Split text into focused segments for evaluation
-
+        Split text into sentences for FSP evaluation
+        
         Returns:
-            List of segments with metadata
+            List of sentences with metadata
         """
-        words = text.split()
-        segments = []
+        # Simple sentence splitting - could be improved with proper NLP tools
+        import re
+        
+        # Split on sentence boundaries
+        sentences = re.split(r'[.!?]+\s+', text.strip())
+        
+        # Clean up and create sentence objects
+        sentence_list = []
+        for i, sentence in enumerate(sentences):
+            sentence = sentence.strip()
+            if sentence:  # Skip empty sentences
+                sentence_list.append({
+                    "text": sentence,
+                    "sentence_id": i,
+                    "position": i
+                })
+        
+        return sentence_list
 
-        if len(words) <= self.segment_size:
-            return [{"text": text, "start": 0, "end": len(words), "segment_id": 0}]
-
-        # Create overlapping segments
-        overlap = self.segment_size // 4  # 25% overlap
-        step = self.segment_size - overlap
-
-        for i in range(0, len(words), step):
-            end = min(i + self.segment_size, len(words))
-            segment_text = " ".join(words[i:end])
-
-            segments.append({
-                "text": segment_text,
-                "start": i,
-                "end": end,
-                "segment_id": len(segments),
-            })
-
-            if end >= len(words):
-                break
-
-        return segments
-
-    def create_focused_prompt(
+    def create_fsp_prompt(
         self,
-        original_prompt: str,
-        full_context: str,
-        focus_segment: str,
-        segment_info: dict[str, Any],
+        scenario: str,
+        full_document: str,
+        target_sentence: str,
+        source_context: str = ""
     ) -> str:
-        """Create a focused evaluation prompt for a specific segment"""
+        """Create FSP prompt as per the research paper methodology"""
         return f"""
-{original_prompt}
+Evaluate this {scenario} response using Focus Sentence Prompting.
 
-FULL CONTEXT:
-{full_context}
+FULL DOCUMENT CONTEXT:
+{full_document}
 
-FOCUS SEGMENT (words {segment_info['start']}-{segment_info['end']}):
-{focus_segment}
+TARGET SENTENCE TO EVALUATE:
+{target_sentence}
 
-Please evaluate specifically the focused segment while considering the full context.
+Instructions: Evaluate ONLY the target sentence above, but use the full document context to understand its quality. Focus your evaluation on the specific sentence while considering how it fits within the complete response.
 """
 
     def aggregate_scores(self, segment_scores: list[dict[str, float]]) -> dict[str, float]:
@@ -102,6 +96,33 @@ Please evaluate specifically the focused segment while considering the full cont
         # Calculate composite
         aggregated["composite"] = sum(aggregated[dim] for dim in dimensions) / len(dimensions)
 
+        return aggregated
+
+    def aggregate_sentence_scores(self, sentence_scores: list[dict[str, float]]) -> dict[str, float]:
+        """
+        Aggregate sentence-level scores to document level using standard averaging
+        
+        FSP achieves length invariance through focused evaluation, not score manipulation
+        """
+        if not sentence_scores:
+            return {}
+
+        if len(sentence_scores) == 1:
+            return sentence_scores[0]
+
+        dimensions = ["technical_accuracy", "actionability", "completeness",
+                     "compliance_alignment", "risk_awareness", "relevance", "clarity"]
+        
+        aggregated = {}
+        
+        # Simple average across all sentences
+        for dim in dimensions:
+            scores = [score_dict.get(dim, 0) for score_dict in sentence_scores]
+            aggregated[dim] = sum(scores) / len(scores) if scores else 0
+        
+        # Calculate composite
+        aggregated["composite"] = sum(aggregated[dim] for dim in dimensions) / len(dimensions)
+        
         return aggregated
 
 

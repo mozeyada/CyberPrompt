@@ -74,7 +74,8 @@ async def execute_batch(
                     granularity_demo=bias_controls_data.get("granularity_demo", False)
                 ),
             )
-            final_run_ids = await get_experiment_service().plan_runs(plan_request)
+            include_variants = request.get("include_variants", False)
+            final_run_ids = await get_experiment_service().plan_runs(plan_request, include_variants)
         else:
             raise HTTPException(status_code=400, detail="No run_ids or prompt_ids+model_names provided")
 

@@ -38,8 +38,8 @@ export function KLDivergenceChart() {
 
   if (error) {
     return (
-      <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-        <p className="text-red-700">Error loading KL divergence data. Ensure you have both static and adaptive prompts.</p>
+      <div className="text-center p-8 text-gray-500">
+        <p>Need both CySecBench baseline and adaptive prompts to validate RQ2</p>
       </div>
     )
   }
@@ -58,45 +58,35 @@ export function KLDivergenceChart() {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="border rounded-lg p-4">
-          <h4 className="font-medium text-gray-900 mb-2">Scenario Distribution</h4>
-          <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getScoreColor(data.scenario_kl_divergence)}`}>
-            KL: {data.scenario_kl_divergence.toFixed(3)}
+    <div className="space-y-4">
+      <div className="text-center">
+        <h4 className="text-lg font-medium mb-2">Benchmark Validation</h4>
+        <p className="text-sm text-gray-600 mb-4">
+          Comparing {data.static_count} CySecBench prompts vs {data.adaptive_count} adaptive prompts from CTI/policy docs
+        </p>
+        
+        <div className={`inline-flex items-center px-4 py-2 rounded-lg text-lg font-medium ${
+          data.interpretation.overall_assessment === 'Representative' 
+            ? 'bg-green-100 text-green-800' 
+            : 'bg-red-100 text-red-800'
+        }`}>
+          {data.interpretation.overall_assessment === 'Representative' 
+            ? '✅ Adaptive prompts are representative' 
+            : '❌ Adaptive prompts drift from baseline'
+          }
+        </div>
+        
+        <div className="mt-3 text-xs text-gray-500">
+          KL divergence: Scenarios {data.scenario_kl_divergence.toFixed(2)} | Lengths {data.length_kl_divergence.toFixed(2)}
+          <br />
+          Validates RQ2: Can adaptive benchmarking maintain coverage without bias?
+        </div>
+        
+        {(data.scenario_kl_divergence > 1.0 || data.length_kl_divergence > 1.0) && (
+          <div className="mt-3 text-sm text-red-600">
+            ⚠️ Adaptive generation may need tuning to match baseline distribution
           </div>
-          <p className="text-sm text-gray-600 mt-2">{data.interpretation.scenario_interpretation}</p>
-        </div>
-
-        <div className="border rounded-lg p-4">
-          <h4 className="font-medium text-gray-900 mb-2">Length Distribution</h4>
-          <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getScoreColor(data.length_kl_divergence)}`}>
-            KL: {data.length_kl_divergence.toFixed(3)}
-          </div>
-          <p className="text-sm text-gray-600 mt-2">{data.interpretation.length_interpretation}</p>
-        </div>
-      </div>
-
-      {/* Overall Assessment */}
-      <div className="border rounded-lg p-4">
-        <h4 className="font-medium text-gray-900 mb-2">Overall Assessment</h4>
-        <div className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getAssessmentColor(data.interpretation.overall_assessment)}`}>
-          {data.interpretation.overall_assessment}
-        </div>
-        <div className="mt-3 text-sm text-gray-600">
-          <p>Static prompts: {data.static_count} | Adaptive prompts: {data.adaptive_count}</p>
-        </div>
-      </div>
-
-      {/* Interpretation Guide */}
-      <div className="bg-gray-50 rounded-lg p-4">
-        <h4 className="font-medium text-gray-900 mb-2">Interpretation Guide</h4>
-        <div className="text-sm text-gray-600 space-y-1">
-          <p><span className="font-medium">KL &lt; 0.5:</span> Very similar distributions (good representativeness)</p>
-          <p><span className="font-medium">KL 0.5-1.0:</span> Moderate differences (acceptable drift)</p>
-          <p><span className="font-medium">KL &gt; 1.0:</span> Significant differences (potential bias)</p>
-        </div>
+        )}
       </div>
     </div>
   )

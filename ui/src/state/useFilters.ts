@@ -24,6 +24,8 @@ export interface FilterState {
   // Experiment state
   selectedPrompts: string[];
   setSelectedPrompts: (prompts: string[]) => void;
+  includeVariants: boolean;
+  setIncludeVariants: (include: boolean) => void;
   experimentConfig: {
     repeats: number;
     temperature: number;
@@ -68,6 +70,9 @@ export const useFilters = create<FilterState>((set, get) => ({
   selectedPrompts: [],
   setSelectedPrompts: (prompts) => set({ selectedPrompts: prompts }),
   
+  includeVariants: false,
+  setIncludeVariants: (include) => set({ includeVariants: include }),
+  
   experimentConfig: {
     repeats: 3,
     temperature: 0.2,
@@ -100,11 +105,14 @@ export const useFilters = create<FilterState>((set, get) => ({
       config: state.experimentConfig
     });
     
+    const promptMultiplier = state.includeVariants ? 3 : 1; // S+M+L variants
+    const totalRuns = state.selectedPrompts.length * promptMultiplier * state.selectedModels.length * state.experimentConfig.repeats;
+    
     return {
       configHash: btoa(configString).slice(0, 8),
       timestamp: new Date().toISOString(),
-      totalRuns: state.selectedPrompts.length * state.selectedModels.length * state.experimentConfig.repeats,
-      estimatedCost: state.selectedPrompts.length * state.selectedModels.length * state.experimentConfig.repeats * 0.03
+      totalRuns,
+      estimatedCost: totalRuns * 0.03
     };
   },
   
@@ -115,6 +123,7 @@ export const useFilters = create<FilterState>((set, get) => ({
     selectedDimension: 'composite',
     selectedJudgeType: null,
     selectedPrompts: [],
+    includeVariants: false,
     experimentConfig: {
       repeats: 3,
       temperature: 0.2,

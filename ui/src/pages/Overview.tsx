@@ -70,29 +70,35 @@ export function Overview() {
     }
   }
 
-  const scatterData = allRuns?.runs?.map(run => {
+  const scatterData = allRuns?.runs?.map((run, index) => {
     // Use prompt_length_bin directly from run data
     const lengthBin = run.prompt_length_bin || null
     const selectedScore = selectedDimension === 'composite' 
       ? run.scores?.composite || 0
       : run.scores?.[selectedDimension] || 0
     
+    // Add small jitter to prevent overlapping points
+    const jitter = (index % 5 - 2) * 0.02 // Small random offset
+    
     return {
       tokens: run.tokens?.total || 0,
-      score: selectedScore,
+      score: selectedScore + jitter,
       model: run.model,
       source: run.source || 'static',
       cost: run.economics?.aud_cost || 0,
       lengthBin,
-      fsp: run.bias_controls?.fsp || false,
+      fsp: run.fsp_enabled || false,
       allScores: run.scores,
       fill: getLengthBinColor(lengthBin),
-      stroke: run.bias_controls?.fsp ? '#374151' : 'none',
-      strokeWidth: run.bias_controls?.fsp ? 2 : 0
+      stroke: '#000000',
+      strokeWidth: 1,
+      run_id: run.run_id // Add for debugging
     }
   }) || []
 
   const allScoresZero = scatterData.every(point => point.score === 0)
+  console.log('Debug - All scores zero:', allScoresZero)
+  console.log('Debug - Sample scores:', scatterData.slice(0, 3).map(d => ({run_id: d.model, score: d.score, fsp: d.fsp, tokens: d.tokens})))
 
   const getModelColor = (model: string) => {
     if (model.includes('gpt-4')) return '#8B5CF6'
@@ -112,6 +118,16 @@ export function Overview() {
     { value: 'relevance', label: 'Relevance' },
     { value: 'clarity', label: 'Clarity' }
   ]
+
+  // Split data by FSP status for different shapes
+  const fspEnabledData = scatterData.filter(d => d.fsp && d.tokens > 0)
+  const fspDisabledData = scatterData.filter(d => !d.fsp && d.tokens > 0)
+  
+  // Debug logging
+  console.log('Debug - Total scatter data points:', scatterData.length)
+  console.log('Debug - FSP enabled points:', fspEnabledData.length)
+  console.log('Debug - FSP disabled points:', fspDisabledData.length)
+  console.log('Debug - Sample data point:', scatterData[0])
 
   // Helper functions for table
   const getSourceTag = (run: any) => {
@@ -310,14 +326,14 @@ export function Overview() {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <span className="font-medium">FSP:</span>
+            <span className="font-medium">Fair Scoring (FSP):</span>
             <div className="flex items-center gap-1">
-              <div className="w-3 h-3 rounded-full border-2 border-gray-400" />
-              <span>Enabled</span>
+              <div className="w-3 h-3 rounded-full bg-gray-400 border border-black" />
+              <span className="text-gray-700 font-medium">Enabled (Circle)</span>
             </div>
             <div className="flex items-center gap-1">
-              <div className="w-3 h-3 rounded-full bg-gray-400" />
-              <span>Disabled</span>
+              <div className="w-3 h-3 bg-gray-400 border border-black transform rotate-45" />
+              <span className="text-gray-700 font-medium">Disabled (Diamond)</span>
             </div>
           </div>
         </div>
@@ -363,22 +379,20 @@ export function Overview() {
                   return null
                 }}
               />
-              {/* Group by model for better comparison */}
-              {['gpt-4', 'claude', 'gpt-3.5', 'gemini'].map(modelType => {
-                const modelData = scatterData.filter(d => 
-                  d.tokens > 0 && d.model.toLowerCase().includes(modelType)
-                )
-                if (modelData.length === 0) return null
-                
-                return (
-                  <Scatter 
-                    key={modelType}
-                    data={modelData}
-                    fillOpacity={0.8}
-                    name={modelType.toUpperCase()}
-                  />
-                )
-              })}
+              {/* FSP Enabled - Circles */}
+              <Scatter 
+                data={fspEnabledData}
+                fillOpacity={0.8}
+                name="FSP Enabled"
+                shape="circle"
+              />
+              {/* FSP Disabled - Diamonds */}
+              <Scatter 
+                data={fspDisabledData}
+                fillOpacity={0.8}
+                name="FSP Disabled"
+                shape="diamond"
+              />
             </ScatterChart>
           </ResponsiveContainer>
         )}
@@ -409,6 +423,7 @@ export function Overview() {
                       <span title="Auto-scored by LLM judge" className="text-gray-400 cursor-help">ℹ️</span>
                     </div>
                   </th>
+                  <th className="text-left py-3 px-4 font-medium text-gray-600">Length</th>
                   <th className="text-left py-3 px-4 font-medium text-gray-600">Tokens</th>
                   <th className="text-left py-3 px-4 font-medium text-gray-600">Cost</th>
                   <th className="text-left py-3 px-4 font-medium text-gray-600">FSP</th>
@@ -419,7 +434,7 @@ export function Overview() {
                 {allRuns.runs
                   .filter(run => run.status === 'succeeded')
                   .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-                  .slice(0, 5)
+                  .slice(0, 15)
                   .map((run, index) => {
                     const scoreBadge = getScoreBadge(run.scores?.composite || 0)
                     
@@ -446,6 +461,16 @@ export function Overview() {
                           </div>
                         </td>
                         <td className="py-3 px-4">
+                          <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+                            run.prompt_length_bin === 'S' ? 'bg-green-100 text-green-800' :
+                            run.prompt_length_bin === 'M' ? 'bg-blue-100 text-blue-800' :
+                            run.prompt_length_bin === 'L' ? 'bg-red-100 text-red-800' :
+                            'bg-gray-100 text-gray-600'
+                          }`}>
+                            {run.prompt_length_bin || '?'}
+                          </span>
+                        </td>
+                        <td className="py-3 px-4">
                           <span className="text-sm text-gray-900">
                             {(run.tokens?.total || 0).toLocaleString()}
                           </span>
@@ -457,11 +482,11 @@ export function Overview() {
                         </td>
                         <td className="py-3 px-4">
                           <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
-                            run.bias_controls?.fsp 
+                            run.fsp_enabled 
                               ? 'bg-green-100 text-green-800' 
                               : 'bg-gray-100 text-gray-600'
                           }`}>
-                            {run.bias_controls?.fsp ? 'Yes' : 'No'}
+                            {run.fsp_enabled ? 'Yes' : 'No'}
                           </span>
                         </td>
                         <td className="py-3 px-4">

@@ -17,6 +17,7 @@ export function BenchmarkRunner() {
     setSelectedPrompts,
     selectedModels,
     setSelectedModels,
+    includeVariants,
     experimentConfig,
     setExperimentConfig,
     validateExperiment,
@@ -127,6 +128,7 @@ export function BenchmarkRunner() {
     executeBatchMutation.mutate({
       prompt_ids: validPromptIds,
       model_names: selectedModels,
+      include_variants: includeVariants,
       bias_controls: {
         fsp: experimentConfig.fspEnabled,
         granularity_demo: false

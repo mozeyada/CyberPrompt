@@ -125,9 +125,12 @@ class Run(BaseModel):
     settings: RunSettings
     status: RunStatus = RunStatus.QUEUED
     source: Literal["static", "adaptive"] = "static"
+    prompt_length_bin: LengthBin | None = None  # Length bin from prompt
+    scenario: ScenarioType | None = None  # Scenario from prompt
     tokens: TokenMetrics | None = None
     economics: EconomicsMetrics | None = None
     output_blob_id: str | None = Field(None, description="Reference to OutputBlob.blob_id")
+    output_ref: str | None = None  # Alternative reference field
     judge: JudgeConfig
     scores: RubricScores | None = None
     risk_metrics: RiskMetrics | None = None

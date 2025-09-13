@@ -32,7 +32,7 @@ class ExperimentService:
         pricing_config = settings.get_pricing()
         self.cost_calculator = CostCalculator(pricing_config) if pricing_config else None
 
-    async def plan_runs(self, plan_request: RunPlanRequest) -> list[str]:
+    async def plan_runs(self, plan_request: RunPlanRequest, include_variants: bool = False) -> list[str]:
         """
         Plan experiment runs based on request
         Returns list of run_ids that were created
@@ -44,9 +44,10 @@ class ExperimentService:
             experiment_id = await get_next_experiment_id()
             current_dataset_version = datetime.now().strftime("%Y%m%d")
             
-            # Validate prompts exist
+            # Validate prompts exist and expand variants if needed
             prompts = []
             invalid_prompt_ids = []
+            
             for prompt_id in plan_request.prompts:
                 if not prompt_id or not isinstance(prompt_id, str):
                     invalid_prompt_ids.append(f"Invalid prompt ID format: {prompt_id}")
@@ -55,8 +56,27 @@ class ExperimentService:
                 prompt = await self.prompt_repo.get_by_id(prompt_id)
                 if not prompt:
                     invalid_prompt_ids.append(prompt_id)
-                else:
-                    prompts.append(prompt)
+                    continue
+                    
+                prompts.append(prompt)
+                
+                # If include_variants is True and this is an original prompt, add its variants
+                if include_variants and (not prompt.metadata or not prompt.metadata.get('variant_of')):
+                    # Find medium and long variants
+                    from app.db.connection import get_database
+                    db = get_database()
+                    variant_docs = await db.prompts.find({
+                        'metadata.variant_of': prompt_id
+                    }).to_list(None)
+                    
+                    for variant_doc in variant_docs:
+                        try:
+                            from app.models import Prompt
+                            variant_prompt = Prompt(**variant_doc)
+                            prompts.append(variant_prompt)
+                        except Exception as e:
+                            logger.warning(f"Skipping invalid variant: {e}")
+                            continue
             
             if invalid_prompt_ids:
                 msg = f"Invalid prompt IDs: {', '.join(invalid_prompt_ids[:5])}" + (" (and more)" if len(invalid_prompt_ids) > 5 else "")
@@ -73,6 +93,9 @@ class ExperimentService:
                         if not judge_config.judge_model:
                             judge_config.judge_model = "gpt-4o-mini"
                         
+                        # Map prompt source to run source
+                        run_source = "adaptive" if prompt.source == "adaptive" else "static"
+                        
                         run = Run(
                             run_id=run_id,
                             prompt_id=prompt.prompt_id,
@@ -83,6 +106,10 @@ class ExperimentService:
                             status=RunStatus.QUEUED,
                             dataset_version=current_dataset_version,
                             experiment_id=experiment_id,
+                            prompt_length_bin=prompt.length_bin,
+                            scenario=prompt.scenario,
+                            source=run_source,
+                            fsp_enabled=plan_request.bias_controls.fsp,
                         )
 
                         await self.run_repo.create(run)

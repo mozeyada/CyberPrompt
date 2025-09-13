@@ -9,16 +9,27 @@ interface Step1Props {
 }
 
 export function Step1_Scenarios({ lengthBin, setLengthBin }: Step1Props) {
-  const { selectedScenario, selectedPrompts, setSelectedPrompts } = useFilters()
+  const { selectedScenario, selectedPrompts, setSelectedPrompts, includeVariants, setIncludeVariants } = useFilters()
   const [sourceFilter, setSourceFilter] = useState('all')
-  const [includeVariants, setIncludeVariants] = useState(false)
+  
+  // Clear variant selections when toggling includeVariants
+  const handleIncludeVariantsChange = (checked: boolean) => {
+    setIncludeVariants(checked)
+    // Clear any selected variant prompts when toggling
+    const filteredPrompts = selectedPrompts.filter(promptId => {
+      return !promptId.startsWith('medium_') && !promptId.startsWith('long_')
+    })
+    if (filteredPrompts.length !== selectedPrompts.length) {
+      setSelectedPrompts(filteredPrompts)
+    }
+  }
   
   // Reset includeVariants when switching to adaptive prompts
   React.useEffect(() => {
     if (sourceFilter === 'adaptive') {
       setIncludeVariants(false)
     }
-  }, [sourceFilter])
+  }, [sourceFilter, setIncludeVariants])
 
   return (
     <div className="space-y-6">
@@ -70,7 +81,7 @@ export function Step1_Scenarios({ lengthBin, setLengthBin }: Step1Props) {
             <input
               type="checkbox"
               checked={includeVariants}
-              onChange={(e) => setIncludeVariants(e.target.checked)}
+              onChange={(e) => handleIncludeVariantsChange(e.target.checked)}
               disabled={sourceFilter === 'adaptive'}
               className={`rounded border-gray-300 text-blue-600 focus:ring-blue-500 ${
                 sourceFilter === 'adaptive' ? 'opacity-50 cursor-not-allowed' : ''

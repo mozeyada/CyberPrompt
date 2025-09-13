@@ -1,6 +1,5 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { CostQualityChart } from '../components/Charts/CostQualityChart'
 import { LengthBias } from '../components/Charts/LengthBias'
 import { RiskCurves } from '../components/Charts/RiskCurves'
 import { RiskCostFrontier } from '../components/Charts/RiskCostFrontier'
@@ -14,21 +13,13 @@ import { analyticsApi, statsApi } from '../api/client'
 import { useFilters } from '../state/useFilters'
 
 export function Insights() {
-  const [selectedView, setSelectedView] = useState('cost_score')
+  const [selectedView, setSelectedView] = useState('research')
   const { selectedScenario, selectedModels } = useFilters()
   
-  // Fetch real analytics data
+  // Fetch analytics summary for research metrics
   const { data: statsData } = useQuery({
     queryKey: ['stats-analytics-summary'],
     queryFn: statsApi.analyticsSummary
-  })
-  
-  const { data: costQualityData } = useQuery({
-    queryKey: ['analytics-cost-quality', selectedScenario, selectedModels],
-    queryFn: () => analyticsApi.costQuality({
-      scenario: selectedScenario || undefined,
-      model: selectedModels.length > 0 ? selectedModels.join(',') : undefined
-    })
   })
   
   const { data: bestQualityData } = useQuery({
@@ -39,10 +30,10 @@ export function Insights() {
   })
   
   const views = [
-    { id: 'cost_score', name: 'Cost vs Score' },
-    { id: 'bias', name: 'Bias Analysis' },
-    { id: 'risk', name: 'Risk Analysis' },
-    { id: 'coverage', name: 'Coverage' }
+    { id: 'research', name: 'Research Questions' },
+    { id: 'statistical', name: 'Statistical Analysis' },
+    { id: 'validation', name: 'Research Validation' },
+    { id: 'advanced', name: 'Advanced Analytics' }
   ]
 
 
@@ -51,23 +42,21 @@ export function Insights() {
     <div className="space-y-6">
       {/* Header */}
       <div className="border-b border-gray-200 pb-4">
-        <h1 className="text-3xl font-bold text-gray-900">Insights</h1>
-        <p className="mt-2 text-gray-600">
-          Advanced analytics and performance insights
-        </p>
+        <h1 className="text-3xl font-bold text-gray-900">Advanced Analytics</h1>
+        <p className="mt-2 text-gray-600">Statistical analysis and research validation</p>
       </div>
 
-      {/* View Tabs */}
+      {/* Analysis Navigation */}
       <div className="border-b border-gray-200">
-        <nav className="-mb-px flex space-x-8">
+        <nav className="flex space-x-8">
           {views.map((view) => (
             <button
               key={view.id}
               onClick={() => setSelectedView(view.id)}
-              className={`py-2 px-1 border-b-2 font-medium text-sm ${
+              className={`py-3 px-1 border-b-2 font-medium text-sm ${
                 selectedView === view.id
                   ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  : 'border-transparent text-gray-500 hover:text-gray-700'
               }`}
             >
               {view.name}
@@ -87,65 +76,97 @@ export function Insights() {
         </div>
       </div>
 
-      {/* Analytics Views */}
+      {/* Research Analytics Views */}
       <div className="space-y-6">
-        {selectedView === 'cost_score' && (
-          <div className="bg-white shadow rounded-lg p-6">
-            <h3 className="text-lg font-semibold mb-4">Cost vs Quality Analysis</h3>
-            <p className="text-gray-600 mb-4">Interactive scatter plot showing cost-performance trade-offs</p>
-            <CostQualityChart />
-          </div>
-        )}
-
-        {selectedView === 'bias' && (
-          <div className="bg-white shadow rounded-lg p-6">
-            <h3 className="text-lg font-semibold mb-4">Length Bias Analysis</h3>
-            <p className="text-gray-600 mb-4">FSP vs raw scoring comparison</p>
-            <LengthBias />
-          </div>
-        )}
-
-        {selectedView === 'risk' && (
+        {selectedView === 'research' && (
           <div className="space-y-6">
+            {/* Length Bias Analysis */}
             <div className="bg-white shadow rounded-lg p-6">
-              <h3 className="text-lg font-semibold mb-4">Risk Curves Analysis</h3>
-              <p className="text-gray-600 mb-4">
-                Risk awareness and hallucination rates across prompt lengths
-              </p>
-              <RiskCurves />
+              <h3 className="text-lg font-semibold mb-4">Length Bias Analysis</h3>
+              <LengthBias />
             </div>
-            
-            <div className="bg-white shadow rounded-lg p-6">
-              <h3 className="text-lg font-semibold mb-4">Risk-Cost Frontier</h3>
-              <p className="text-gray-600 mb-4">
-                Optimal balance between cost efficiency and risk mitigation
-              </p>
-              <RiskCostFrontier />
-            </div>
-          </div>
-        )}
 
-        {selectedView === 'coverage' && (
-          <div className="space-y-6">
+            {/* Distribution Validation */}
             <div className="bg-white shadow rounded-lg p-6">
-              <h3 className="text-lg font-semibold mb-4">Prompt Coverage Analysis</h3>
-              <p className="text-gray-600 mb-4">
-                Track prompt usage across static and adaptive sources by scenario
-              </p>
-              <PromptCoverageChart />
-            </div>
-            
-            <div className="bg-white shadow rounded-lg p-6">
-              <h3 className="text-lg font-semibold mb-4">KL Divergence Validation</h3>
-              <p className="text-gray-600 mb-4">
-                Statistical validation of adaptive vs static benchmark representativeness
-              </p>
+              <h3 className="text-lg font-semibold mb-4">Distribution Validation</h3>
               <KLDivergenceChart />
             </div>
           </div>
         )}
 
+        {selectedView === 'statistical' && (
+          <div className="space-y-6">
+            {/* Statistical Testing */}
+            <div className="bg-white shadow rounded-lg p-6">
+              <h3 className="text-lg font-semibold mb-4">Statistical Testing</h3>
+              <LengthBias />
+            </div>
 
+            {/* Model Efficiency */}
+            <div className="bg-white shadow rounded-lg p-6">
+              <h3 className="text-lg font-semibold mb-4">Model Efficiency</h3>
+              {bestQualityData?.leaderboard && (
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b">
+                        <th className="text-left py-2">Rank</th>
+                        <th className="text-left py-2">Model</th>
+                        <th className="text-left py-2">Quality/AUD</th>
+                        <th className="text-left py-2">Avg Quality</th>
+                        <th className="text-left py-2">Avg Cost</th>
+                        <th className="text-left py-2">Runs</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {bestQualityData.leaderboard.slice(0, 10).map((entry, index) => (
+                        <tr key={entry.model_id} className={index % 2 === 0 ? 'bg-gray-50' : ''}>
+                          <td className="py-2">{index + 1}</td>
+                          <td className="py-2 font-medium">{entry.model_id}</td>
+                          <td className="py-2 text-green-600 font-bold">{entry.quality_per_aud.toFixed(2)}</td>
+                          <td className="py-2">{entry.avg_quality.toFixed(2)}</td>
+                          <td className="py-2">${entry.avg_cost.toFixed(4)}</td>
+                          <td className="py-2">{entry.count}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {selectedView === 'validation' && (
+          <div className="space-y-6">
+            {/* Validation */}
+            <div className="bg-white shadow rounded-lg p-6">
+              <h3 className="text-lg font-semibold mb-4">Validation</h3>
+              <KLDivergenceChart />
+            </div>
+
+            {/* Coverage */}
+            <div className="bg-white shadow rounded-lg p-6">
+              <h3 className="text-lg font-semibold mb-4">Coverage</h3>
+              <PromptCoverageChart />
+            </div>
+          </div>
+        )}
+
+        {selectedView === 'advanced' && (
+          <div className="space-y-6">
+            {/* Risk Analysis */}
+            <div className="bg-white shadow rounded-lg p-6">
+              <h3 className="text-lg font-semibold mb-4">Risk Analysis</h3>
+              <RiskCurves />
+            </div>
+            
+            <div className="bg-white shadow rounded-lg p-6">
+              <h3 className="text-lg font-semibold mb-4">Risk-Cost Frontier</h3>
+              <RiskCostFrontier />
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )

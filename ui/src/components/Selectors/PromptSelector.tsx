@@ -101,7 +101,15 @@ export function PromptSelector({ selectedPrompts, onPromptsChange, scenario, len
             No prompts available. {scenario ? `Try selecting a different scenario.` : 'Import some prompts first.'}
           </div>
         ) : (
-          prompts.map((prompt, index) => {
+          prompts
+            .filter(prompt => {
+              // When includeVariants is true, only show original prompts for selection
+              if (includeVariants) {
+                return !prompt.metadata?.variant_of
+              }
+              return true
+            })
+            .map((prompt, index) => {
             const uniqueKey = `${prompt.prompt_id || `prompt-${index}`}-${index}`
             const promptId = prompt.prompt_id || `prompt-${index}`
             return (

@@ -36,7 +36,10 @@ export function LengthBias({ className = "" }: LengthBiasProps) {
     return (
       <div className="text-center p-8">
         <div className="text-gray-500 mb-2">No length bias data available</div>
-        <div className="text-sm text-gray-400">Run experiments with different prompt lengths to see bias analysis</div>
+        <div className="text-sm text-gray-400 mb-4">Run experiments with different prompt lengths to see bias analysis</div>
+        <div className="text-xs text-gray-500">
+          Need S/M/L length variants for bias analysis
+        </div>
       </div>
     )
   }
@@ -47,15 +50,23 @@ export function LengthBias({ className = "" }: LengthBiasProps) {
     slope: modelData.slope,
     r_squared: modelData.r_squared,
     p_value: modelData.p_value,
-    significance: modelData.p_value < 0.05 ? 'Significant' : 'Not Significant'
+    significance: modelData.p_value < 0.05 ? 'Significant' : 'Not Significant',
+    slope_ci_lower: modelData.slope_ci_lower,
+    slope_ci_upper: modelData.slope_ci_upper,
+    effect_size: Math.abs(modelData.slope) > 0.1 ? 'Large' : Math.abs(modelData.slope) > 0.05 ? 'Medium' : 'Small'
   }))
 
   return (
     <div className={`rounded-2xl shadow-lg p-6 bg-white ${className}`}>
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold">Length Bias Analysis</h3>
-        <div className="text-sm text-gray-500">
-          {selectedDimension.replace('_', ' ')}
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-gray-500">
+            {selectedDimension.replace('_', ' ')}
+          </span>
+          <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
+            RQ1 Analysis
+          </span>
         </div>
       </div>
       
@@ -64,11 +75,29 @@ export function LengthBias({ className = "" }: LengthBiasProps) {
           <XAxis dataKey="model" />
           <YAxis label={{ value: 'Bias Slope', angle: -90, position: 'insideLeft' }} />
           <Tooltip 
-            formatter={(value: any, name: string) => {
-              if (name === 'slope') return [value.toFixed(4), 'Bias Slope']
-              return [value, name]
+            content={({ active, payload, label }) => {
+              if (active && payload && payload[0]) {
+                const data = payload[0].payload
+                return (
+                  <div className="bg-white p-3 border rounded shadow-lg">
+                    <div className="font-medium mb-2">{label}</div>
+                    <div className="text-sm space-y-1">
+                      <div>Slope: <strong>{data.slope.toFixed(4)}</strong></div>
+                      <div>95% CI: [{data.slope_ci_lower?.toFixed(4)}, {data.slope_ci_upper?.toFixed(4)}]</div>
+                      <div>R²: <strong>{data.r_squared.toFixed(3)}</strong></div>
+                      <div>p-value: <strong>{data.p_value.toFixed(6)}</strong></div>
+                      <div>Effect: <strong>{data.effect_size}</strong></div>
+                      <div className={`font-medium ${
+                        data.significance === 'Significant' ? 'text-red-600' : 'text-gray-600'
+                      }`}>
+                        {data.significance}
+                      </div>
+                    </div>
+                  </div>
+                )
+              }
+              return null
             }}
-            labelFormatter={(label) => `Model: ${label}`}
           />
           <Legend />
           <Bar dataKey="slope" name="Length Bias Slope">
@@ -79,11 +108,12 @@ export function LengthBias({ className = "" }: LengthBiasProps) {
         </BarChart>
       </ResponsiveContainer>
       
-      {/* Interpretation */}
-      <div className="mt-4 text-sm text-gray-600">
-        <p><strong>Red bars:</strong> Statistically significant bias (p &lt; 0.05)</p>
-        <p><strong>Gray bars:</strong> No significant bias detected</p>
-        <p><strong>Positive slope:</strong> Longer prompts get higher scores</p>
+      {/* Quick Interpretation */}
+      <div className="mt-4 bg-gray-50 p-3 rounded text-xs text-gray-600">
+        <p><strong>Red:</strong> Significant bias (p&lt;0.05) | <strong>Gray:</strong> No bias | <strong>Positive:</strong> Longer=higher scores</p>
+        {chartData.some(d => d.significance === 'Significant') && (
+          <p className="text-yellow-700 mt-1">⚠️ {chartData.filter(d => d.significance === 'Significant').length} model(s) show significant bias - consider FSP</p>
+        )}
       </div>
     </div>
   )

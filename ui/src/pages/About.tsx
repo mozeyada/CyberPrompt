@@ -8,8 +8,8 @@ export function About() {
         <h1 className="text-4xl font-bold text-gray-900 mb-4">About This Research</h1>
         <p className="text-xl text-gray-600 max-w-3xl mx-auto">
           CyberCQBench enables systematic study of prompt length effects on LLM cost-quality trade-offs 
-          in cybersecurity operations. With 952 research-grade prompts across controlled length variants, 
-          it provides cost-effective and reproducible AI evaluation for SOC and GRC tasks.
+          in cybersecurity operations. With 952 research-grade prompts across controlled length variants 
+          and proper FSP bias mitigation, it provides cost-effective and reproducible AI evaluation for SOC and GRC tasks.
         </p>
       </div>
 
@@ -37,10 +37,10 @@ export function About() {
             </ul>
           </div>
           <div>
-            <h3 className="text-lg font-semibold text-gray-800 mb-3">Bias Mitigation (FSP)</h3>
+            <h3 className="text-lg font-semibold text-gray-800 mb-3">Bias Mitigation (FSP) ⚠️ Fixed</h3>
             <p className="text-gray-600">
-              Focus Sentence Prompting mitigates verbosity bias by evaluating content quality 
-              rather than response length, ensuring fair comparison across different prompt lengths.
+              Focus Sentence Prompting now properly evaluates sentences with full context for true 
+              length-invariant scoring. Critical bug fix ensures research validity.
             </p>
           </div>
           <div>
@@ -68,7 +68,7 @@ export function About() {
             <div className="text-2xl font-bold text-green-600">L</div>
             <div>
               <h3 className="font-semibold text-gray-800">Length Bias Detection</h3>
-              <p className="text-gray-600">Statistical analysis identifying verbosity bias with confidence intervals and significance testing.</p>
+              <p className="text-gray-600">Statistical analysis with confidence intervals, p-values, and effect sizes. Enhanced tooltips show research-grade metrics.</p>
             </div>
           </div>
           <div className="flex items-start space-x-3">
