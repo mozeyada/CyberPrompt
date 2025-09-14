@@ -22,14 +22,14 @@ async def calculate_kl_divergence(
     try:
         repo = PromptRepository()
         
-        # Get static (CySecBench) prompts
+        # Get static prompts (CySecBench baseline)
         static_prompts = await repo.list_prompts(source="CySecBench", limit=1000)
         
         # Get adaptive prompts
         adaptive_prompts = await repo.list_prompts(source="adaptive", limit=1000)
         
         if not static_prompts or not adaptive_prompts:
-            raise HTTPException(status_code=400, detail="Need both static and adaptive prompts")
+            raise HTTPException(status_code=400, detail="Need both CySecBench baseline and adaptive prompts to validate RQ2")
         
         # Calculate scenario distribution KL divergence
         scenario_kl = _calculate_scenario_kl_divergence(static_prompts, adaptive_prompts)

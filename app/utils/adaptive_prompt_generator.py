@@ -3,6 +3,7 @@ from typing import List
 
 from app.core.config import settings
 from app.services.llm_client import LLMClientFactory
+from app.services.groq_client import GroqClient, GROQ_MODELS
 
 logger = logging.getLogger(__name__)
 
@@ -24,23 +25,33 @@ async def generate_adaptive_prompts(
         List of generated benchmark prompt strings
     """
     try:
-        # Create LLM client
-        client = LLMClientFactory.create_client(
-            model=model,
-            openai_key=settings.openai_api_key,
-            anthropic_key=settings.anthropic_api_key,
-            google_key=settings.google_api_key
-        )
-        
         # Generate prompts using meta-prompt
         meta_prompt = _build_meta_prompt(document_text, task_type)
         
-        response = await client.generate(
-            model=model,
-            prompt=meta_prompt,
-            temperature=0.7,
-            max_tokens=1200
-        )
+        # Use Groq for cost-effective generation if Groq model selected
+        if model.startswith("llama-"):
+            groq_client = GroqClient(settings.groq_api_key)
+            groq_model = GROQ_MODELS.get(model, "llama-3.3-70b-versatile")
+            response = await groq_client.generate(
+                model=groq_model,
+                prompt=meta_prompt,
+                temperature=0.7,
+                max_tokens=1200
+            )
+        else:
+            # Use existing LLM client for OpenAI/Anthropic models
+            client = LLMClientFactory.create_client(
+                model=model,
+                openai_key=settings.openai_api_key,
+                anthropic_key=settings.anthropic_api_key,
+                google_key=settings.google_api_key
+            )
+            response = await client.generate(
+                model=model,
+                prompt=meta_prompt,
+                temperature=0.7,
+                max_tokens=1200
+            )
         
         # Parse response into individual prompts
         prompts = _parse_generated_prompts(response)
@@ -57,11 +68,9 @@ def _build_meta_prompt(document_text: str, task_type: str) -> str:
     """Build meta-prompt for generating SOC/GRC benchmark prompts"""
     
     task_styles = {
-        "incident_response": "incident analysis, threat containment, forensic investigation",
-        "compliance_mapping": "regulatory alignment, policy adherence, audit preparation", 
-        "threat_assessment": "risk evaluation, vulnerability analysis, threat modeling",
-        "soc_operations": "alert triage, security monitoring, incident classification",
-        "grc_reporting": "compliance reporting, risk documentation, governance assessment"
+        "SOC_INCIDENT": "incident analysis, threat containment, forensic investigation",
+        "GRC_MAPPING": "regulatory alignment, policy adherence, audit preparation", 
+        "CTI_SUMMARY": "threat analysis, intelligence summaries, risk evaluation"
     }
     
     style_guidance = task_styles.get(task_type, "cybersecurity analysis, security operations")

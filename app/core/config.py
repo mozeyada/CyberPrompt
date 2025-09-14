@@ -20,6 +20,7 @@ class Settings(BaseSettings):
     openai_api_key: str = ""
     anthropic_api_key: str = ""
     google_api_key: str = ""
+    groq_api_key: str = ""
 
     # Judge settings
     default_judge_model: str = "gpt-4o-mini"

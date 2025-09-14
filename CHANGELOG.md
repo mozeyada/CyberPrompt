@@ -1,5 +1,98 @@
 # CyberCQBench Changelog
 
+## [1.2.0] - 2025-01-XX - Research Enhancement & Bug Fixes
+
+### 🔧 **Critical Bug Fixes**
+
+#### **1. Fixed FSP Implementation Bug** ⚠️
+- **Issue**: Focus Sentence Prompting (FSP) code existed but wasn't properly integrated into judge evaluation
+- **Fixed**: FSP now correctly implements sentence-based evaluation with full context for true length-invariant scoring
+- **Impact**: Enables fair cost-quality comparison across models and prompt lengths
+- **Files**: `app/services/base.py`
+
+#### **2. Fixed KL Divergence Validation**
+- **Issue**: KL divergence used incorrect source field ("static" vs "CySecBench")
+- **Fixed**: Proper validation of adaptive prompts against CySecBench baseline for RQ2 research
+- **Impact**: Accurate statistical validation for adaptive vs static benchmarking
+- **Files**: `app/api/validation.py`
+
+#### **3. Fixed Progress Bar Calculation**
+- **Issue**: Benchmark runner progress didn't account for length variants multiplier
+- **Fixed**: Progress calculation now correctly includes ×3 multiplier when variants enabled
+- **Impact**: Accurate progress tracking during experiments
+- **Files**: `ui/src/pages/BenchmarkRunner.tsx`
+
+#### **4. Fixed Prompt Count Display**
+- **Issue**: Prompt selector showed incorrect counts when length filters applied
+- **Fixed**: Displays actual M and L variant prompts under selected originals
+- **Impact**: Clear visibility of what will be tested when variants enabled
+- **Files**: `ui/src/components/Selectors/PromptSelector.tsx`
+
+### 🚀 **New Features**
+
+#### **Groq API Integration**
+- **Added**: Groq API support for cost-effective adaptive prompt generation
+- **Models**: llama-3.1-70b-versatile, llama-3.1-8b-instant
+- **Purpose**: Preserve OpenAI/Gemini quota while enabling RQ2 research
+- **Files**: `app/services/groq_client.py`, `app/core/config.py`
+
+#### **Adaptive Prompting System**
+- **Added**: Complete adaptive prompt generation from policy documents
+- **Features**: Text input processing, consistent data structure with static prompts
+- **Integration**: Seamless integration with existing benchmark pipeline
+- **Files**: `ui/src/pages/AdaptivePrompting.tsx`, `app/utils/adaptive_prompt_generator.py`
+
+#### **Enhanced Analytics Dashboard**
+- **Added**: FSP indicators (circles vs diamonds) on Overview page
+- **Added**: 15-row recent runs table with length classification
+- **Improved**: Streamlined verbose research explanations while maintaining statistical rigor
+- **Files**: `ui/src/components/Charts/Overview.tsx`, `ui/src/pages/Insights.tsx`
+
+### 📊 **Research Enhancements**
+
+#### **Length Variant Analysis**
+- **Enhanced**: Perfect traceability for S+M+L prompt groups (≤300, 301-800, >800 tokens)
+- **Dataset**: 952 research-grade prompts (318 originals + 317 medium + 317 long variants)
+- **Purpose**: Enables systematic RQ1 prompt length studies
+
+#### **KL Divergence Validation**
+- **Purpose**: Statistical validation for RQ2 comparing adaptive vs static prompt distributions
+- **Implementation**: Proper scenario and length distribution analysis
+- **Endpoint**: `GET /validation/kl-divergence`
+
+### 🏗️ **Architecture Improvements**
+
+#### **Database Layer Enhancement**
+- **Structure**: Clean separation between API, services, and database layers
+- **Pattern**: Repository pattern with 5 main repositories (Prompt, Run, OutputBlob, Baseline, SourceDocument)
+- **Driver**: MongoDB with Motor async driver for optimal performance
+- **Files**: `app/db/connection.py`, `app/db/repositories.py`
+
+### 🔄 **API Enhancements**
+
+#### **New Endpoints**
+- `POST /prompts/adaptive/generate` - Generate adaptive prompts from policy documents
+- `GET /validation/kl-divergence` - KL divergence between adaptive and static prompts
+
+#### **Enhanced Endpoints**
+- `GET /prompts` - Improved filtering with include_variants support
+- `POST /runs/execute/batch` - Better progress tracking with variants
+
+### 📚 **Documentation Updates**
+- Updated README.md with Groq integration and adaptive prompting
+- Added new API endpoints documentation
+- Enhanced configuration examples
+- Updated supported models list
+- Added usage examples for adaptive prompting
+
+### 🔬 **Research Validation**
+- **RQ1**: Systematic prompt length effects on LLM cost-quality trade-offs
+- **RQ2**: Adaptive vs static benchmarking effectiveness with statistical validation
+- **Bias Studies**: True length-invariant scoring with fixed FSP implementation
+- **Reproducibility**: Fixed seeds, dataset versioning, transparent scoring
+
+---
+
 ## [1.1.0] - 2024-01-XX - Architecture Improvements
 
 ### 🔧 **Fixed Critical Issues**

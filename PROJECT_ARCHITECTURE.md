@@ -51,11 +51,13 @@ CyberCQBench/
 │   │   ├── composite.py   # Rubric score calculations
 │   │   ├── experiment.py  # Experiment orchestration
 │   │   ├── fsp.py         # Focus Sentence Prompting (bias control)
+│   │   ├── groq_client.py # Groq API integration for adaptive prompting
 │   │   ├── llm_client.py  # LLM API integrations
 │   │   ├── prompt_generator.py # Dynamic prompt creation
 │   │   ├── prompts.py     # Evaluation prompt templates
 │   │   └── risk.py        # Risk assessment metrics
 │   ├── utils/             # Utilities
+│   │   ├── adaptive_prompt_generator.py # Adaptive prompt generation logic
 │   │   ├── mongodb.py     # ObjectId conversion helpers
 │   │   ├── token_meter.py # Token counting & cost calculation
 │   │   └── ulid_gen.py    # Unique ID generation
@@ -71,10 +73,12 @@ CyberCQBench/
 │   │   │   ├── Tables/    # Data table components
 │   │   │   └── Step*.tsx  # Experiment wizard steps
 │   │   ├── pages/         # Route Components
+│   │   │   ├── AdaptivePrompting.tsx # Adaptive prompt generation page
 │   │   │   ├── Analytics.tsx  # Cost-quality analysis page
+│   │   │   ├── BenchmarkRunner.tsx # Experiment configuration page
 │   │   │   ├── Documents.tsx  # Document management page
-│   │   │   ├── Experiments.tsx # Experiment configuration page
-│   │   │   ├── Research.tsx   # Research analysis page
+│   │   │   ├── Insights.tsx   # Research analysis page
+│   │   │   ├── Overview.tsx   # Dashboard overview page
 │   │   │   └── Results.tsx    # Results viewing page
 │   │   ├── state/         # State Management
 │   │   │   └── useFilters.ts # Global filter state
@@ -152,7 +156,8 @@ OutputBlob
 /prompts/
 ├── GET /           # List prompts with filters
 ├── GET /{id}       # Get specific prompt
-└── POST /import    # Import prompt collections
+├── POST /import    # Import prompt collections
+└── POST /adaptive/generate # Generate adaptive prompts from policy documents
 
 /runs/
 ├── POST /plan      # Plan experiment matrix
@@ -170,6 +175,9 @@ OutputBlob
 /research/
 ├── GET /prompts/filter      # Research-specific filtering
 └── GET /scenarios/stats     # Dataset statistics
+
+/validation/
+└── GET /kl-divergence      # KL divergence between adaptive and static prompts
 
 /documents/
 ├── POST /                   # Upload documents
@@ -198,6 +206,7 @@ OutputBlob
 ### External Integrations
 - **OpenAI API**: GPT models (gpt-4o, gpt-4o-mini, gpt-3.5-turbo)
 - **Anthropic API**: Claude models (claude-3-5-sonnet, claude-3-opus)
+- **Groq API**: Llama models (llama-3.1-70b-versatile, llama-3.1-8b-instant) for cost-effective adaptive prompting
 - **Token Counting**: tiktoken for accurate token measurement
 - **Cost Calculation**: Real-time AUD pricing per 1K tokens
 
@@ -231,8 +240,9 @@ Every LLM response is evaluated across:
 - **Concurrent Execution**: Configurable parallelism (1-10 concurrent runs)
 
 ### 5. Research Capabilities
-- **Adaptive Benchmarking**: Generate prompts from live documents
-- **Length Bias Analysis**: Study prompt length vs quality correlation
+- **Adaptive Benchmarking**: Generate prompts from live documents using Groq API
+- **KL Divergence Validation**: Statistical validation of adaptive vs static prompt distributions
+- **Length Bias Analysis**: Study prompt length vs quality correlation with FSP bias mitigation
 - **Scenario Comparison**: Compare performance across SOC/GRC contexts
 - **Reproducible Experiments**: Fixed seeds and versioned datasets
 
@@ -277,6 +287,7 @@ MONGO_DB=genai_bench
 # LLM API Keys
 OPENAI_API_KEY=your_openai_key
 ANTHROPIC_API_KEY=your_anthropic_key
+GROQ_API_KEY=your_groq_key
 
 # Pricing (AUD per 1K tokens)
 PRICE_INPUT.gpt4=0.03

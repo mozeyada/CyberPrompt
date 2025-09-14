@@ -5,6 +5,7 @@ import { Select } from '../components/ui/select'
 import { Textarea } from '../components/ui/textarea'
 import { Badge } from '../components/ui/badge'
 import axios from 'axios'
+// PDF parsing removed - use text input for reliable research results
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
 const API_KEY = import.meta.env.VITE_API_KEY || 'supersecret1'
@@ -16,11 +17,9 @@ interface AdaptivePromptResponse {
 }
 
 const taskTypes = [
-  { value: 'incident_response', label: 'Incident Response' },
-  { value: 'compliance_mapping', label: 'Compliance Mapping' },
-  { value: 'threat_assessment', label: 'Threat Assessment' },
-  { value: 'soc_operations', label: 'SOC Operations' },
-  { value: 'grc_reporting', label: 'GRC Reporting' }
+  { value: 'SOC_INCIDENT', label: 'SOC Incident Response' },
+  { value: 'GRC_MAPPING', label: 'GRC Compliance Mapping' },
+  { value: 'CTI_SUMMARY', label: 'CTI Threat Intelligence' }
 ]
 
 export function AdaptivePrompting() {
@@ -36,17 +35,16 @@ export function AdaptivePrompting() {
     const file = event.target.files?.[0]
     if (!file) return
 
-    if (!file.name.endsWith('.txt') && !file.name.endsWith('.pdf')) {
-      setError('Only .txt and .pdf files are supported')
-      return
-    }
-
-    try {
-      const text = await file.text()
-      setDocumentText(text)
-      setError('')
-    } catch (err) {
-      setError('Failed to read file')
+    if (file.name.endsWith('.txt')) {
+      try {
+        const text = await file.text()
+        setDocumentText(text)
+        setError('')
+      } catch (err) {
+        setError('Failed to read text file')
+      }
+    } else {
+      setError('Only .txt files supported. For PDFs, copy and paste the text below.')
     }
   }
 
@@ -100,18 +98,25 @@ export function AdaptivePrompting() {
     }
 
     try {
-      const promptsToSave = selected.map(text => ({
+      const promptsToSave = selected.map((text, index) => ({
         text,
-        scenario: taskType.includes('incident') ? 'SOC_INCIDENT' : 
-                 taskType.includes('compliance') || taskType.includes('grc') ? 'GRC_MAPPING' : 'CTI_SUMMARY',
+        scenario: taskType, // Direct scenario name (SOC_INCIDENT, GRC_MAPPING, CTI_SUMMARY)
+        category: 'Adaptive Generated',
         source: 'adaptive',
+        metadata: {
+          word_count: text.split(' ').length,
+          original_category: 'Adaptive Generated',
+          dataset_version: '1.0',
+          generation_model: model,
+          generation_date: new Date().toISOString().split('T')[0]
+        },
+        tags: [taskType.toLowerCase()],
         prompt_type: 'adaptive',
-        // Token count will be calculated by backend during import
-        // Backend will use proper tiktoken and assign correct length_bin
-        token_count: undefined, // Let backend calculate
-        length_bin: undefined, // Let backend classify
-        safety_tag: 'SAFE_DOC',
-        complexity: 3
+        dataset_version: new Date().toISOString().replace(/-/g, '').slice(0, 8), // YYYYMMDD format
+        prompt_id: `adaptive_${Date.now()}_${index + 1}`,
+        // Token count and length_bin will be calculated by backend
+        token_count: undefined,
+        length_bin: undefined
       }))
 
       await axios.post(
@@ -132,8 +137,11 @@ export function AdaptivePrompting() {
       <div>
         <h1 className="text-3xl font-bold text-gray-900">Adaptive Prompting</h1>
         <p className="mt-2 text-gray-600">
-          Generate benchmark prompts from CTI/GRC documents using AI
+          RQ2 Research: Generate adaptive prompts from SOC/GRC policies and CTI for benchmarking validation
         </p>
+        <div className="mt-2 text-sm text-blue-600">
+          📊 Research Method: Generate adaptive prompts → Compare vs CySecBench baseline using KL divergence
+        </div>
       </div>
 
       {/* Document Upload */}
@@ -142,17 +150,23 @@ export function AdaptivePrompting() {
         <div className="space-y-4">
           <Input
             type="file"
-            accept=".txt,.pdf"
+            accept=".txt"
             onChange={handleFileUpload}
-            className="file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+            className="file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibent file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
           />
+          <div className="text-sm text-gray-500">
+            📄 Upload .txt files • For PDFs: copy text and paste below
+          </div>
           <Textarea
-            placeholder="Or paste document text here..."
+            placeholder="Paste your policy document text here (NIST Framework, ISO 27001, CTI reports, etc.)..."
             value={documentText}
             onChange={(e) => setDocumentText(e.target.value)}
-            rows={6}
+            rows={8}
             className="w-full"
           />
+          <div className="text-xs text-gray-400">
+            Research tip: Use authentic policy documents (NIST, ISO 27001, threat intelligence) for valid RQ2 results
+          </div>
         </div>
       </div>
 
@@ -177,6 +191,7 @@ export function AdaptivePrompting() {
               <option value="gpt-4">GPT-4</option>
               <option value="gpt-4o">GPT-4o</option>
               <option value="claude-3-5-sonnet">Claude 3.5 Sonnet</option>
+              <option value="llama-3.3-70b">Groq Llama-3.3-70B (Cost-effective)</option>
             </Select>
           </div>
         </div>

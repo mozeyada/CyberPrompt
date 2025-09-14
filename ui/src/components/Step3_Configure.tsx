@@ -1,5 +1,7 @@
 import { useState } from 'react'
 
+import { useFilters } from '../state/useFilters'
+
 interface Step3Props {
   selectedPrompts: string[]
   selectedModels: string[]
@@ -29,8 +31,13 @@ export function Step3_Configure({
   isRunning
 }: Step3Props) {
   const [showAdvanced, setShowAdvanced] = useState(false)
-  const estimatedCost = selectedPrompts.length * selectedModels.length * experimentConfig.repeats * 0.03
-  const totalRuns = selectedPrompts.length * selectedModels.length * experimentConfig.repeats
+  const { includeVariants } = useFilters()
+  
+  // Account for length variants if enabled
+  const promptMultiplier = includeVariants ? 3 : 1 // S+M+L variants
+  const actualPromptCount = selectedPrompts.length * promptMultiplier
+  const estimatedCost = actualPromptCount * selectedModels.length * experimentConfig.repeats * 0.03
+  const totalRuns = actualPromptCount * selectedModels.length * experimentConfig.repeats
 
   return (
     <div className="space-y-6">
@@ -45,7 +52,12 @@ export function Step3_Configure({
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
           <div>
             <p className="font-medium text-blue-900">Selected Prompts</p>
-            <p className="text-blue-700">{selectedPrompts.length} security scenarios</p>
+            <p className="text-blue-700">
+              {selectedPrompts.length} security scenarios
+              {promptMultiplier > 1 && (
+                <span className="text-xs block text-blue-600">× {promptMultiplier} variants = {actualPromptCount} total</span>
+              )}
+            </p>
           </div>
           <div>
             <p className="font-medium text-blue-900">AI Models</p>
@@ -93,17 +105,30 @@ export function Step3_Configure({
         {/* Bias Controls */}
         <div>
           <h4 className="font-medium text-gray-900 mb-3">🎯 Bias Controls</h4>
-          <label className="flex items-center">
-            <input
-              type="checkbox"
-              checked={experimentConfig.fspEnabled}
-              onChange={(e) => setExperimentConfig({ fspEnabled: e.target.checked })}
-              className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-            />
-            <span className="ml-2 text-sm text-gray-700">
-              Enable Fair Scoring (prevents bias toward longer responses) - Recommended
-            </span>
-          </label>
+          <div className="space-y-2">
+            <label className="flex items-center">
+              <input
+                type="checkbox"
+                checked={experimentConfig.fspEnabled}
+                onChange={(e) => setExperimentConfig({ fspEnabled: e.target.checked })}
+                className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+              />
+              <span className="ml-2 text-sm text-gray-700">
+                Enable Fair Scoring (prevents bias toward longer responses) - Recommended
+              </span>
+            </label>
+            
+            {includeVariants && (
+              <div className="bg-yellow-50 border border-yellow-200 rounded p-3">
+                <div className="flex items-center text-yellow-800">
+                  <span className="mr-2">⚠️</span>
+                  <span className="text-sm font-medium">
+                    Length variants enabled: Each selected prompt will include S+M+L versions (×3 multiplier)
+                  </span>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Advanced Settings Accordion */}

@@ -22,10 +22,11 @@ help:
 # Development
 dev:
 	@echo "🚀 Starting CyberCQBench development environment..."
+	@if [ ! -f .env ]; then echo "⚠️  .env not found. Run: cp .env.example .env"; exit 1; fi
 	@echo "📡 Starting backend services with Docker Compose..."
 	@docker compose up -d --build
 	@echo "⏳ Waiting for services to be ready..."
-	@sleep 5
+	@sleep 10
 	@echo "✅ Backend services started!"
 	@echo "🎨 Starting frontend development server..."
 	@echo "📱 Frontend will be available at: http://localhost:3000"

@@ -107,7 +107,8 @@ export function BenchmarkRunner() {
       addLog(`Warning: ${selectedPrompts.length - validPromptIds.length} invalid prompt IDs were filtered out`, 'error')
     }
 
-    const totalRuns = validPromptIds.length * selectedModels.length * experimentConfig.repeats
+    const promptMultiplier = includeVariants ? 3 : 1 // S+M+L variants
+    const totalRuns = validPromptIds.length * promptMultiplier * selectedModels.length * experimentConfig.repeats
     
     setExecutionStatus({
       isRunning: true,

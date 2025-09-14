@@ -16,6 +16,8 @@ As organizations adopt Large Language Models (LLMs) like GPT-4, Claude, and Gemi
 - **Bias Mitigation**: Focus Sentence Prompting (FSP) for fair evaluation
 - **Length Variant Analysis**: Automatic S+M+L prompt groups for controlled length studies
 - **Academic Dataset**: 952 research-grade prompts with proper token classification (≤300, 301-800, >800)
+- **Adaptive Prompting**: Generate benchmarks from CTI/policy documents using Groq API
+- **KL Divergence Validation**: Statistical validation of adaptive vs static prompt distributions
 - **Experiment Grouping**: Track and compare experiments with metadata
 - **Export Functionality**: CSV export with full research metadata
 
@@ -49,6 +51,7 @@ As organizations adopt Large Language Models (LLMs) like GPT-4, Claude, and Gemi
 - Python 3.11+ (for local development)
 - Node.js 18+ (for frontend development)
 - OpenAI and/or Anthropic API keys
+- Groq API key (for cost-effective adaptive prompting)
 
 ### 1. Clone and Setup
 ```bash
@@ -101,6 +104,9 @@ Controlled S+M+L prompt groups (≤300, 301-800, >800 tokens) with perfect trace
 ### KL Divergence Validation
 Proper implementation validates adaptive prompts from CTI/policy documents against CySecBench baseline for RQ2 research validation.
 
+### Adaptive Prompting System
+Generate contextually relevant benchmarks from policy documents and CTI feeds using cost-effective Groq API. Maintains consistent data structure with static prompts for seamless integration.
+
 ### Streamlined UX
 Removed verbose research explanations while maintaining statistical rigor. Clean, actionable insights with essential interpretation guides.
 
@@ -140,6 +146,7 @@ Direct linking between experiment runs and LLM outputs for easy debugging and an
 - `POST /prompts/import` - Import prompt collections
 - `GET /prompts` - List prompts with scenario, length_bin, prompt_type, include_variants filters
 - `GET /prompts/{id}` - Get specific prompt
+- `POST /prompts/adaptive/generate` - Generate adaptive prompts from policy documents
 
 ### Runs  
 - `POST /runs/plan` - Plan experiment matrix
@@ -152,6 +159,9 @@ Direct linking between experiment runs and LLM outputs for easy debugging and an
 - `GET /analytics/cost_quality` - Cost vs quality scatter data
 - `GET /analytics/length_bias` - Length bias analysis
 - `GET /analytics/coverage` - Prompt coverage statistics
+
+### Validation
+- `GET /validation/kl-divergence` - KL divergence between adaptive and static prompts
 
 ### Export
 - `GET /export/runs.csv` - Export runs with full metadata
@@ -223,6 +233,7 @@ make test
   create_academic_variants.py  # Generate S+M+L prompt variants
   fix_token_counts.py         # Recalculate token classifications
 /cysecbench-data/     # Original research dataset (330 prompts)
+/uploads/             # Policy documents for adaptive prompting
 ```
 
 ## FAQ
@@ -261,6 +272,7 @@ MONGO_DB=genai_bench
 # LLM API Keys
 OPENAI_API_KEY=your_openai_key
 ANTHROPIC_API_KEY=your_anthropic_key
+GROQ_API_KEY=your_groq_key
 
 # Pricing (AUD per 1K tokens)
 PRICE_INPUT.gpt4=0.03
@@ -272,6 +284,7 @@ PRICE_OUTPUT.claude35=0.075
 ### Supported Models
 - **OpenAI**: gpt-4, gpt-4o, gpt-4o-mini, gpt-3.5-turbo
 - **Anthropic**: claude-3-5-sonnet, claude-3-opus, claude-3-haiku
+- **Groq**: llama-3.1-70b-versatile, llama-3.1-8b-instant (for adaptive prompting)
 - **Google**: gemini-2.5-flash (coming soon)
 - **Extensible**: Add new providers via LLM client adapters
 
@@ -305,7 +318,21 @@ length_bias = await analytics_service.length_bias_analysis(
 )
 ```
 
-### 3. Export Data
+### 3. Generate Adaptive Prompts
+```python
+# Generate prompts from policy documents
+adaptive_prompts = await promptsApi.generateAdaptive({
+    "policy_text": "Your SOC/GRC policy document...",
+    "model_name": "llama-3.1-70b-versatile",
+    "num_prompts": 10,
+    "scenarios": ["SOC_INCIDENT", "GRC_MAPPING"]
+})
+
+# Validate with KL divergence
+validation = await validationApi.klDivergence()
+```
+
+### 4. Export Data
 ```bash
 # Export all runs with full metadata
 curl -H "x-api-key: your_key" \

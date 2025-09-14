@@ -1,6 +1,8 @@
 services:
   api:
-    build: .
+    build: 
+      context: .
+      dockerfile: Dockerfile
     ports:
       - "8000:8000"
     environment:
@@ -10,11 +12,13 @@ services:
     env_file:
       - .env
     depends_on:
-      - mongo
+      mongo:
+        condition: service_healthy
     volumes:
-      - .:/app
+      - uploads_data:/app/uploads
     networks:
       - cybercq-network
+    restart: unless-stopped
 
   mongo:
     image: mongo:7.0
@@ -26,6 +30,12 @@ services:
       - ./docker/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
     networks:
       - cybercq-network
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
 
   mongo-express:
     image: mongo-express:latest
@@ -48,3 +58,4 @@ networks:
 
 volumes:
   mongo_data:
+  uploads_data:
