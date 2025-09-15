@@ -22,16 +22,17 @@ help:
 # Development
 dev:
 	@echo "🚀 Starting CyberCQBench development environment..."
-	@if [ ! -f .env ]; then echo "⚠️  .env not found. Run: cp .env.example .env"; exit 1; fi
+	@if [ ! -f .env ]; then echo ".env not found. Run: cp .env.example .env"; exit 1; fi
+	@command -v node >/dev/null 2>&1 || { echo "Installing Node.js..."; curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash - >/dev/null 2>&1 && sudo apt-get install -y nodejs >/dev/null 2>&1 || echo "Auto-install failed. Install Node.js from https://nodejs.org"; }
 	@echo "📡 Starting backend services with Docker Compose..."
 	@docker compose up -d --build
 	@echo "⏳ Waiting for services to be ready..."
 	@sleep 10
-	@echo "✅ Backend services started!"
-	@echo "🎨 Starting frontend development server..."
-	@echo "📱 Frontend will be available at: http://localhost:3000"
-	@echo "🔧 API will be available at: http://localhost:8000"
-	@echo "📊 MongoDB Admin at: http://localhost:8081"
+	@echo "Backend services started!"
+	@echo "Starting frontend development server..."
+	@echo "Frontend will be available at: http://localhost:3000"
+	@echo "API will be available at: http://localhost:8000"
+	@echo "MongoDB Admin at: http://localhost:8081"
 	@echo ""
 	@echo "Press Ctrl+C to stop the frontend (backend will keep running)"
 	@cd ui && npm install --silent && npm run dev
