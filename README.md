@@ -15,7 +15,7 @@ As organizations adopt Large Language Models (LLMs) like GPT-4, Claude, and Gemi
 - **7-Dimension SOC/GRC Rubric**: Technical accuracy, actionability, completeness, compliance alignment, risk awareness, relevance, clarity
 - **Bias Mitigation**: Focus Sentence Prompting (FSP) for fair evaluation
 - **Length Variant Analysis**: Automatic S+M+L prompt groups for controlled length studies
-- **Academic Dataset**: 952 research-grade prompts with proper token classification (≤300, 301-800, >800)
+- **Static Dataset**: 951 prompts auto-loaded on startup + research-grade variants with token classification (≤300, 301-800, >800)
 - **Adaptive Prompting**: Generate benchmarks from CTI/policy documents using Groq API
 - **KL Divergence Validation**: Statistical validation of adaptive vs static prompt distributions
 - **Experiment Grouping**: Track and compare experiments with metadata
@@ -71,12 +71,7 @@ make docker-up    # Start backend + database
 make dev-frontend # Start frontend dev server
 ```
 
-### 3. Seed Sample Data
-```bash
-make seed
-```
-
-### 4. Access the Application
+### 3. Access the Application (951 static prompts auto-loaded)
 - **CyberCQBench UI**: http://localhost:3000
 - **API Documentation**: http://localhost:8000/docs
 - **Database Admin**: http://localhost:8081
