@@ -23,6 +23,10 @@ async def lifespan(app: FastAPI):
     # Initialize database
     await connect_to_mongo()
 
+    # Load static prompts if database is empty
+    from .services.static_loader import load_static_prompts_if_empty
+    await load_static_prompts_if_empty()
+
     # Initialize cost calculator
     global cost_calculator
     pricing_config = settings.get_pricing()
