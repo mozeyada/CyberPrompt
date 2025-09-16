@@ -1,16 +1,27 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useMutation } from '@tanstack/react-query'
+import { useSearchParams } from 'react-router-dom'
 import { runsApi } from '../api/client'
 import { useFilters } from '../state/useFilters'
 import { Step1_Scenarios } from '../components/Step1_Scenarios'
 import { Step2_Models } from '../components/Step2_Models'
 import { Step3_Configure } from '../components/Step3_Configure'
+import { AdaptivePrompting } from './AdaptivePrompting'
 
 export function BenchmarkRunner() {
+  const [searchParams] = useSearchParams()
+  const [activeTab, setActiveTab] = useState<'standard' | 'adaptive'>('standard')
   const [currentStep, setCurrentStep] = useState(1)
   const [promptSource, setPromptSource] = useState<'static' | 'adaptive'>('static')
   const [lengthBin, setLengthBin] = useState('')
   const [researchMode, setResearchMode] = useState(false)
+
+  useEffect(() => {
+    const tab = searchParams.get('tab')
+    if (tab === 'adaptive') {
+      setActiveTab('adaptive')
+    }
+  }, [searchParams])
   
   const {
     selectedPrompts,
@@ -60,7 +71,8 @@ export function BenchmarkRunner() {
         status: result.status,
         model: result.model || 'unknown',
         cost: result.economics?.aud_cost,
-        quality: result.scores?.composite
+        quality: result.scores?.composite,
+        error: result.error
       }))
       
       const successCount = results.filter((r: any) => r.status === 'succeeded').length
@@ -75,6 +87,11 @@ export function BenchmarkRunner() {
       }))
       
       addLog(`Completed: ${successCount} successful, ${failCount} failed`, successCount > 0 ? 'success' : 'error')
+      
+      // Log specific errors for failed runs
+      results.filter(r => r.status === 'failed').forEach(result => {
+        addLog(`Failed run ${result.run_id}: ${result.error || 'Unknown error'}`, 'error')
+      })
       
       if (successCount > 0) {
         const totalCost = results.reduce((sum: number, r: any) => sum + (r.cost || 0), 0)
@@ -164,37 +181,10 @@ export function BenchmarkRunner() {
     switch (currentStep) {
       case 1:
         return (
-          <div className="space-y-6">
-            <div className="bg-white rounded-lg shadow p-6">
-              <h3 className="text-lg font-semibold mb-4">Prompt Source</h3>
-              <div className="flex gap-4">
-                <label className="flex items-center">
-                  <input
-                    type="radio"
-                    value="static"
-                    checked={promptSource === 'static'}
-                    onChange={(e) => setPromptSource(e.target.value as 'static')}
-                    className="mr-2"
-                  />
-                  Static Prompts
-                </label>
-                <label className="flex items-center">
-                  <input
-                    type="radio"
-                    value="adaptive"
-                    checked={promptSource === 'adaptive'}
-                    onChange={(e) => setPromptSource(e.target.value as 'adaptive')}
-                    className="mr-2"
-                  />
-                  Adaptive Prompts
-                </label>
-              </div>
-            </div>
-            <Step1_Scenarios
-              lengthBin={lengthBin}
-              setLengthBin={setLengthBin}
-            />
-          </div>
+          <Step1_Scenarios
+            lengthBin={lengthBin}
+            setLengthBin={setLengthBin}
+          />
         )
       case 2:
         return (
@@ -221,178 +211,250 @@ export function BenchmarkRunner() {
     }
   }
 
+  const tabs = [
+    { id: 'standard', name: 'RQ1: Standard Experiments', desc: 'Prompt length analysis', color: 'blue' },
+    { id: 'adaptive', name: 'RQ2: Adaptive Experiments', desc: 'Adaptive vs static benchmarking', color: 'green' }
+  ]
+
   return (
     <div className="space-y-6">
-      <div className="border-b border-gray-200 pb-4">
-        <h1 className="text-3xl font-bold text-gray-900">Benchmark Runner</h1>
-        <p className="mt-2 text-gray-600">
-          Compare AI models for your security operations
-        </p>
-        
-        {/* Progress Stepper */}
-        <div className="mt-6 flex items-center justify-center">
-          <div className="flex items-center space-x-4">
-            {[1, 2, 3].map((step) => (
-              <div key={step} className="flex items-center">
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
-                  step === currentStep
-                    ? 'bg-blue-600 text-white'
-                    : step < currentStep
-                    ? 'bg-green-500 text-white'
-                    : 'bg-gray-300 text-gray-600'
+      <div>
+        <h1 className="text-3xl font-bold text-gray-900">Experiments</h1>
+        <p className="text-gray-600">Run research experiments and generate adaptive prompts</p>
+      </div>
+
+      {/* Tab Navigation */}
+      <div className="bg-gradient-to-r from-blue-50 to-green-50 rounded-lg p-6">
+        <div className="flex justify-center space-x-8">
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id as 'standard' | 'adaptive')}
+              className={`px-8 py-4 rounded-lg font-semibold text-lg transition-all duration-200 ${
+                activeTab === tab.id
+                  ? (tab.color === 'blue' 
+                      ? 'bg-blue-600 text-white shadow-lg transform scale-105' 
+                      : 'bg-green-600 text-white shadow-lg transform scale-105')
+                  : (tab.color === 'blue'
+                      ? 'bg-white text-blue-600 border-2 border-blue-200 hover:border-blue-400 hover:bg-blue-50'
+                      : 'bg-white text-green-600 border-2 border-green-200 hover:border-green-400 hover:bg-green-50')
+              }`}
+            >
+              <div className="text-center">
+                <div className="font-bold">{tab.name}</div>
+                <div className={`text-sm mt-1 ${
+                  activeTab === tab.id 
+                    ? 'text-white opacity-90' 
+                    : (tab.color === 'blue' ? 'text-blue-500' : 'text-green-500')
                 }`}>
-                  {step < currentStep ? '✓' : step}
+                  {tab.desc}
                 </div>
-                {step < 3 && (
-                  <div className={`w-16 h-0.5 mx-2 ${
-                    step < currentStep ? 'bg-green-500' : 'bg-gray-300'
-                  }`}></div>
-                )}
               </div>
-            ))}
-          </div>
-        </div>
-        
-        <div className="mt-4 flex justify-center space-x-8 text-sm">
-          <span className={currentStep === 1 ? 'text-blue-600 font-medium' : 'text-gray-500'}>
-            1. Choose Scenarios
-          </span>
-          <span className={currentStep === 2 ? 'text-blue-600 font-medium' : 'text-gray-500'}>
-            2. Select Models
-          </span>
-          <span className={currentStep === 3 ? 'text-blue-600 font-medium' : 'text-gray-500'}>
-            3. Configure & Run
-          </span>
+            </button>
+          ))}
         </div>
       </div>
 
-      {/* Current Step Content */}
-      <div className="min-h-[600px]">
-        {renderCurrentStep()}
-      </div>
-
-      {/* Navigation Buttons */}
-      <div className="flex justify-between items-center pt-6 border-t border-gray-200">
-        <button
-          onClick={prevStep}
-          disabled={currentStep === 1}
-          className="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          ← Back
-        </button>
-        
-        <div className="text-sm text-gray-500">
-          Step {currentStep} of 3
-        </div>
-        
-        {currentStep < 3 ? (
-          <button
-            onClick={nextStep}
-            disabled={!canGoNext()}
-            className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            Next →
-          </button>
-        ) : (
-          <div className="w-20"></div>
-        )}
-      </div>
-
-
-
-      {/* Real-time Execution Dashboard */}
-      {(executionStatus.isRunning || executionStatus.logs.length > 0) && (
-        <div className="bg-white shadow rounded-lg p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold">Test Execution Status</h3>
-            {executionStatus.isRunning && (
-              <div className="flex items-center text-blue-600">
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 mr-2"></div>
-                Running tests...
-              </div>
-            )}
-          </div>
-          
-          {/* Progress Bar */}
-          {executionStatus.totalRuns > 0 && (
-            <div className="mb-4">
-              <div className="flex justify-between text-sm text-gray-600 mb-1">
-                <span>Progress: {executionStatus.completedRuns + executionStatus.failedRuns} / {executionStatus.totalRuns}</span>
-                <span>{Math.round(((executionStatus.completedRuns + executionStatus.failedRuns) / executionStatus.totalRuns) * 100)}%</span>
-              </div>
-              <div className="w-full bg-gray-200 rounded-full h-2">
-                <div 
-                  className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-                  style={{ width: `${((executionStatus.completedRuns + executionStatus.failedRuns) / executionStatus.totalRuns) * 100}%` }}
-                ></div>
-              </div>
-              <div className="flex justify-between text-xs text-gray-500 mt-1">
-                <span className="text-green-600">✓ {executionStatus.completedRuns} successful</span>
-                <span className="text-red-600">✗ {executionStatus.failedRuns} failed</span>
+      {/* Tab Content */}
+      {activeTab === 'standard' && (
+        <div className="space-y-6">
+          <div className="border-b border-gray-200 pb-4">
+            <div className="text-center">
+              <h2 className="text-3xl font-bold text-blue-900">RQ1: Standard Experiments</h2>
+              <p className="mt-3 text-lg text-blue-700">
+                Systematic evaluation of prompt length effects on LLM performance
+              </p>
+              <div className="mt-4 bg-blue-50 rounded-lg p-4 inline-block">
+                <div className="text-sm text-blue-600 font-medium">
+                  Research Focus: Cost-Quality Trade-offs • Length Bias Analysis • FSP Validation
+                </div>
               </div>
             </div>
-          )}
-          
-          {/* Live Logs */}
-          <div className="bg-gray-50 rounded-lg p-4 max-h-64 overflow-y-auto">
-            <h4 className="font-medium text-gray-900 mb-2">Execution Log</h4>
-            <div className="space-y-1 font-mono text-sm">
-              {executionStatus.logs.map(log => (
-                <div key={log.id} className={`flex items-start space-x-2 ${
-                  log.type === 'error' ? 'text-red-600' :
-                  log.type === 'success' ? 'text-green-600' :
-                  'text-gray-600'
-                }`}>
-                  <span className="text-gray-400 text-xs">{log.timestamp}</span>
-                  <span className={`${
-                    log.type === 'error' ? 'text-red-500' :
-                    log.type === 'success' ? 'text-green-500' :
-                    'text-blue-500'
-                  }`}>
-                    {log.type === 'error' ? '✗' : log.type === 'success' ? '✓' : 'ℹ'}
-                  </span>
-                  <span>{log.message}</span>
-                </div>
-              ))}
-              {executionStatus.logs.length === 0 && (
-                <div className="text-gray-400 text-center py-4">No logs yet...</div>
-              )}
-            </div>
-          </div>
-          
-          {/* Results Summary */}
-          {executionStatus.results.length > 0 && (
-            <div className="mt-4">
-              <h4 className="font-medium text-gray-900 mb-2">Test Results</h4>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                {executionStatus.results.map(result => (
-                  <div key={result.run_id} className={`p-3 rounded-lg border ${
-                    result.status === 'succeeded' ? 'bg-green-50 border-green-200' :
-                    result.status === 'failed' ? 'bg-red-50 border-red-200' :
-                    'bg-gray-50 border-gray-200'
-                  }`}>
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="font-medium text-sm">{result.model}</span>
-                      <span className={`text-xs px-2 py-1 rounded ${
-                        result.status === 'succeeded' ? 'bg-green-100 text-green-800' :
-                        result.status === 'failed' ? 'bg-red-100 text-red-800' :
-                        'bg-gray-100 text-gray-800'
-                      }`}>
-                        {result.status}
-                      </span>
+        
+            {/* Progress Stepper */}
+            <div className="mt-6 flex items-center justify-center">
+              <div className="flex items-center space-x-4">
+                {[1, 2, 3].map((step) => (
+                  <div key={step} className="flex items-center">
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
+                      step === currentStep
+                        ? 'bg-blue-600 text-white'
+                        : step < currentStep
+                        ? 'bg-green-500 text-white'
+                        : 'bg-gray-300 text-gray-600'
+                    }`}>
+                      {step < currentStep ? '✓' : step}
                     </div>
-                    {result.status === 'succeeded' && (
-                      <div className="text-xs text-gray-600">
-                        {result.quality && <div>Quality: {result.quality.toFixed(1)}/5.0</div>}
-                        {result.cost && <div>Cost: ${result.cost.toFixed(4)} AUD</div>}
-                      </div>
+                    {step < 3 && (
+                      <div className={`w-16 h-0.5 mx-2 ${
+                        step < currentStep ? 'bg-green-500' : 'bg-gray-300'
+                      }`}></div>
                     )}
                   </div>
                 ))}
               </div>
             </div>
+        
+            <div className="mt-4 flex justify-center space-x-8 text-sm">
+              <span className={currentStep === 1 ? 'text-blue-600 font-medium' : 'text-gray-500'}>
+                1. Choose Scenarios
+              </span>
+              <span className={currentStep === 2 ? 'text-blue-600 font-medium' : 'text-gray-500'}>
+                2. Select Models
+              </span>
+              <span className={currentStep === 3 ? 'text-blue-600 font-medium' : 'text-gray-500'}>
+                3. Configure & Run
+              </span>
+            </div>
+          </div>
+
+          {/* Current Step Content */}
+          <div className="min-h-[600px]">
+            {renderCurrentStep()}
+          </div>
+
+          {/* Navigation Buttons */}
+          <div className="flex justify-between items-center pt-6 border-t border-gray-200">
+            <button
+              onClick={prevStep}
+              disabled={currentStep === 1}
+              className="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              ← Back
+            </button>
+        
+            <div className="text-sm text-gray-500">
+              Step {currentStep} of 3
+            </div>
+        
+            {currentStep < 3 ? (
+              <button
+                onClick={nextStep}
+                disabled={!canGoNext()}
+                className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Next →
+              </button>
+            ) : (
+              <div className="w-20"></div>
+            )}
+          </div>
+
+          {/* Real-time Execution Dashboard */}
+          {(executionStatus.isRunning || executionStatus.logs.length > 0) && (
+            <div className="bg-white shadow rounded-lg p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold">Test Execution Status</h3>
+                {executionStatus.isRunning && (
+                  <div className="flex items-center text-blue-600">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 mr-2"></div>
+                    Running tests...
+                  </div>
+                )}
+              </div>
+          
+              {/* Progress Bar */}
+              {executionStatus.totalRuns > 0 && (
+                <div className="mb-4">
+                  <div className="flex justify-between text-sm text-gray-600 mb-1">
+                    <span>Progress: {executionStatus.completedRuns + executionStatus.failedRuns} / {executionStatus.totalRuns}</span>
+                    <span>{Math.round(((executionStatus.completedRuns + executionStatus.failedRuns) / executionStatus.totalRuns) * 100)}%</span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div 
+                      className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                      style={{ width: `${((executionStatus.completedRuns + executionStatus.failedRuns) / executionStatus.totalRuns) * 100}%` }}
+                    ></div>
+                  </div>
+                  <div className="flex justify-between text-xs text-gray-500 mt-1">
+                    <span className="text-green-600">✓ {executionStatus.completedRuns} successful</span>
+                    <span className="text-red-600">✗ {executionStatus.failedRuns} failed</span>
+                  </div>
+                </div>
+              )}
+          
+              {/* Live Logs */}
+              <div className="bg-gray-50 rounded-lg p-4 max-h-64 overflow-y-auto">
+                <h4 className="font-medium text-gray-900 mb-2">Execution Log</h4>
+                <div className="space-y-1 font-mono text-sm">
+                  {executionStatus.logs.map(log => (
+                    <div key={log.id} className={`flex items-start space-x-2 ${
+                      log.type === 'error' ? 'text-red-600' :
+                      log.type === 'success' ? 'text-green-600' :
+                      'text-gray-600'
+                    }`}>
+                      <span className="text-gray-400 text-xs">{log.timestamp}</span>
+                      <span className={`${
+                        log.type === 'error' ? 'text-red-500' :
+                        log.type === 'success' ? 'text-green-500' :
+                        'text-blue-500'
+                      }`}>
+                        {log.type === 'error' ? '✗' : log.type === 'success' ? '✓' : 'ℹ'}
+                      </span>
+                      <span>{log.message}</span>
+                    </div>
+                  ))}
+                  {executionStatus.logs.length === 0 && (
+                    <div className="text-gray-400 text-center py-4">No logs yet...</div>
+                  )}
+                </div>
+              </div>
+          
+              {/* Results Summary */}
+              {executionStatus.results.length > 0 && (
+                <div className="mt-4">
+                  <div className="flex items-center justify-between mb-4">
+                    <h4 className="font-medium text-gray-900">Test Results</h4>
+                    {!executionStatus.isRunning && executionStatus.completedRuns > 0 && (
+                      <a 
+                        href={`/overview?experiment=${executionStatus.results[0]?.run_id?.split('_')[0] || 'latest'}`}
+                        className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 text-sm font-medium"
+                      >
+                        View RQ1 Results →
+                      </a>
+                    )}
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                    {executionStatus.results.map(result => (
+                      <div key={result.run_id} className={`p-3 rounded-lg border ${
+                        result.status === 'succeeded' ? 'bg-green-50 border-green-200' :
+                        result.status === 'failed' ? 'bg-red-50 border-red-200' :
+                        'bg-gray-50 border-gray-200'
+                      }`}>
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="font-medium text-sm">{result.model}</span>
+                          <span className={`text-xs px-2 py-1 rounded ${
+                            result.status === 'succeeded' ? 'bg-green-100 text-green-800' :
+                            result.status === 'failed' ? 'bg-red-100 text-red-800' :
+                            'bg-gray-100 text-gray-800'
+                          }`}>
+                            {result.status}
+                          </span>
+                        </div>
+                        {result.status === 'succeeded' && (
+                          <div className="text-xs text-gray-600">
+                            {result.quality && <div>Quality: {result.quality.toFixed(1)}/5.0</div>}
+                            {result.cost && <div>Cost: ${result.cost.toFixed(4)} AUD</div>}
+                          </div>
+                        )}
+                        {result.status === 'failed' && result.error && (
+                          <div className="text-xs text-red-600 mt-1">
+                            Error: {result.error}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
           )}
         </div>
+      )}
+
+      {/* Adaptive Tab */}
+      {activeTab === 'adaptive' && (
+        <AdaptivePrompting />
       )}
     </div>
   )

@@ -257,6 +257,7 @@ class ExperimentService:
 
             return {
                 "run_id": run_id,
+                "experiment_id": run.experiment_id,
                 "status": "succeeded",
                 "tokens": tokens.model_dump(),
                 "economics": economics.model_dump(),
@@ -265,11 +266,17 @@ class ExperimentService:
 
         except Exception as e:
             logger.error(f"Error executing run {run_id}: {e}")
+            # Get run for experiment_id even on failure
+            try:
+                run = await self.run_repo.get_by_id(run_id)
+                exp_id = run.experiment_id if run else None
+            except:
+                exp_id = None
             await self.run_repo.update(run_id, {
                 "status": RunStatus.FAILED,
                 "updated_at": datetime.utcnow(),
             })
-            return {"run_id": run_id, "status": "failed", "error": str(e)}
+            return {"run_id": run_id, "experiment_id": exp_id, "status": "failed", "error": str(e)}
 
     async def execute_batch(self, run_ids: list[str], max_concurrent: int = 5) -> list[dict[str, Any]]:
         """Execute multiple runs concurrently"""

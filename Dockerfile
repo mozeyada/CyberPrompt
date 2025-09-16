@@ -12,6 +12,8 @@ RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt
 
 COPY app/ ./app/
+COPY scripts/ ./scripts/
+COPY data/ ./data/
 
 RUN mkdir -p /app/uploads && \
     useradd --create-home --uid 1000 appuser && \

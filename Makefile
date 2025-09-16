@@ -29,6 +29,8 @@ dev:
 	@echo "⏳ Waiting for services to be ready..."
 	@sleep 10
 	@echo "Backend services started!"
+	@echo "📥 Auto-importing 951 prompts..."
+	@docker compose exec api python scripts/import_cysecbench.py || echo "Import skipped (data already exists)"
 	@echo "Starting frontend development server..."
 	@echo "Frontend will be available at: http://localhost:3000"
 	@echo "API will be available at: http://localhost:8000"

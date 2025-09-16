@@ -15,7 +15,8 @@ class FSPProcessor:
     def should_use_fsp(self, text: str, length_bin: LengthBin) -> bool:
         """Determine if FSP should be used based on length"""
         # FSP is designed for longer texts to maintain length invariance
-        return length_bin in [LengthBin.L] or len(text.split()) > 200
+        # Make it more selective to reduce API calls
+        return length_bin == LengthBin.L and len(text.split()) > 400
 
     def split_into_sentences(self, text: str) -> list[dict[str, Any]]:
         """

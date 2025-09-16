@@ -67,7 +67,3 @@ uploads/
 
 # Data
 cysecbench-data/
-data/
-
-# Scripts (not needed in container)
-scripts/

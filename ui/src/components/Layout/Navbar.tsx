@@ -1,12 +1,10 @@
 import { Link, useLocation } from 'react-router-dom'
 
 const navigation = [
-  { name: 'Overview', href: '/', desc: 'System summary' },
-  { name: 'Benchmark Runner', href: '/benchmark', desc: 'Run AI comparisons' },
-  { name: 'Prompt Library', href: '/prompts', desc: 'Browse prompts' },
-  { name: 'Adaptive Prompting', href: '/adaptive', desc: 'Generate prompts' },
-  { name: 'Insights', href: '/insights', desc: 'Advanced analytics' },
-  { name: 'Results', href: '/results', desc: 'View outcomes' },
+  { name: 'Home', href: '/', desc: 'Research landing' },
+  { name: 'Experiments', href: '/benchmark', desc: 'Run experiments' },
+  { name: 'Analytics', href: '/insights', desc: 'Advanced analytics' },
+  { name: 'Data', href: '/prompts', desc: 'Prompts & results' },
   { name: 'About', href: '/about', desc: 'Research info' },
 ]
 

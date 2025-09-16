@@ -114,7 +114,7 @@ export function Step3_Configure({
                 className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
               />
               <span className="ml-2 text-sm text-gray-700">
-                Enable Fair Scoring (prevents bias toward longer responses) - Recommended
+                Enable Fair Scoring (prevents bias toward longer responses)
               </span>
             </label>
             

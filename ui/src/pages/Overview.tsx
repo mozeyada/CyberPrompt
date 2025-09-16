@@ -1,11 +1,14 @@
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
+import { useSearchParams } from 'react-router-dom'
 import { runsApi, statsApi, promptsApi } from '../api/client'
 import { Badge } from '../components/ui/badge'
 
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ScatterChart, Scatter } from 'recharts'
 
-export function Overview() {
+export function Overview({ experimentId: propExperimentId }: { experimentId?: string } = {}) {
+  const [searchParams] = useSearchParams()
+  const experimentId = propExperimentId || searchParams.get('experiment')
   const [selectedDimension, setSelectedDimension] = useState('composite')
   
   const { data: statsOverview, isLoading: statsLoading, error: statsError } = useQuery({
@@ -14,8 +17,8 @@ export function Overview() {
   })
 
   const { data: allRuns, isLoading: runsLoading, error: runsError } = useQuery({
-    queryKey: ['all-runs'],
-    queryFn: () => runsApi.list({})
+    queryKey: ['all-runs', experimentId],
+    queryFn: () => runsApi.list(experimentId ? { experiment_id: experimentId } : {})
   })
 
   const { data: allPrompts, isLoading: promptsLoading, error: promptsError } = useQuery({
@@ -170,8 +173,14 @@ export function Overview() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-bold text-gray-900">Research Overview</h1>
-        <p className="text-gray-600">Real-time benchmarking insights from working APIs</p>
+        <h1 className="text-3xl font-bold text-gray-900">
+          {experimentId ? 'RQ1 Experiment Results' : 'Research Overview'}
+        </h1>
+        <p className="text-gray-600">
+          {experimentId 
+            ? 'Results from your latest RQ1 experiment - prompt length analysis' 
+            : 'Real-time benchmarking insights from working APIs'}
+        </p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">

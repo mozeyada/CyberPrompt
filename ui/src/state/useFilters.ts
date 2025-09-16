@@ -78,7 +78,7 @@ export const useFilters = create<FilterState>((set, get) => ({
     temperature: 0.2,
     maxTokens: 800,
     seed: 42,
-    fspEnabled: true,
+    fspEnabled: false,
     experimentName: '',
   },
   setExperimentConfig: (config) => set((state) => ({
@@ -129,7 +129,7 @@ export const useFilters = create<FilterState>((set, get) => ({
       temperature: 0.2,
       maxTokens: 800,
       seed: 42,
-      fspEnabled: true,
+      fspEnabled: false,
       experimentName: '',
     },
   }),

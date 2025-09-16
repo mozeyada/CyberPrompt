@@ -77,6 +77,25 @@ make dev-frontend # Start frontend dev server
 - **Database Admin**: http://localhost:8081
 
 ### 5. Run Your First Experiment
+
+**Option A: Research Wizard Landing (Recommended)**
+1. Navigate to **Research** for guided research workflow
+2. Choose between RQ1 (prompt length) or RQ2 (adaptive benchmarking) flows
+3. Follow structured wizards with integrated results
+
+**Option B: RQ1 Research Wizard**
+1. Navigate to **RQ1 Flow** for guided prompt length analysis
+2. Follow the 4-step wizard: Introduction → Demo → Experiment → Results
+3. Automatically includes S+M+L prompt variants for controlled studies
+4. View integrated results with cost-quality analysis
+
+**Option C: RQ2 Research Wizard**
+1. Navigate to **RQ2 Flow** for adaptive benchmarking analysis
+2. Follow the 3-step wizard: Introduction → Demo → Results
+3. Compare static vs adaptive prompt effectiveness
+4. View KL divergence validation and coverage analysis
+
+**Option D: Standard Benchmarking**
 1. Navigate to **Benchmark Runner** tab
 2. Choose security scenarios and configure evaluation settings
 3. **Optional**: Enable "Include length variants" for S+M+L prompt groups
@@ -91,6 +110,9 @@ make dev-frontend # Start frontend dev server
 
 ### Research-Grade Analytics
 **Overview Page**: Real-time cost efficiency analysis with FSP indicators (circles vs diamonds) and 15-row recent runs table with length classification.
+**Research Wizard Landing**: Central hub for guided research workflows with real-time statistics.
+**RQ1 Flow Wizard**: 4-step guided research workflow for systematic prompt length analysis with integrated results display.
+**RQ2 Flow Wizard**: 3-step guided workflow for adaptive vs static benchmarking comparison with KL divergence validation.
 **Advanced Analytics Page**: Statistical significance testing with confidence intervals, p-values, and research validation for RQ1 & RQ2.
 
 ### Length Variant Analysis
@@ -219,8 +241,8 @@ make test
 
 /ui/                  # React frontend
   /src/
-    /components/      # UI components
-    /pages/           # Main pages (Overview, BenchmarkRunner, Results)
+    /components/      # UI components (ScrollToTop, RQ1Results)
+    /pages/           # Main pages (WizardLanding, RQ1Flow, RQ2Flow, Overview, BenchmarkRunner, Insights)
     /api/             # API client
     /types/           # TypeScript definitions
 

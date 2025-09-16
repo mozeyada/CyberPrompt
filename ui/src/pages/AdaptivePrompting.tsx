@@ -134,13 +134,15 @@ export function AdaptivePrompting() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900">Adaptive Prompting</h1>
-        <p className="mt-2 text-gray-600">
-          RQ2 Research: Generate adaptive prompts from SOC/GRC policies and CTI for benchmarking validation
+      <div className="text-center">
+        <h1 className="text-3xl font-bold text-green-900">RQ2: Adaptive Experiments</h1>
+        <p className="mt-3 text-lg text-green-700">
+          Generate adaptive prompts from SOC/GRC policies and CTI for benchmarking validation
         </p>
-        <div className="mt-2 text-sm text-blue-600">
-          📊 Research Method: Generate adaptive prompts → Compare vs CySecBench baseline using KL divergence
+        <div className="mt-4 bg-green-50 rounded-lg p-4 inline-block">
+          <div className="text-sm text-green-600 font-medium">
+            Research Focus: Document-Based Generation • Coverage Analysis • KL Divergence Validation
+          </div>
         </div>
       </div>
 
@@ -155,7 +157,7 @@ export function AdaptivePrompting() {
             className="file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibent file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
           />
           <div className="text-sm text-gray-500">
-            📄 Upload .txt files • For PDFs: copy text and paste below
+            Upload .txt files • For PDFs: copy text and paste below
           </div>
           <Textarea
             placeholder="Paste your policy document text here (NIST Framework, ISO 27001, CTI reports, etc.)..."
@@ -164,7 +166,7 @@ export function AdaptivePrompting() {
             rows={8}
             className="w-full"
           />
-          <div className="text-xs text-gray-400">
+          <div className="text-xs text-green-600 bg-green-50 rounded p-2">
             Research tip: Use authentic policy documents (NIST, ISO 27001, threat intelligence) for valid RQ2 results
           </div>
         </div>
