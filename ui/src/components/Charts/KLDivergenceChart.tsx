@@ -71,20 +71,48 @@ export function KLDivergenceChart() {
             : 'bg-red-100 text-red-800'
         }`}>
           {data.interpretation.overall_assessment === 'Representative' 
-            ? '✅ Adaptive prompts are representative' 
-            : '❌ Adaptive prompts drift from baseline'
+            ? 'PASS: Adaptive prompts maintain baseline distribution' 
+            : 'FAIL: Adaptive prompts deviate from baseline distribution'
           }
         </div>
         
-        <div className="mt-3 text-xs text-gray-500">
-          KL divergence: Scenarios {data.scenario_kl_divergence.toFixed(2)} | Lengths {data.length_kl_divergence.toFixed(2)}
-          <br />
-          Validates RQ2: Can adaptive benchmarking maintain coverage without bias?
+        <div className="mt-4 bg-gray-50 rounded-lg p-4">
+          <div className="text-sm font-medium text-gray-700 mb-2">Statistical Analysis (KL Divergence)</div>
+          <div className="grid grid-cols-2 gap-4 text-sm">
+            <div>
+              <span className="font-medium">Scenario Coverage:</span>
+              <span className={`ml-2 px-2 py-1 rounded text-xs ${
+                data.scenario_kl_divergence < 0.5 ? 'bg-green-100 text-green-800' :
+                data.scenario_kl_divergence < 1.0 ? 'bg-yellow-100 text-yellow-800' :
+                'bg-red-100 text-red-800'
+              }`}>
+                {data.scenario_kl_divergence.toFixed(2)}
+              </span>
+            </div>
+            <div>
+              <span className="font-medium">Length Distribution:</span>
+              <span className={`ml-2 px-2 py-1 rounded text-xs ${
+                data.length_kl_divergence < 0.5 ? 'bg-green-100 text-green-800' :
+                data.length_kl_divergence < 1.0 ? 'bg-yellow-100 text-yellow-800' :
+                'bg-red-100 text-red-800'
+              }`}>
+                {data.length_kl_divergence.toFixed(2)}
+              </span>
+            </div>
+          </div>
+          <div className="mt-3 text-xs text-gray-600">
+            <strong>Research Question 2:</strong> Can adaptive benchmarking maintain coverage without introducing bias?
+            <br />
+            <strong>Interpretation:</strong> Values &lt;0.5 = Good match, 0.5-1.0 = Acceptable, &gt;1.0 = Significant drift
+          </div>
         </div>
         
         {(data.scenario_kl_divergence > 1.0 || data.length_kl_divergence > 1.0) && (
-          <div className="mt-3 text-sm text-red-600">
-            ⚠️ Adaptive generation may need tuning to match baseline distribution
+          <div className="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+            <div className="text-sm font-medium text-yellow-800">Recommendation</div>
+            <div className="text-sm text-yellow-700 mt-1">
+              Adaptive prompt generation requires tuning to better match baseline distribution patterns
+            </div>
           </div>
         )}
       </div>
