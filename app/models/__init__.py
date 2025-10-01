@@ -20,6 +20,7 @@ class DocumentSourceType(str, Enum):
 class ScenarioType(str, Enum):
     SOC_INCIDENT = "SOC_INCIDENT"
     CTI_SUMMARY = "CTI_SUMMARY"
+    CTI_ANALYSIS = "CTI_ANALYSIS"
     GRC_MAPPING = "GRC_MAPPING"
 
 

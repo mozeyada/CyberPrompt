@@ -76,7 +76,7 @@ export function WizardLanding() {
             <Badge className="mb-2">Length Variants</Badge>
             <h3 className="font-semibold mb-2">Controlled Studies</h3>
             <p className="text-sm text-gray-600">
-              S+M+L prompt groups (≤300, 301-800, &gt;800 tokens) for systematic analysis
+              S+M+L prompt groups (268-362, 379-485, 616-721 tokens) - Tactical, Analytical, Strategic
             </p>
           </div>
           <div className="border rounded-lg p-4">

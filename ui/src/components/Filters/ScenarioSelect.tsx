@@ -2,7 +2,7 @@ import { useFilters } from '../../state/useFilters'
 
 const SCENARIOS = [
   { value: 'SOC_INCIDENT', label: 'SOC Incident Analysis' },
-  { value: 'CTI_SUMMARY', label: 'CTI Summary' },
+  { value: 'CTI_SUMMARY', label: 'CTI Threat Intelligence' },
   { value: 'GRC_MAPPING', label: 'GRC Mapping' }
 ]
 

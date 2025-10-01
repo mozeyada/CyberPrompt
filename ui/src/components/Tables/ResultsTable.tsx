@@ -5,6 +5,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '.
 import { Badge } from '../ui/badge'
 import { Button } from '../ui/button'
 import { Select } from '../ui/select'
+import { ViewResponseModal } from '../Modals/ViewResponseModal'
+import { Eye } from 'lucide-react'
 
 interface ResultsTableProps {
   experimentId?: string | null
@@ -14,6 +16,7 @@ export function ResultsTable({ experimentId }: ResultsTableProps) {
   const [page, setPage] = useState(1)
   const [sourceFilter, setSourceFilter] = useState<string>('all')
   const [isDownloading, setIsDownloading] = useState(false)
+  const [selectedRunId, setSelectedRunId] = useState<string | null>(null)
   const limit = 10
 
   const { data, isLoading, error } = useQuery({
@@ -118,6 +121,7 @@ export function ResultsTable({ experimentId }: ResultsTableProps) {
             <TableHead>Tokens</TableHead>
             <TableHead>Cost (AUD)</TableHead>
             <TableHead>Quality Score</TableHead>
+            <TableHead>Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -151,6 +155,18 @@ export function ResultsTable({ experimentId }: ResultsTableProps) {
               <TableCell>
                 {run.scores?.composite ? `${run.scores.composite.toFixed(1)}/5.0` : 'N/A'}
               </TableCell>
+              <TableCell>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setSelectedRunId(run.run_id)}
+                  className="flex items-center gap-1"
+                  disabled={run.status !== 'succeeded'}
+                >
+                  <Eye className="h-3 w-3" />
+                  View
+                </Button>
+              </TableCell>
             </TableRow>
           ))}
         </TableBody>
@@ -179,6 +195,15 @@ export function ResultsTable({ experimentId }: ResultsTableProps) {
           </Button>
         </div>
       </div>
+
+      {/* View Response Modal */}
+      {selectedRunId && (
+        <ViewResponseModal
+          runId={selectedRunId}
+          isOpen={!!selectedRunId}
+          onClose={() => setSelectedRunId(null)}
+        />
+      )}
     </div>
   )
 }

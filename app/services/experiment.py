@@ -245,7 +245,7 @@ class ExperimentService:
                 "status": RunStatus.SUCCEEDED,
                 "tokens": tokens.model_dump(),
                 "economics": economics.model_dump(),
-                "output_ref": blob_id,
+                "output_blob_id": blob_id,
                 "risk_metrics": risk_metrics.model_dump(),
                 "updated_at": datetime.utcnow(),
             }

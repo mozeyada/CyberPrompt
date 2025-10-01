@@ -4,6 +4,9 @@ import { promptsApi, runsApi } from '../api/client'
 import { Badge } from '../components/ui/badge'
 import { Select } from '../components/ui/select'
 import { Input } from '../components/ui/input'
+import { Button } from '../components/ui/button'
+import { ViewResponseModal } from '../components/Modals/ViewResponseModal'
+import { Eye } from 'lucide-react'
 
 export function PromptLibrary() {
   const [activeTab, setActiveTab] = useState<'prompts' | 'runs'>('prompts')
@@ -11,22 +14,27 @@ export function PromptLibrary() {
   const [scenarioFilter, setScenarioFilter] = useState('all')
   const [searchQuery, setSearchQuery] = useState('')
   const [page, setPage] = useState(1)
-
+  const [selectedRunId, setSelectedRunId] = useState<string | null>(null)
+  const [isDownloading, setIsDownloading] = useState(false)
+  const limit = 10
   const { data, isLoading } = useQuery({
-    queryKey: ['prompts', sourceFilter, scenarioFilter, searchQuery, page],
+    queryKey: ['prompts', sourceFilter, scenarioFilter, searchQuery],
     queryFn: () => promptsApi.list({
       ...(sourceFilter !== 'all' && { prompt_type: sourceFilter }),
       ...(scenarioFilter !== 'all' && { scenario: scenarioFilter }),
       ...(searchQuery && { q: searchQuery }),
-      page,
-      limit: 20
+      limit: 500 // Load more prompts
     }),
     enabled: activeTab === 'prompts'
   })
 
   const { data: runsData, isLoading: runsLoading } = useQuery({
-    queryKey: ['runs-detailed'],
-    queryFn: () => runsApi.list({ limit: 50 }),
+    queryKey: ['runs-detailed', page, sourceFilter],
+    queryFn: () => runsApi.list({ 
+      page, 
+      limit,
+      ...(sourceFilter !== 'all' && { source: sourceFilter })
+    }),
     enabled: activeTab === 'runs'
   })
 
@@ -34,7 +42,7 @@ export function PromptLibrary() {
 
   const tabs = [
     { id: 'prompts', name: 'Browse Prompts', desc: 'Static and adaptive prompts' },
-    { id: 'runs', name: 'Experiment Runs', desc: 'Detailed run results with export' }
+    { id: 'runs', name: 'All Results', desc: 'Complete results with response viewing' }
   ]
 
   const formatDateTime = (dateStr: string) => {
@@ -49,11 +57,54 @@ export function PromptLibrary() {
     })
   }
 
-  const getScoreBadge = (score: number) => {
-    if (score === 0) return { label: '0.0', color: 'bg-gray-100 text-gray-600' }
-    if (score < 2.0) return { label: score.toFixed(1), color: 'bg-red-100 text-red-800' }
-    if (score <= 3.5) return { label: score.toFixed(1), color: 'bg-yellow-100 text-yellow-800' }
-    return { label: score.toFixed(1), color: 'bg-green-100 text-green-800' }
+  const handleDownloadCSV = async () => {
+    const runs = runsData?.runs || []
+    if (!runs || runs.length === 0) {
+      alert('No data to export. Please run some experiments first.')
+      return
+    }
+    
+    const validRuns = runs.filter(run => run.status === 'succeeded')
+    if (validRuns.length === 0) {
+      alert('No successful runs to export. Please check your experiment results.')
+      return
+    }
+    
+    setIsDownloading(true)
+    try {
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
+      const API_KEY = import.meta.env.VITE_API_KEY || 'supersecret1'
+      
+      const params = new URLSearchParams()
+      if (sourceFilter !== 'all') {
+        params.append('source', sourceFilter)
+      }
+      params.append('export_timestamp', new Date().toISOString())
+      params.append('total_records', validRuns.length.toString())
+      
+      const response = await fetch(`${API_BASE_URL}/results/export?${params}`, {
+        headers: { 'x-api-key': API_KEY }
+      })
+      
+      if (!response.ok) throw new Error('Export failed')
+      
+      const blob = await response.blob()
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `cybercqbench_results_${new Date().toISOString().split('T')[0]}.csv`
+      document.body.appendChild(a)
+      a.click()
+      window.URL.revokeObjectURL(url)
+      document.body.removeChild(a)
+      
+      console.log(`Exported ${validRuns.length} valid runs out of ${runs.length} total runs`)
+    } catch (error) {
+      console.error('Download failed:', error)
+      alert('Download failed. Please try again.')
+    } finally {
+      setIsDownloading(false)
+    }
   }
 
   return (
@@ -174,113 +225,148 @@ export function PromptLibrary() {
         )}
       </div>
 
-      {/* Pagination */}
-      {data && data.count > 20 && (
-        <div className="flex justify-center gap-2">
-          <button
-            onClick={() => setPage(p => Math.max(1, p - 1))}
-            disabled={page === 1}
-            className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 disabled:opacity-50"
-          >
-            Previous
-          </button>
-          <span className="px-4 py-2 text-gray-600">
-            Page {page}
-          </span>
-          <button
-            onClick={() => setPage(p => p + 1)}
-            disabled={prompts.length < 20}
-            className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 disabled:opacity-50"
-          >
-            Next
-          </button>
+      {/* Show total count */}
+      {data && (
+        <div className="text-center text-gray-600 text-sm">
+          Showing {prompts.length} of {data.count} prompts
         </div>
       )}
         </div>
       )}
 
-      {/* Experiment Runs Tab */}
+      {/* All Results Tab */}
       {activeTab === 'runs' && (
         <div className="space-y-6">
           <div className="bg-white rounded-lg shadow p-6">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold">Detailed Experiment Results</h3>
-              <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 text-sm">
-                Export CSV
-              </button>
+              <div className="flex items-center gap-4">
+                <h3 className="text-lg font-semibold">All Results</h3>
+                <div className="flex items-center gap-2">
+                  <label className="text-sm font-medium text-gray-700">Source:</label>
+                  <Select value={sourceFilter} onChange={(e) => setSourceFilter(e.target.value)} className="w-32">
+                    <option value="all">All</option>
+                    <option value="static">Static</option>
+                    <option value="adaptive">Adaptive</option>
+                  </Select>
+                </div>
+              </div>
+              <Button 
+                onClick={handleDownloadCSV}
+                disabled={isDownloading}
+                variant="outline"
+                size="sm"
+              >
+                {isDownloading ? 'Downloading...' : 'Export CSV'}
+              </Button>
             </div>
             
             {runsLoading ? (
-              <div className="text-center py-8">Loading experiment runs...</div>
+              <div className="text-center py-8">Loading results...</div>
             ) : !runsData?.runs?.length ? (
               <div className="text-center py-8 text-gray-500">
-                No experiment runs found. Run some experiments first!
+                No results found. Run some experiments first!
               </div>
             ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b border-gray-200">
-                      <th className="text-left py-3 px-4 font-medium text-gray-600">Run ID</th>
-                      <th className="text-left py-3 px-4 font-medium text-gray-600">Model</th>
-                      <th className="text-left py-3 px-4 font-medium text-gray-600">Scenario</th>
-                      <th className="text-left py-3 px-4 font-medium text-gray-600">Tech Accuracy</th>
-                      <th className="text-left py-3 px-4 font-medium text-gray-600">Actionability</th>
-                      <th className="text-left py-3 px-4 font-medium text-gray-600">Completeness</th>
-                      <th className="text-left py-3 px-4 font-medium text-gray-600">Compliance</th>
-                      <th className="text-left py-3 px-4 font-medium text-gray-600">Risk Awareness</th>
-                      <th className="text-left py-3 px-4 font-medium text-gray-600">Relevance</th>
-                      <th className="text-left py-3 px-4 font-medium text-gray-600">Clarity</th>
-                      <th className="text-left py-3 px-4 font-medium text-gray-600">Composite</th>
-                      <th className="text-left py-3 px-4 font-medium text-gray-600">Cost</th>
-                      <th className="text-left py-3 px-4 font-medium text-gray-600">Date</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {runsData.runs
-                      .filter(run => run.status === 'succeeded')
-                      .slice(0, 25)
-                      .map((run, index) => {
-                        const scores = run.scores || {}
-                        const compositeBadge = getScoreBadge(scores.composite || 0)
-                        
-                        return (
-                          <tr key={run.run_id} className={index % 2 === 0 ? 'bg-gray-50' : 'bg-white'}>
-                            <td className="py-3 px-4 text-sm text-gray-900 max-w-xs truncate">
-                              {run.run_id.substring(0, 8)}...
-                            </td>
-                            <td className="py-3 px-4 text-sm font-medium text-gray-900">{run.model}</td>
-                            <td className="py-3 px-4">
-                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                {run.prompt?.scenario || 'Unknown'}
-                              </span>
-                            </td>
-                            <td className="py-3 px-4 text-sm text-center">{(scores.technical_accuracy || 0).toFixed(1)}</td>
-                            <td className="py-3 px-4 text-sm text-center">{(scores.actionability || 0).toFixed(1)}</td>
-                            <td className="py-3 px-4 text-sm text-center">{(scores.completeness || 0).toFixed(1)}</td>
-                            <td className="py-3 px-4 text-sm text-center">{(scores.compliance_alignment || 0).toFixed(1)}</td>
-                            <td className="py-3 px-4 text-sm text-center">{(scores.risk_awareness || 0).toFixed(1)}</td>
-                            <td className="py-3 px-4 text-sm text-center">{(scores.relevance || 0).toFixed(1)}</td>
-                            <td className="py-3 px-4 text-sm text-center">{(scores.clarity || 0).toFixed(1)}</td>
-                            <td className="py-3 px-4">
-                              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${compositeBadge.color}`}>
-                                {compositeBadge.label}
-                              </span>
-                            </td>
-                            <td className="py-3 px-4 text-sm text-gray-900">
-                              ${(run.economics?.aud_cost || 0).toFixed(4)}
-                            </td>
-                            <td className="py-3 px-4 text-sm text-gray-500">
-                              {formatDateTime(run.created_at)}
-                            </td>
-                          </tr>
-                        )
-                      })}
-                  </tbody>
-                </table>
-              </div>
+              <>
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b border-gray-200">
+                        <th className="text-left py-3 px-4 font-medium text-gray-600">Model</th>
+                        <th className="text-left py-3 px-4 font-medium text-gray-600">Source</th>
+                        <th className="text-left py-3 px-4 font-medium text-gray-600">Experiment</th>
+                        <th className="text-left py-3 px-4 font-medium text-gray-600">Dataset</th>
+                        <th className="text-left py-3 px-4 font-medium text-gray-600">Status</th>
+                        <th className="text-left py-3 px-4 font-medium text-gray-600">Tokens</th>
+                        <th className="text-left py-3 px-4 font-medium text-gray-600">Cost (AUD)</th>
+                        <th className="text-left py-3 px-4 font-medium text-gray-600">Quality Score</th>
+                        <th className="text-left py-3 px-4 font-medium text-gray-600">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {runsData.runs.map((run, index) => (
+                        <tr key={run.run_id} className={index % 2 === 0 ? 'bg-gray-50' : 'bg-white'}>
+                          <td className="py-3 px-4">
+                            <Badge variant="secondary">{run.model}</Badge>
+                          </td>
+                          <td className="py-3 px-4">
+                            <Badge variant={run.source === 'adaptive' ? 'default' : 'outline'}>
+                              {run.source || 'static'}
+                            </Badge>
+                          </td>
+                          <td className="py-3 px-4">
+                            <span className="text-xs text-gray-600">
+                              {run.experiment_id ? run.experiment_id.split('_').slice(-1)[0] : 'N/A'}
+                            </span>
+                          </td>
+                          <td className="py-3 px-4">
+                            <span className="text-xs text-gray-600">
+                              {run.dataset_version || 'N/A'}
+                            </span>
+                          </td>
+                          <td className="py-3 px-4">
+                            <Badge variant={run.status === 'succeeded' ? 'default' : 'destructive'}>
+                              {run.status}
+                            </Badge>
+                          </td>
+                          <td className="py-3 px-4 text-sm">{run.tokens?.total || 0}</td>
+                          <td className="py-3 px-4 text-sm">${run.economics?.aud_cost?.toFixed(4) || '0.0000'}</td>
+                          <td className="py-3 px-4 text-sm">
+                            {run.scores?.composite ? `${run.scores.composite.toFixed(1)}/5.0` : 'N/A'}
+                          </td>
+                          <td className="py-3 px-4">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => setSelectedRunId(run.run_id)}
+                              className="flex items-center gap-1"
+                              disabled={run.status !== 'succeeded'}
+                            >
+                              <Eye className="h-3 w-3" />
+                              View
+                            </Button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                
+                <div className="flex justify-between items-center mt-4">
+                  <span className="text-sm text-gray-500">
+                    Page {page} • {runsData?.count || 0} total runs
+                  </span>
+                  <div className="flex gap-2">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => setPage(p => Math.max(1, p - 1))}
+                      disabled={page === 1}
+                    >
+                      Previous
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => setPage(p => p + 1)}
+                      disabled={runsData?.runs?.length < limit}
+                    >
+                      Next
+                    </Button>
+                  </div>
+                </div>
+              </>
             )}
           </div>
+          
+          {/* View Response Modal */}
+          {selectedRunId && (
+            <ViewResponseModal
+              runId={selectedRunId}
+              isOpen={!!selectedRunId}
+              onClose={() => setSelectedRunId(null)}
+            />
+          )}
         </div>
       )}
     </div>

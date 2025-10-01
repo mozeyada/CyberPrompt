@@ -20,8 +20,9 @@ export function About() {
           <div>
             <h3 className="text-lg font-semibold text-gray-800 mb-3">Length Variant Analysis</h3>
             <p className="text-gray-600">
-              Controlled S+M+L prompt groups (≤300, 301-800, &gt;800 tokens) enable systematic 
+              Controlled S+M+L prompt groups (268-362, 379-485, 616-721 tokens) enable systematic
               studies of how prompt length affects LLM quality and cost efficiency in cybersecurity tasks.
+              Ranges reflect realistic operational workflows: Tactical (S), Analytical (M), and Strategic (L).
             </p>
           </div>
           <div>

@@ -368,18 +368,18 @@ export function RQ1Flow() {
         </p>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="bg-white rounded p-4 text-center">
-            <div className="text-2xl font-bold text-green-600">318</div>
-            <div className="text-sm text-gray-600">Short Prompts (≤300 tokens)</div>
+            <div className="text-2xl font-bold text-green-600">100</div>
+            <div className="text-sm text-gray-600">Tactical (268-362 tokens)</div>
             <Badge variant="outline" className="mt-2">S</Badge>
           </div>
           <div className="bg-white rounded p-4 text-center">
-            <div className="text-2xl font-bold text-blue-600">317</div>
-            <div className="text-sm text-gray-600">Medium Prompts (301-800 tokens)</div>
+            <div className="text-2xl font-bold text-blue-600">100</div>
+            <div className="text-sm text-gray-600">Analytical (379-485 tokens)</div>
             <Badge variant="outline" className="mt-2">M</Badge>
           </div>
           <div className="bg-white rounded p-4 text-center">
-            <div className="text-2xl font-bold text-red-600">317</div>
-            <div className="text-sm text-gray-600">Long Prompts (&gt;800 tokens)</div>
+            <div className="text-2xl font-bold text-red-600">100</div>
+            <div className="text-sm text-gray-600">Strategic (616-721 tokens)</div>
             <Badge variant="outline" className="mt-2">L</Badge>
           </div>
         </div>

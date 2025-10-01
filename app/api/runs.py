@@ -179,24 +179,45 @@ async def get_run(
     validate_api_key_header(x_api_key)
 
     try:
-        from app.db.repositories import OutputBlobRepository, RunRepository
+        from app.db.repositories import OutputBlobRepository, PromptRepository, RunRepository
 
         run_repo = RunRepository()
         blob_repo = OutputBlobRepository()
+        prompt_repo = PromptRepository()
 
         run = await run_repo.get_by_id(run_id)
         if not run:
             raise HTTPException(status_code=404, detail=f"Run with id {run_id} not found")
 
-        # Get output if available
+        # Get output if available - check both old and new field names
         output_content = None
-        if run.output_blob_id:
-            blob = await blob_repo.get_by_id(run.output_blob_id)
+        blob_id = run.output_blob_id or getattr(run, 'output_ref', None)
+        
+        logger.info(f"Debug run {run_id}: output_blob_id={run.output_blob_id}, output_ref={getattr(run, 'output_ref', None)}")
+        
+        if blob_id:
+            blob = await blob_repo.get_by_id(blob_id)
             if blob:
                 output_content = blob.content
+                logger.info(f"Debug run {run_id}: Found blob with content length {len(output_content)}")
+            else:
+                logger.warning(f"Debug run {run_id}: Blob {blob_id} not found")
+        else:
+            logger.warning(f"Debug run {run_id}: No blob_id found")
+
+        # Get prompt text if available
+        prompt_text = None
+        if run.prompt_id:
+            prompt = await prompt_repo.get_by_id(run.prompt_id)
+            if prompt:
+                prompt_text = prompt.text
+
+        # Add prompt_text to run data
+        run_data = run.model_dump()
+        run_data["prompt_text"] = prompt_text
 
         return {
-            "run": run.model_dump(),
+            "run": run_data,
             "output": output_content,
         }
     except HTTPException:

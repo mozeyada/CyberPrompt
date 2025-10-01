@@ -112,7 +112,7 @@ export const runsApi = {
     return response.data;
   },
 
-  get: async (runId: string): Promise<{ run: Run }> => {
+  get: async (runId: string): Promise<{ run: Run; output: string | null }> => {
     const response = await api.get(`/runs/${runId}`);
     return response.data;
   },
