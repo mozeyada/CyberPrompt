@@ -144,18 +144,20 @@ Fixed seeds, dataset versioning, and transparent scoring allow repeatable resear
 Direct linking between experiment runs and LLM outputs for easy debugging and analysis.
 
 ### Research-Grade Dataset
-**952 Total Prompts** structured for academic analysis:
-- **318 Original Prompts**: Base CySecBench prompts across 10 attack categories
-- **317 Medium Variants**: SOC incident context expansion (301-800 tokens)  
-- **317 Long Variants**: Comprehensive analysis framework (>800 tokens)
-- **Perfect Traceability**: Each variant linked to original via metadata
+**300 Total Prompts** (100 base × 3 length variants) structured for academic analysis:
+- **100 Base Prompts**: 50 SOC incidents, 30 GRC assessments, 20 CTI analysis
+- **3 Length Variants**: Short (250-350), Medium (350-500), Long (600-750 tokens)
+- **Perfect Traceability**: Each variant linked to base prompt via metadata
 - **Controlled Length Distribution**: Enables systematic RQ1 prompt length studies
 - **FSP Integration**: Proper sentence-based evaluation for bias-free scoring
+- **Reproducible**: Fixed seed (42) ensures identical generation across runs
 
 **Token Classification**:
-- **Short (S)**: ≤300 tokens - Concise security questions
-- **Medium (M)**: 301-800 tokens - SOC incident analysis context
-- **Long (L)**: >800 tokens - Comprehensive GRC analysis framework
+- **Short (S)**: 250-350 tokens - Tactical responses (SOC L1/L2)
+- **Medium (M)**: 350-500 tokens - Analytical plans (SOC L3/IR)
+- **Long (L)**: 600-750 tokens - Executive briefings (CISO/Board)
+
+**Dataset Generation**: See [DATASET_GENERATION.md](DATASET_GENERATION.md) for details
 
 ## API Endpoints
 
