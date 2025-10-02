@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useQuery, useMutation } from '@tanstack/react-query'
 import { Badge } from '../components/ui/badge'
-import { runsApi, statsApi } from '../api/client'
+import { runsApi, statsApi, analyticsApi } from '../api/client'
 import { useFilters } from '../state/useFilters'
 import { Step1_Scenarios } from '../components/Step1_Scenarios'
 import { Step2_Models } from '../components/Step2_Models'
@@ -48,15 +48,7 @@ export function RQ1Flow() {
     queryFn: statsApi.overview
   })
 
-  const { data: costQualityData } = useQuery({
-    queryKey: ['cost-quality'],
-    queryFn: () => analyticsApi.costQuality()
-  })
-
-  const { data: lengthBiasData } = useQuery({
-    queryKey: ['length-bias'],
-    queryFn: () => analyticsApi.lengthBias()
-  })
+  // Removed unused queries - not needed for RQ1 flow
 
   const addLog = (message: string, type: 'info' | 'success' | 'error' = 'info') => {
     const log = {
@@ -74,7 +66,54 @@ export function RQ1Flow() {
   const executeBatchMutation = useMutation({
     mutationFn: runsApi.executeBatch,
     onSuccess: (data) => {
-      const results = data.results.map((result: any) => ({
+      // Handle background execution (status: "accepted")
+      if (data.status === 'accepted') {
+        addLog(`Background execution started for ${data.total_runs} runs`, 'info')
+        addLog(`Run IDs: ${data.run_ids?.slice(0, 3).join(', ')}...`, 'info')
+        addLog('Polling for results...', 'info')
+        
+        // Poll for results
+        const pollInterval = setInterval(async () => {
+          try {
+            const runsData = await runsApi.list({ limit: data.total_runs })
+            const relevantRuns = runsData.runs.filter((r: any) => 
+              data.run_ids.includes(r.run_id)
+            )
+            
+            const completed = relevantRuns.filter((r: any) => 
+              r.status === 'succeeded' || r.status === 'failed'
+            ).length
+            
+            setExecutionStatus(prev => ({
+              ...prev,
+              completedRuns: relevantRuns.filter((r: any) => r.status === 'succeeded').length,
+              failedRuns: relevantRuns.filter((r: any) => r.status === 'failed').length
+            }))
+            
+            if (completed >= data.total_runs) {
+              clearInterval(pollInterval)
+              const successCount = relevantRuns.filter((r: any) => r.status === 'succeeded').length
+              const failCount = relevantRuns.filter((r: any) => r.status === 'failed').length
+              
+              addLog(`Completed: ${successCount} successful, ${failCount} failed`, 'success')
+              setExecutionStatus(prev => ({ ...prev, isRunning: false }))
+              
+              if (successCount > 0) {
+                setTimeout(() => setCurrentStep('results'), 2000)
+              }
+            }
+          } catch (error) {
+            console.error('Polling error:', error)
+          }
+        }, 3000) // Poll every 3 seconds
+        
+        return
+      }
+      
+      // Handle synchronous execution (results array)
+      const resultsArray = Array.isArray(data) ? data : (data.results || [])
+      
+      const results = resultsArray.map((result: any) => ({
         run_id: result.run_id,
         experiment_id: result.experiment_id,
         status: result.status,
@@ -104,12 +143,12 @@ export function RQ1Flow() {
       if (successCount > 0) {
         const totalCost = results.reduce((sum: number, r: any) => sum + (r.cost || 0), 0)
         addLog(`Total cost: $${totalCost.toFixed(4)} AUD`, 'info')
-        // Auto-advance to results after successful completion
         setTimeout(() => setCurrentStep('results'), 2000)
       }
     },
-    onError: (error) => {
-      addLog(`Experiment failed: ${error}`, 'error')
+    onError: (error: any) => {
+      const errorMsg = error?.response?.data?.detail || error?.message || String(error)
+      addLog(`Experiment failed: ${errorMsg}`, 'error')
       setExecutionStatus(prev => ({ ...prev, isRunning: false }))
     }
   })

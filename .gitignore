@@ -87,3 +87,12 @@ Thumbs.db
 *.md.backup
 **/personal_*
 **/research_notes*temp_cybersoc/
+
+# Temporary documentation (not for GitHub)
+INSIGHTS_REDESIGN.md
+INSIGHTS_REDESIGN_SUMMARY.md
+EFFICIENCY_METRIC_EXPLAINED.md
+q-dev-chat-2025-10-02.md
+test_fsp_fix.py
+test_length_invariance.py
+data/prompts_backup_old.json

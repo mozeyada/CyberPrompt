@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { Link } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { Badge } from '../components/ui/badge'
 import { analyticsApi } from '../api/client'
 import { KLDivergenceChart } from '../components/Charts/KLDivergenceChart'
@@ -8,7 +8,8 @@ import { PromptCoverageChart } from '../components/Charts/PromptCoverageChart'
 
 export function RQ2Flow() {
   const [currentStep, setCurrentStep] = useState<'intro' | 'demo' | 'results'>('intro')
-  
+  const navigate = useNavigate()
+
   const { data: coverageData } = useQuery({
     queryKey: ['coverage'],
     queryFn: () => analyticsApi.coverage()
@@ -16,10 +17,9 @@ export function RQ2Flow() {
 
   const nextStep = () => {
     if (currentStep === 'intro') setCurrentStep('demo')
-    else if (currentStep === 'demo') {
-      window.location.href = '/benchmark?tab=adaptive'
-    } else if (currentStep === 'results') {
-      window.location.href = '/overview'
+    else if (currentStep === 'demo') setCurrentStep('results')
+    else if (currentStep === 'results') {
+      navigate('/benchmark?tab=adaptive')
     }
   }
 
@@ -260,8 +260,8 @@ export function RQ2Flow() {
           className="px-6 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
         >
           {currentStep === 'intro' && 'Next →'}
-          {currentStep === 'demo' && 'Generate Prompts →'}
-          {currentStep === 'results' && 'View Results →'}
+          {currentStep === 'demo' && 'View Validation Results →'}
+          {currentStep === 'results' && 'Generate Adaptive Prompts →'}
         </button>
       </div>
     </div>

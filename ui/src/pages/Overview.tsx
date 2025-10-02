@@ -5,6 +5,7 @@ import { runsApi, statsApi, promptsApi } from '../api/client'
 import { Badge } from '../components/ui/badge'
 
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ScatterChart, Scatter } from 'recharts'
+import { CombinedLengthAnalysis } from '../components/Charts/CombinedLengthAnalysis'
 
 export function Overview({ experimentId: propExperimentId }: { experimentId?: string } = {}) {
   const [searchParams] = useSearchParams()
@@ -28,12 +29,18 @@ export function Overview({ experimentId: propExperimentId }: { experimentId?: st
 
   // Remove unused recentRuns - we use allRuns.runs.slice(0,5) instead
 
-  // Client-side aggregation
-  const totalRuns = allRuns?.runs?.length || 0
-  const avgTokenCost = statsOverview?.total_cost_aud && statsOverview?.total_runs 
-    ? (statsOverview.total_cost_aud / statsOverview.total_runs) 
+  // Client-side aggregation - use ONLY experiment runs if experimentId provided
+  const experimentRuns = experimentId 
+    ? (allRuns?.runs || [])
+    : (allRuns?.runs || [])
+  
+  const totalRuns = experimentRuns.length
+  const avgTokenCost = totalRuns > 0
+    ? experimentRuns.reduce((sum, r) => sum + (r.economics?.aud_cost || 0), 0) / totalRuns
     : 0
-  const avgScore = statsOverview?.avg_quality_overall || 0
+  const avgScore = totalRuns > 0
+    ? experimentRuns.reduce((sum, r) => sum + (r.scores?.composite || 0), 0) / totalRuns
+    : 0
   
   // Show message when no runs exist
   const hasNoRuns = totalRuns === 0
@@ -52,7 +59,7 @@ export function Overview({ experimentId: propExperimentId }: { experimentId?: st
 
 
 
-  const modelChartData = allRuns?.runs?.reduce((acc, run) => {
+  const modelChartData = experimentRuns.reduce((acc, run) => {
     const existing = acc.find(item => item.model === run.model)
     if (existing) {
       existing.count += 1
@@ -73,7 +80,7 @@ export function Overview({ experimentId: propExperimentId }: { experimentId?: st
     }
   }
 
-  const scatterData = allRuns?.runs?.map((run, index) => {
+  const scatterData = experimentRuns.map((run, index) => {
     // Use prompt_length_bin directly from run data
     const lengthBin = run.prompt_length_bin || null
     const selectedScore = selectedDimension === 'composite' 
@@ -178,9 +185,14 @@ export function Overview({ experimentId: propExperimentId }: { experimentId?: st
         </h1>
         <p className="text-gray-600">
           {experimentId 
-            ? 'Results from your latest RQ1 experiment - prompt length analysis' 
+            ? `Analysis of ${totalRuns} runs from this experiment` 
             : 'Real-time benchmarking insights from working APIs'}
         </p>
+        {experimentId && (
+          <div className="mt-2 inline-flex items-center px-3 py-1 rounded-full text-sm bg-blue-100 text-blue-800">
+            Experiment ID: {experimentId}
+          </div>
+        )}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -219,7 +231,7 @@ export function Overview({ experimentId: propExperimentId }: { experimentId?: st
                 <p className="text-2xl font-bold text-gray-900">
                   {isLoading ? '...' : `${avgScore.toFixed(1)}/5.0`}
                 </p>
-                {avgScore === 0 && !isLoading && (
+                {avgScore === 0 && totalRuns > 0 && !isLoading && (
                   <span title="Backend judge returns zero scores – scoring may be disabled" className="text-yellow-500">
                     ⚠️
                   </span>
@@ -263,30 +275,16 @@ export function Overview({ experimentId: propExperimentId }: { experimentId?: st
         </div>
       </div>
 
-      {/* Charts Section */}
-      <div className="grid grid-cols-1 gap-8">
-        {/* Model Usage */}
+      {/* RQ1 Results: Prompt Length Analysis */}
+      {experimentId && (
         <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-lg font-semibold mb-4">Model Usage</h3>
-          {isLoading ? (
-            <div className="h-64 flex items-center justify-center text-gray-400">Loading...</div>
-          ) : (
-            <ResponsiveContainer width="100%" height={250}>
-              <BarChart data={modelChartData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="model" angle={-45} textAnchor="end" height={80} />
-                <YAxis />
-                <Tooltip formatter={(value, name) => [`${value} runs`, 'Count']} />
-                <Bar dataKey="count">
-                  {modelChartData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={getModelColor(entry.model)} />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          )}
+          <h3 className="text-lg font-semibold mb-4">RQ1: Prompt Length Impact Analysis</h3>
+          <p className="text-sm text-gray-600 mb-6">
+            Cost-quality trade-offs across Short, Medium, and Long prompts from your experiment
+          </p>
+          <CombinedLengthAnalysis />
         </div>
-      </div>
+      )}
 
       {/* Chart 3: Enhanced Score vs Token Usage - Full Width */}
       <div className="bg-white rounded-lg shadow p-6">
@@ -440,10 +438,10 @@ export function Overview({ experimentId: propExperimentId }: { experimentId?: st
                 </tr>
               </thead>
               <tbody>
-                {allRuns.runs
+                {experimentRuns
                   .filter(run => run.status === 'succeeded')
                   .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-                  .slice(0, 15)
+                  .slice(0, experimentId ? 50 : 15)
                   .map((run, index) => {
                     const scoreBadge = getScoreBadge(run.scores?.composite || 0)
                     

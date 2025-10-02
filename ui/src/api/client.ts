@@ -84,6 +84,7 @@ export const runsApi = {
   executeBatch: async (params: {
     prompt_ids: string[];
     model_names: string[];
+    include_variants?: boolean;
     bias_controls?: {
       fsp: boolean;
       granularity_demo?: boolean;

@@ -3,8 +3,8 @@ import { Link, useLocation } from 'react-router-dom'
 const navigation = [
   { name: 'Home', href: '/', desc: 'Research landing' },
   { name: 'Experiments', href: '/benchmark', desc: 'Run experiments' },
-  { name: 'Analytics', href: '/insights', desc: 'Advanced analytics' },
-  { name: 'Data', href: '/prompts', desc: 'Prompts & results' },
+  { name: 'Results', href: '/insights', desc: 'Experiment results & analytics' },
+  { name: 'Data', href: '/prompts', desc: 'Prompt datasets' },
   { name: 'About', href: '/about', desc: 'Research info' },
 ]
 
