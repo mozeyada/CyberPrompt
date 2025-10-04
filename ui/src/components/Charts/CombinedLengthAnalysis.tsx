@@ -6,32 +6,61 @@ import { useFilters } from '../../state/useFilters'
 const LENGTH_COLORS = { S: '#10B981', M: '#3B82F6', L: '#F59E0B' }
 
 export function CombinedLengthAnalysis() {
-  const { selectedScenario, selectedModels } = useFilters()
+  const { selectedScenario, selectedModels, scoringMode } = useFilters()
   
   const { data: runsData, isLoading } = useQuery({
-    queryKey: ['runs-length-combined', selectedScenario, selectedModels],
+    queryKey: ['runs-length-combined', selectedScenario, selectedModels, scoringMode],
     queryFn: () => runsApi.list({ 
       limit: 200,
       ...(selectedScenario && { scenario: selectedScenario }),
-      ...(selectedModels.length > 0 && { models: selectedModels.join(',') })
+      ...(selectedModels.length > 0 && { model: selectedModels.join(',') })
     }),
     staleTime: 30000
   })
 
   if (isLoading) return <div className="flex justify-center items-center h-64">Loading...</div>
 
-  // Filters already applied in API query, just filter by status
-  const runs = runsData?.runs?.filter(r => r.status === 'succeeded' && r.scores?.composite > 0) || []
+  // Filter by scoring mode and status
+  const runs = runsData?.runs?.filter(r => {
+    if (r.status !== 'succeeded') return false
+    
+    if (scoringMode === 'ensemble') {
+      // Ensemble mode: must have ensemble_evaluation with aggregated scores
+      return r.ensemble_evaluation?.aggregated?.mean_scores?.composite && r.ensemble_evaluation.aggregated.mean_scores.composite > 0
+    } else {
+      // Single mode: must have regular scores, no ensemble
+      return r.scores?.composite && r.scores.composite > 0 && !r.ensemble_evaluation
+    }
+  }) || []
+  
   if (runs.length === 0) {
-    return <div className="text-center p-8 text-gray-500">Run S/M/L experiments to see analysis</div>
+    return (
+      <div className="text-center p-8 text-gray-500">
+        {scoringMode === 'ensemble' 
+          ? 'No ensemble evaluation data found. Run experiments with Ensemble Evaluation enabled.'
+          : 'Run S/M/L experiments to see analysis'
+        }
+      </div>
+    )
   }
 
   // Aggregate by length
   const stats = runs.reduce((acc, r) => {
-    const bin = r.prompt_length_bin as 'S' | 'M' | 'L'
-    if (!bin) return acc
+    const bin = (r as any).prompt_length_bin as 'S' | 'M' | 'L'
+    if (!bin || !r.economics?.aud_cost) return acc
+    
+    // Get quality score based on scoring mode
+    let quality = 0
+    if (scoringMode === 'ensemble' && r.ensemble_evaluation?.aggregated?.mean_scores?.composite) {
+      quality = r.ensemble_evaluation.aggregated.mean_scores.composite
+    } else if (scoringMode === 'single' && r.scores?.composite) {
+      quality = r.scores.composite
+    }
+    
+    if (quality <= 0) return acc
+    
     if (!acc[bin]) acc[bin] = { quality: 0, cost: 0, count: 0 }
-    acc[bin].quality += r.scores.composite
+    acc[bin].quality += quality
     acc[bin].cost += r.economics.aud_cost
     acc[bin].count += 1
     return acc
@@ -44,18 +73,19 @@ export function CombinedLengthAnalysis() {
       bin,
       quality: avgQuality,
       cost: avgCost,
-      // Cost per quality point (lower is better)
-      costPerQuality: avgCost / avgQuality,
-      // Relative efficiency (higher is better)
-      rawEfficiency: avgQuality / avgCost,
-      count: s.count
+      // Cost per quality point (lower is better) - guard against zero quality
+      costPerQuality: avgQuality > 0 ? avgCost / avgQuality : null,
+      // Relative efficiency (higher is better) - guard against zero cost
+      rawEfficiency: avgCost > 0 ? avgQuality / avgCost : 0,
+      count: s.count,
+      efficiency: 0 // Will be calculated below
     }
   }).sort((a, b) => ({ S: 0, M: 1, L: 2 }[a.bin] || 0) - ({ S: 0, M: 1, L: 2 }[b.bin] || 0))
 
   // Calculate relative efficiency index (0-100%)
   const maxRawEfficiency = Math.max(...data.map(d => d.rawEfficiency))
   data.forEach(d => {
-    d.efficiency = (d.rawEfficiency / maxRawEfficiency) * 100
+    d.efficiency = maxRawEfficiency > 0 ? (d.rawEfficiency / maxRawEfficiency) * 100 : 0
   })
 
   const maxEfficiency = Math.max(...data.map(d => d.efficiency))
@@ -63,6 +93,11 @@ export function CombinedLengthAnalysis() {
   // Calculate insights
   const bestLength = data.find(d => d.efficiency === maxEfficiency)
   const worstLength = data.reduce((min, d) => d.efficiency < min.efficiency ? d : min)
+  
+  if (!bestLength || data.length === 0) {
+    return <div className="text-center p-8 text-gray-500">Insufficient data for analysis</div>
+  }
+  
   const qualityDiff = ((bestLength.quality - worstLength.quality) / worstLength.quality * 100).toFixed(1)
   const costDiff = ((worstLength.cost - bestLength.cost) / bestLength.cost * 100).toFixed(1)
   const efficiencyDiff = ((bestLength.efficiency - worstLength.efficiency)).toFixed(1)
@@ -94,7 +129,19 @@ export function CombinedLengthAnalysis() {
 
       {/* PRIMARY FINDING: RQ1 Answer */}
       <div className="border border-gray-300 rounded-lg p-6 bg-white">
-        <h4 className="text-lg font-semibold mb-2 text-gray-900">Cost-Efficiency Comparison</h4>
+        <div className="flex items-center justify-between mb-2">
+          <h4 className="text-lg font-semibold text-gray-900">Cost-Efficiency Comparison</h4>
+          <div className="flex items-center gap-2">
+            <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+              scoringMode === 'ensemble' 
+                ? 'bg-purple-100 text-purple-800' 
+                : 'bg-blue-100 text-blue-800'
+            }`}>
+              Scoring: {scoringMode === 'ensemble' ? 'Ensemble' : 'Single'}
+            </span>
+            <span className="text-xs text-gray-500">n={runs.length} runs</span>
+          </div>
+        </div>
         <p className="text-sm text-gray-600 mb-4">Which prompt length gives you the best value for money?</p>
         <ResponsiveContainer width="100%" height={200}>
           <BarChart data={data} margin={{ top: 10, right: 30, left: 20, bottom: 20 }}>
@@ -109,8 +156,8 @@ export function CombinedLengthAnalysis() {
                   <p className="font-bold">{d.bin} Prompts</p>
                   <p className="text-sm">Efficiency: <strong>{d.efficiency.toFixed(1)}%</strong></p>
                   <p className="text-sm">Quality: {d.quality.toFixed(2)}/5.0</p>
-                  <p className="text-sm">Cost: ${d.cost.toFixed(4)} AUD</p>
-                  <p className="text-sm">Cost/Quality: ${d.costPerQuality.toFixed(5)}</p>
+                  <p className="text-sm">Cost: <strong>${d.cost.toFixed(4)} AUD</strong></p>
+                  <p className="text-sm">Cost/Quality: {d.costPerQuality ? `$${d.costPerQuality.toFixed(5)} AUD/point` : 'N/A'}</p>
                   <p className="text-xs text-gray-600 mt-1">n={d.count} runs</p>
                 </div>
               )
@@ -127,9 +174,9 @@ export function CombinedLengthAnalysis() {
             <thead>
               <tr className="border-b border-gray-300">
                 <th className="text-left py-2">Length</th>
-                <th className="text-left py-2">Quality</th>
-                <th className="text-left py-2">Cost/Query</th>
-                <th className="text-left py-2">Efficiency</th>
+                <th className="text-left py-2">Quality (0-5)</th>
+                <th className="text-left py-2">Cost/Query (AUD)</th>
+                <th className="text-left py-2">Efficiency (%)</th>
                 <th className="text-left py-2">Verdict</th>
               </tr>
             </thead>
@@ -138,7 +185,7 @@ export function CombinedLengthAnalysis() {
                 <tr key={d.bin} className={d.efficiency === maxEfficiency ? 'bg-green-50 font-semibold' : ''}>
                   <td className="py-2">{d.bin}</td>
                   <td className="py-2">{d.quality.toFixed(2)}/5.0</td>
-                  <td className="py-2">${d.cost.toFixed(4)}</td>
+                  <td className="py-2">${d.cost.toFixed(4)} AUD</td>
                   <td className="py-2">{d.efficiency.toFixed(1)}%</td>
                   <td className="py-2">
                     {d.efficiency === maxEfficiency && <span className="text-green-700 font-bold">✓ BEST VALUE</span>}
@@ -199,7 +246,7 @@ export function CombinedLengthAnalysis() {
             </BarChart>
           </ResponsiveContainer>
           <div className="text-xs text-gray-600 mt-2">
-            {data.map(d => <div key={d.bin}><strong>{d.bin}:</strong> {d.quality.toFixed(2)}/5.0 ({d.count} runs)</div>)}
+            {data.map(d => <div key={d.bin}><strong>{d.bin}:</strong> {d.quality.toFixed(2)}/5.0 quality ({d.count} runs)</div>)}
           </div>
         </div>
 
@@ -217,7 +264,7 @@ export function CombinedLengthAnalysis() {
             </BarChart>
           </ResponsiveContainer>
           <div className="text-xs text-gray-600 mt-2">
-            {data.map(d => <div key={d.bin}><strong>{d.bin}:</strong> ${d.cost.toFixed(4)} AUD ({d.count} runs)</div>)}
+            {data.map(d => <div key={d.bin}><strong>{d.bin}:</strong> ${d.cost.toFixed(4)} AUD per query ({d.count} runs)</div>)}
           </div>
         </div>
       </div>

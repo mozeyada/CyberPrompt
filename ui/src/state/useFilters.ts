@@ -21,6 +21,10 @@ export interface FilterState {
   selectedJudgeType: string | null;
   setSelectedJudgeType: (judgeType: string | null) => void;
   
+  // Scoring mode filter
+  scoringMode: 'ensemble' | 'single';
+  setScoringMode: (mode: 'ensemble' | 'single') => void;
+  
   // Experiment state
   selectedPrompts: string[];
   setSelectedPrompts: (prompts: string[]) => void;
@@ -66,6 +70,9 @@ export const useFilters = create<FilterState>((set, get) => ({
   
   selectedJudgeType: null,
   setSelectedJudgeType: (judgeType) => set({ selectedJudgeType: judgeType }),
+  
+  scoringMode: 'ensemble',
+  setScoringMode: (mode) => set({ scoringMode: mode }),
   
   selectedPrompts: [],
   setSelectedPrompts: (prompts) => set({ selectedPrompts: prompts }),
@@ -122,6 +129,7 @@ export const useFilters = create<FilterState>((set, get) => ({
     selectedLengthBins: [],
     selectedDimension: 'composite',
     selectedJudgeType: null,
+    scoringMode: 'ensemble',
     selectedPrompts: [],
     includeVariants: false,
     experimentConfig: {

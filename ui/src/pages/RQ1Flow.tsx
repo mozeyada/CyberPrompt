@@ -13,6 +13,7 @@ export function RQ1Flow() {
   const [experimentStep, setExperimentStep] = useState(1)
   const [lengthBin, setLengthBin] = useState('')
   const [researchMode, setResearchMode] = useState(false)
+  const [enableEnsemble, setEnableEnsemble] = useState(false)
   
   const {
     selectedPrompts,
@@ -276,6 +277,8 @@ export function RQ1Flow() {
             setExperimentConfig={setExperimentConfig}
             researchMode={researchMode}
             setResearchMode={setResearchMode}
+            enableEnsemble={enableEnsemble}
+            setEnableEnsemble={setEnableEnsemble}
             onRunExperiment={handleRunExperiment}
             isRunning={executionStatus.isRunning}
           />

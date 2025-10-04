@@ -137,6 +137,26 @@ export function Step3_Configure({
 
         {/* Advanced Settings Accordion */}
         <div className="border border-gray-200 rounded-lg">
+          {/* Ensemble Evaluation - Always Visible */}
+          <div className="px-4 pb-4 border-b border-gray-200">
+            <div>
+              <label className="flex items-center mb-3">
+                <input
+                  type="checkbox"
+                  checked={enableEnsemble}
+                  onChange={(e) => setEnableEnsemble(e.target.checked)}
+                  className="rounded border-gray-300 text-purple-600 focus:ring-purple-500"
+                />
+                <span className="ml-2 text-sm font-medium text-gray-700">
+                  🧠 Ensemble Evaluation (Multi-Judge)
+                </span>
+              </label>
+              <div className="ml-6 text-xs text-gray-500 mb-3">
+                Uses GPT-4o-mini, Claude-3.5-Sonnet, and Llama-3.1-70B for enhanced reliability
+              </div>
+            </div>
+          </div>
+
           <button
             onClick={() => setShowAdvanced(!showAdvanced)}
             className="w-full px-4 py-3 text-left flex items-center justify-between hover:bg-gray-50"
@@ -159,23 +179,6 @@ export function Step3_Configure({
                     Research/Advanced Mode
                   </span>
                 </label>
-              </div>
-
-              <div>
-                <label className="flex items-center mb-3">
-                  <input
-                    type="checkbox"
-                    checked={enableEnsemble}
-                    onChange={(e) => setEnableEnsemble(e.target.checked)}
-                    className="rounded border-gray-300 text-purple-600 focus:ring-purple-500"
-                  />
-                  <span className="ml-2 text-sm font-medium text-gray-700">
-                    🧠 Ensemble Evaluation (Multi-Judge)
-                  </span>
-                </label>
-                <div className="ml-6 text-xs text-gray-500 mb-3">
-                  Uses GPT-4o-mini, Claude-3.5-Sonnet, and Llama-3.1-70B for enhanced reliability
-                </div>
               </div>
               
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

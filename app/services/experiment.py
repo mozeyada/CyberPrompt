@@ -60,13 +60,25 @@ class ExperimentService:
                     
                 prompts.append(prompt)
                 
-                # If include_variants is True and this is an original prompt, add its variants
-                if include_variants and (not prompt.metadata or not prompt.metadata.get('variant_of')):
-                    # Find medium and long variants
+                # If include_variants is True, add the M and L variants for this prompt
+                if include_variants:
+                    # Find variants by matching the base prompt ID (remove length suffix)
+                    import re
+                    base_prompt_id = re.sub(r'_[slm]$', '', prompt_id, flags=re.IGNORECASE)
+                    
+                    # Find medium and long variants using the naming pattern
                     from app.db.connection import get_database
                     db = get_database()
+                    
+                    # Create the variant IDs based on naming pattern
+                    variant_ids = [
+                        f"{base_prompt_id}_m",  # Medium variant
+                        f"{base_prompt_id}_l"   # Long variant
+                    ]
+                    
                     variant_docs = await db.prompts.find({
-                        'metadata.variant_of': prompt_id
+                        'prompt_id': {'$in': variant_ids},
+                        'scenario': prompt.scenario  # Ensure same scenario
                     }).to_list(None)
                     
                     for variant_doc in variant_docs:
@@ -74,6 +86,7 @@ class ExperimentService:
                             from app.models import Prompt
                             variant_prompt = Prompt(**variant_doc)
                             prompts.append(variant_prompt)
+                            logger.info(f"Added variant: {variant_prompt.prompt_id} ({variant_prompt.length_bin})")
                         except Exception as e:
                             logger.warning(f"Skipping invalid variant: {e}")
                             continue
@@ -262,6 +275,7 @@ class ExperimentService:
                 "run_id": run_id,
                 "experiment_id": run.experiment_id,
                 "status": "succeeded",
+                "model": run.model,
                 "tokens": tokens.model_dump(),
                 "economics": economics.model_dump(),
                 "scores": scores,
@@ -279,7 +293,13 @@ class ExperimentService:
                 "status": RunStatus.FAILED,
                 "updated_at": datetime.utcnow(),
             })
-            return {"run_id": run_id, "experiment_id": exp_id, "status": "failed", "error": str(e)}
+            return {
+                "run_id": run_id, 
+                "experiment_id": exp_id, 
+                "status": "failed", 
+                "model": run.model if run else "unknown",
+                "error": str(e)
+            }
 
     async def execute_batch(self, run_ids: list[str], max_concurrent: int = 5) -> list[dict[str, Any]]:
         """Execute multiple runs concurrently"""
@@ -297,9 +317,17 @@ class ExperimentService:
         processed_results = []
         for i, result in enumerate(results):
             if isinstance(result, Exception):
+                # Try to get model info for failed runs
+                try:
+                    run = await self.run_repo.get_by_id(run_ids[i])
+                    model = run.model if run else "unknown"
+                except:
+                    model = "unknown"
+                    
                 processed_results.append({
                     "run_id": run_ids[i],
                     "status": "failed",
+                    "model": model,
                     "error": str(result),
                 })
             else:

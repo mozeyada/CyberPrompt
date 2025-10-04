@@ -23,7 +23,7 @@ export function ViewResponseModal({ runId, isOpen, onClose }: ViewResponseModalP
   // Debug logging
   if (data) {
     console.log('ViewResponseModal data:', data)
-    console.log('Prompt text:', data.run?.prompt_text)
+    console.log('Prompt text:', (data.run as any)?.prompt_text)
     console.log('Output:', data.output)
   }
 
@@ -92,8 +92,8 @@ export function ViewResponseModal({ runId, isOpen, onClose }: ViewResponseModalP
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-600">FSP Enabled:</span>
-                      <Badge variant={data.run.fsp_enabled ? 'default' : 'secondary'}>
-                        {data.run.fsp_enabled ? 'Yes' : 'No'}
+                      <Badge variant={(data.run as any).fsp_enabled ? 'default' : 'secondary'}>
+                        {(data.run as any).fsp_enabled ? 'Yes' : 'No'}
                       </Badge>
                     </div>
                   </div>
@@ -200,9 +200,21 @@ export function ViewResponseModal({ runId, isOpen, onClose }: ViewResponseModalP
                             $${data.run.ensemble_evaluation.primary_judge.cost_usd?.toFixed(4)}
                           </span>
                         </div>
-                        <div className="text-xs text-gray-600">
+                        <div className="text-xs text-gray-600 mb-2">
                           Composite: {data.run.ensemble_evaluation.primary_judge.scores?.composite?.toFixed(1)}
                         </div>
+                        {(data.run.ensemble_evaluation.primary_judge as any).response && (
+                          <details className="text-xs">
+                            <summary className="cursor-pointer text-blue-600 hover:text-blue-800">
+                              View Response
+                            </summary>
+                            <div className="mt-2 p-2 bg-gray-50 rounded text-xs max-h-32 overflow-y-auto">
+                              <pre className="whitespace-pre-wrap">
+                                {(data.run.ensemble_evaluation.primary_judge as any).response}
+                              </pre>
+                            </div>
+                          </details>
+                        )}
                       </div>
                     )}
 
@@ -216,9 +228,21 @@ export function ViewResponseModal({ runId, isOpen, onClose }: ViewResponseModalP
                             $${data.run.ensemble_evaluation.secondary_judge.cost_usd?.toFixed(4)}
                           </span>
                         </div>
-                        <div className="text-xs text-gray-600">
+                        <div className="text-xs text-gray-600 mb-2">
                           Composite: {data.run.ensemble_evaluation.secondary_judge.scores?.composite?.toFixed(1)}
                         </div>
+                        {(data.run.ensemble_evaluation.secondary_judge as any).response && (
+                          <details className="text-xs">
+                            <summary className="cursor-pointer text-green-600 hover:text-green-800">
+                              View Response
+                            </summary>
+                            <div className="mt-2 p-2 bg-gray-50 rounded text-xs max-h-32 overflow-y-auto">
+                              <pre className="whitespace-pre-wrap">
+                                {(data.run.ensemble_evaluation.secondary_judge as any).response}
+                              </pre>
+                            </div>
+                          </details>
+                        )}
                       </div>
                     )}
 
@@ -232,12 +256,57 @@ export function ViewResponseModal({ runId, isOpen, onClose }: ViewResponseModalP
                             $${data.run.ensemble_evaluation.tertiary_judge.cost_usd?.toFixed(4)}
                           </span>
                         </div>
-                        <div className="text-xs text-gray-600">
+                        <div className="text-xs text-gray-600 mb-2">
                           Composite: {data.run.ensemble_evaluation.tertiary_judge.scores?.composite?.toFixed(1)}
                         </div>
+                        {(data.run.ensemble_evaluation.tertiary_judge as any).response && (
+                          <details className="text-xs">
+                            <summary className="cursor-pointer text-purple-600 hover:text-purple-800">
+                              View Response
+                            </summary>
+                            <div className="mt-2 p-2 bg-gray-50 rounded text-xs max-h-32 overflow-y-auto">
+                              <pre className="whitespace-pre-wrap">
+                                {(data.run.ensemble_evaluation.tertiary_judge as any).response}
+                              </pre>
+                            </div>
+                          </details>
+                        )}
                       </div>
                     )}
                   </div>
+
+                  {/* Aggregated Scores */}
+                  {data.run.ensemble_evaluation.aggregated && (
+                    <div className="mt-4 pt-3 border-t">
+                      <h4 className="text-sm font-medium text-gray-700 mb-2">Aggregated Ensemble Scores</h4>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+                        <div className="text-center">
+                          <div className="text-lg font-semibold text-blue-600">
+                            {data.run.ensemble_evaluation.aggregated.mean_scores?.technical_accuracy?.toFixed(1) || 'N/A'}
+                          </div>
+                          <div className="text-gray-600">Technical Accuracy</div>
+                        </div>
+                        <div className="text-center">
+                          <div className="text-lg font-semibold text-green-600">
+                            {data.run.ensemble_evaluation.aggregated.mean_scores?.actionability?.toFixed(1) || 'N/A'}
+                          </div>
+                          <div className="text-gray-600">Actionability</div>
+                        </div>
+                        <div className="text-center">
+                          <div className="text-lg font-semibold text-purple-600">
+                            {data.run.ensemble_evaluation.aggregated.mean_scores?.completeness?.toFixed(1) || 'N/A'}
+                          </div>
+                          <div className="text-gray-600">Completeness</div>
+                        </div>
+                        <div className="text-center">
+                          <div className="text-xl font-bold text-gray-900">
+                            {data.run.ensemble_evaluation.aggregated.mean_scores?.composite?.toFixed(1) || 'N/A'}
+                          </div>
+                          <div className="text-gray-600 font-medium">Composite</div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
 
                   {/* Reliability Metrics */}
                   {data.run.ensemble_evaluation.reliability_metrics && (
@@ -267,7 +336,7 @@ export function ViewResponseModal({ runId, isOpen, onClose }: ViewResponseModalP
                 <h3 className="font-medium text-gray-900 mb-2">Original Prompt</h3>
                 <div className="p-4 bg-gray-100 rounded-lg text-sm">
                   <pre className="whitespace-pre-wrap font-mono text-gray-700">
-                    {data.run.prompt_text || 'Prompt text not available'}
+                    {(data.run as any).prompt_text || 'Prompt text not available'}
                   </pre>
                 </div>
               </div>
