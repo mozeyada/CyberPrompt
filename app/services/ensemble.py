@@ -148,6 +148,12 @@ class EnsembleJudgeService:
     def calculate_ensemble_metrics(self, judge_results: Dict[str, JudgeResult]) -> AggregatedScores:
         """Calculate mean, median, std, and confidence intervals"""
         
+        def safe_float(value, default=0.0):
+            """Convert numpy values to JSON-safe floats"""
+            if np.isfinite(value):
+                return float(value)
+            return default
+        
         dimensions = ["technical_accuracy", "actionability", "completeness",
                      "compliance_alignment", "risk_awareness", "relevance", "clarity"]
         
@@ -164,28 +170,28 @@ class EnsembleJudgeService:
                         scores.append(score_value)
             
             if len(scores) >= 2:  # Need at least 2 scores for meaningful aggregation
-                mean_scores[dim] = np.mean(scores)
-                std_scores[dim] = np.std(scores)
+                mean_scores[dim] = safe_float(np.mean(scores))
+                std_scores[dim] = safe_float(np.std(scores))
                 
                 # 95% confidence interval
                 ci_95[dim] = (
-                    mean_scores[dim] - 1.96 * std_scores[dim],
-                    mean_scores[dim] + 1.96 * std_scores[dim]
+                    safe_float(mean_scores[dim] - 1.96 * std_scores[dim]),
+                    safe_float(mean_scores[dim] + 1.96 * std_scores[dim])
                 )
             else:
                 # Fallback if insufficient scores
-                mean_scores[dim] = scores[0] if scores else 0
-                std_scores[dim] = 0
+                mean_scores[dim] = safe_float(scores[0] if scores else 0)
+                std_scores[dim] = 0.0
                 ci_95[dim] = (mean_scores[dim], mean_scores[dim])
         
         # Composite score aggregation
         eligible_scores = [v for v in mean_scores.values() if v > 0]
-        mean_scores["composite"] = np.mean(eligible_scores) if eligible_scores else 0
-        std_scores["composite"] = np.std(eligible_scores) if len(eligible_scores) > 1 else 0
+        mean_scores["composite"] = safe_float(np.mean(eligible_scores)) if eligible_scores else 0.0
+        std_scores["composite"] = safe_float(np.std(eligible_scores)) if len(eligible_scores) > 1 else 0.0
         
         ci_95["composite"] = (
-            mean_scores["composite"] - 1.96 * std_scores["composite"],
-            mean_scores["composite"] + 1.96 * std_scores["composite"]
+            safe_float(mean_scores["composite"] - 1.96 * std_scores["composite"]),
+            safe_float(mean_scores["composite"] + 1.96 * std_scores["composite"])
         )
         
         return AggregatedScores(
@@ -225,15 +231,25 @@ class EnsembleJudgeService:
                 if len(scores1) >= 2:
                     try:
                         corr_coef, _ = pearsonr(scores1, scores2)
-                        correlations[f"{judge1_name}_{judge2_name}"] = corr_coef
+                        # Ensure correlation is finite
+                        if np.isfinite(corr_coef):
+                            correlations[f"{judge1_name}_{judge2_name}"] = float(corr_coef)
+                        else:
+                            correlations[f"{judge1_name}_{judge2_name}"] = 0.0
                     except Exception as e:
                         logger.warning(f"Correlation calculation failed: {e}")
-                        correlations[f"{judge1_name}_{judge2_name}"] = 0
+                        correlations[f"{judge1_name}_{judge2_name}"] = 0.0
                 else:
-                    correlations[f"{judge1_name}_{judge2_name}"] = 0
+                    correlations[f"{judge1_name}_{judge2_name}"] = 0.0
         
-        # Calculate average correlation
-        avg_correlation = np.mean(list(correlations.values())) if correlations else 0
+        # Calculate average correlation with safe float conversion
+        def safe_float(value, default=0.0):
+            """Convert numpy values to JSON-safe floats"""
+            if np.isfinite(value):
+                return float(value)
+            return default
+        
+        avg_correlation = safe_float(np.mean(list(correlations.values()))) if correlations else 0.0
         
         # Determine agreement level
         if avg_correlation > 0.8:

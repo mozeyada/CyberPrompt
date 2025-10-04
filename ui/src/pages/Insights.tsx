@@ -18,7 +18,7 @@ import { Eye } from 'lucide-react'
 
 export function Insights() {
   const [selectedView, setSelectedView] = useState('rq1')
-  const { selectedScenario, selectedModels } = useFilters()
+  const { selectedScenario, selectedModels, scoringMode, setScoringMode } = useFilters()
 
   // All Runs tab state
   const [sourceFilter, setSourceFilter] = useState('all')
@@ -37,7 +37,17 @@ export function Insights() {
 
   // Calculate filtered stats with length distribution
   const statsData = React.useMemo(() => {
-    let runs = runsData?.runs?.filter(r => r.status === 'succeeded' && r.scores?.composite > 0) || []
+    let runs = runsData?.runs?.filter(r => {
+      if (r.status !== 'succeeded') return false
+      
+      if (scoringMode === 'ensemble') {
+        // Ensemble mode: must have ensemble_evaluation with aggregated scores
+        return r.ensemble_evaluation?.aggregated?.mean_scores?.composite && r.ensemble_evaluation.aggregated.mean_scores.composite > 0
+      } else {
+        // Single mode: must have regular scores, no ensemble
+        return r.scores?.composite && r.scores.composite > 0 && !r.ensemble_evaluation
+      }
+    }) || []
     
     if (selectedScenario) {
       runs = runs.filter(r => r.scenario === selectedScenario)
@@ -48,11 +58,18 @@ export function Insights() {
     }
 
     const totalRuns = runs.length
-    const avgQuality = totalRuns > 0 ? runs.reduce((sum, r) => sum + r.scores.composite, 0) / totalRuns : 0
+    const avgQuality = totalRuns > 0 ? runs.reduce((sum, r) => {
+      if (scoringMode === 'ensemble' && r.ensemble_evaluation?.aggregated?.mean_scores?.composite) {
+        return sum + r.ensemble_evaluation.aggregated.mean_scores.composite
+      } else if (scoringMode === 'single' && r.scores?.composite) {
+        return sum + r.scores.composite
+      }
+      return sum
+    }, 0) / totalRuns : 0
     
     // Count by length bin
     const lengthCounts = runs.reduce((acc, r) => {
-      const bin = r.prompt_length_bin || 'Unknown'
+      const bin = (r as any).prompt_length_bin || 'Unknown'
       acc[bin] = (acc[bin] || 0) + 1
       return acc
     }, {} as Record<string, number>)
@@ -62,7 +79,7 @@ export function Insights() {
       avg_quality_overall: avgQuality,
       length_distribution: lengthCounts
     }
-  }, [runsData, selectedScenario, selectedModels])
+  }, [runsData, selectedScenario, selectedModels, scoringMode])
 
   const { data: bestQualityData } = useQuery({
     queryKey: ['analytics-best-quality', selectedScenario],
@@ -177,11 +194,27 @@ export function Insights() {
             <ScenarioSelect />
             <ModelSelect />
             {selectedView === 'rq1' && (
-              <div className="col-span-2 bg-blue-50 border border-blue-200 rounded p-3">
-                <p className="text-xs text-blue-800">
-                  <strong>Note:</strong> RQ1 analysis compares S/M/L lengths. Length bin filter disabled for this view.
-                </p>
-              </div>
+              <>
+                <div className="col-span-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Scoring Mode</label>
+                  <select
+                    value={scoringMode}
+                    onChange={(e) => setScoringMode(e.target.value as 'ensemble' | 'single')}
+                    className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+                  >
+                    <option value="ensemble">Ensemble (Multi-Judge)</option>
+                    <option value="single">Single Judge</option>
+                  </select>
+                  <div className="text-xs text-gray-500 mt-1">
+                    {scoringMode === 'ensemble' ? '3 judges, higher reliability' : '1 judge, faster'}
+                  </div>
+                </div>
+                <div className="col-span-1 bg-blue-50 border border-blue-200 rounded p-3">
+                  <p className="text-xs text-blue-800">
+                    <strong>Note:</strong> RQ1 analysis compares S/M/L lengths. Length bin filter disabled for this view.
+                  </p>
+                </div>
+              </>
             )}
           </div>
         </div>
@@ -201,7 +234,18 @@ export function Insights() {
 
             {/* Data Summary */}
             <div className="bg-white shadow rounded-lg p-6">
-              <h3 className="text-lg font-semibold mb-4">📊 Evaluation Dataset</h3>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold">📊 Evaluation Dataset</h3>
+                <div className="flex items-center gap-2">
+                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                    scoringMode === 'ensemble' 
+                      ? 'bg-purple-100 text-purple-800' 
+                      : 'bg-blue-100 text-blue-800'
+                  }`}>
+                    {scoringMode === 'ensemble' ? 'Ensemble Scoring' : 'Single Judge Scoring'}
+                  </span>
+                </div>
+              </div>
               <div className="grid grid-cols-3 gap-4">
                 <div>
                   <div className="text-sm text-gray-600">Total Runs</div>
@@ -395,9 +439,14 @@ export function Insights() {
                               <Badge variant="secondary">{run.model}</Badge>
                             </td>
                             <td className="py-3 px-4">
-                              <Badge variant={run.source === 'adaptive' ? 'default' : 'outline'}>
-                                {run.source || 'static'}
-                              </Badge>
+                              <div className="flex flex-col gap-1">
+                                <Badge variant={run.source === 'adaptive' ? 'default' : 'outline'}>
+                                  {run.source || 'static'}
+                                </Badge>
+                                <Badge variant={run.ensemble_evaluation ? 'default' : 'secondary'} className="text-xs">
+                                  {run.ensemble_evaluation ? 'Ensemble' : 'Single'}
+                                </Badge>
+                              </div>
                             </td>
                             <td className="py-3 px-4">
                               <span className="text-xs text-gray-600">

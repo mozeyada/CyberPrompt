@@ -1,8 +1,34 @@
 from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, Literal
+import math
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_validator, model_serializer
+
+
+def safe_float_for_json(value: Any) -> Any:
+    """Convert NaN and Infinity values to None for JSON serialization"""
+    if isinstance(value, float):
+        if math.isnan(value) or math.isinf(value):
+            return None
+    return value
+
+
+class SafeBaseModel(BaseModel):
+    """Base model with safe JSON serialization for NaN/Infinity values"""
+    
+    @model_serializer
+    def serialize_model(self):
+        """Custom serializer that handles NaN and Infinity values"""
+        data = {}
+        for key, value in self.__dict__.items():
+            if isinstance(value, dict):
+                data[key] = {k: safe_float_for_json(v) for k, v in value.items()}
+            elif isinstance(value, list):
+                data[key] = [safe_float_for_json(item) for item in value]
+            else:
+                data[key] = safe_float_for_json(value)
+        return data
 
 
 class SourceType(str, Enum):
@@ -79,7 +105,7 @@ class TokenMetrics(BaseModel):
     total: int
 
 
-class EconomicsMetrics(BaseModel):
+class EconomicsMetrics(SafeBaseModel):
     aud_cost: float
     unit_price_in: float
     unit_price_out: float
@@ -98,7 +124,7 @@ class JudgeConfig(BaseModel):
     prompt_ver: str = "v2"
 
 
-class RubricScores(BaseModel):
+class RubricScores(SafeBaseModel):
     technical_accuracy: float = Field(..., ge=0, le=5)
     actionability: float = Field(..., ge=0, le=5)
     completeness: float = Field(..., ge=0, le=5)
@@ -128,20 +154,20 @@ class JudgeResult(BaseModel):
     cost_usd: float = 0.0
     fsp_used: bool = False
 
-class AggregatedScores(BaseModel):
+class AggregatedScores(SafeBaseModel):
     """Aggregated scores from ensemble evaluation"""
     mean_scores: RubricScores
     median_scores: RubricScores | None = None
     std_scores: RubricScores | None = None
     confidence_95_ci: dict[str, tuple[float, float]] = {}
 
-class ReliabilityMetrics(BaseModel):
+class ReliabilityMetrics(SafeBaseModel):
     """Inter-judge reliability metrics"""
     pearson_correlations: dict[str, float] = {}
     fleiss_kappa: float = 0.0
     inter_judge_agreement: str = "unknown"
 
-class EnsembleEvaluation(BaseModel):
+class EnsembleEvaluation(SafeBaseModel):
     """Triple-judge ensemble evaluation result"""
     evaluation_id: str = Field(default_factory=lambda: f"ensemble_{int(datetime.utcnow().timestamp())}")
     primary_judge: JudgeResult | None = None    # GPT-4o-mini
@@ -150,7 +176,7 @@ class EnsembleEvaluation(BaseModel):
     aggregated: AggregatedScores | None = None
     reliability_metrics: ReliabilityMetrics | None = None
 
-class Run(BaseModel):
+class Run(SafeBaseModel):
     run_id: str = Field(..., description="ULID identifier")
     prompt_id: str
     model: str

@@ -126,6 +126,7 @@ async def execute_batch_ensemble(
         prompt_ids = request.get("prompt_ids", [])
         model_names = request.get("model_names", [])
         ensemble_enabled = request.get("ensemble", True)
+        include_variants = request.get("include_variants", False)
         
         if not prompt_ids or not model_names:
             raise HTTPException(status_code=400, detail="prompt_ids and model_names are required")
@@ -143,7 +144,7 @@ async def execute_batch_ensemble(
             repeats=repeats,
             settings=RunSettings(
                 temperature=settings_data.get("temperature", 0.2),
-                max_output_tokens=settings_data.get("max_tokens", 800)
+                max_tokens=settings_data.get("max_tokens", 800)
             ),
             judge=JudgeConfig(type=JudgeType.LLM),
             bias_controls=BiasControls(
@@ -152,7 +153,7 @@ async def execute_batch_ensemble(
             ),
         )
         
-        run_ids = await get_experiment_service().plan_runs(plan_request)
+        run_ids = await get_experiment_service().plan_runs(plan_request, include_variants)
         
         results = []
         if ensemble_enabled:
@@ -191,19 +192,38 @@ async def execute_batch_ensemble(
                                 results.append({
                                     "run_id": run_id,
                                     "status": "succeeded",
+                                    "model": run.model,
                                     "ensemble_evaluation": ensemble_eval.model_dump(),
                                     "ensemble_enabled": True
                                 })
                             else:
-                                results.append({"run_id": run_id, "status": "failed", "error": "No output blob"})
+                                results.append({
+                                    "run_id": run_id, 
+                                    "status": "failed", 
+                                    "model": run.model if run else "unknown",
+                                    "error": "No output blob"
+                                })
                         else:
-                            results.append({"run_id": run_id, "status": "failed", "error": "No run found or output blob ID"})
+                            results.append({
+                                "run_id": run_id, 
+                                "status": "failed", 
+                                "model": run.model if run else "unknown",
+                                "error": "No run found or output blob ID"
+                            })
                     else:
+                        # For non-succeeded runs, add model info from exec_result if available
+                        if "model" not in exec_result:
+                            exec_result["model"] = run.model if run else "unknown"
                         results.append(exec_result)
                         
                 except Exception as e:
                     logger.error(f"Ensemble execution failed for run {run_id}: {e}")
-                    results.append({"run_id": run_id, "status": "failed", "error": str(e)})
+                    results.append({
+                        "run_id": run_id, 
+                        "status": "failed", 
+                        "model": run.model if run else "unknown",
+                        "error": str(e)
+                    })
         else:
             # Execute without ensemble evaluation
             results = await get_experiment_service().execute_batch(run_ids)

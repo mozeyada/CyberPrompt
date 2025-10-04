@@ -194,6 +194,7 @@ export function BenchmarkRunner() {
         prompt_ids: validPromptIds,
         model_names: selectedModels,
         ensemble: enableEnsemble,
+        include_variants: includeVariants,
         bias_controls: {
           fsp: experimentConfig.fspEnabled,
           granularity_demo: false

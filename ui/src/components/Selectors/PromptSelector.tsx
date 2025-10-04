@@ -162,15 +162,19 @@ export function PromptSelector({ selectedPrompts, onPromptsChange, scenario, len
               
               // Add variants if this prompt is selected and variants are enabled
               if (includeVariants && selectedPrompts.includes(promptId)) {
-                const variants = prompts.filter(p => p.metadata?.variant_of === promptId)
+                // Find variants by matching the base prompt ID (remove the length suffix)
+                const basePromptId = promptId.replace(/_[slm]$/i, '')
+                const variants = prompts.filter(p => {
+                  if (p.prompt_id === promptId) return false // Don't include the original
+                  const variantBaseId = p.prompt_id.replace(/_[slm]$/i, '')
+                  return variantBaseId === basePromptId && p.scenario === prompt.scenario
+                })
+                
                 console.log(`Variants for ${promptId}:`, variants.map(v => ({ id: v.prompt_id, length: v.length_bin })))
                 
-                // Remove duplicates and sort variants by length_bin to ensure consistent M, L order
-                const uniqueVariants = variants.filter((variant, index, arr) => 
-                  arr.findIndex(v => v.prompt_id === variant.prompt_id) === index
-                )
-                const sortedVariants = uniqueVariants.sort((a, b) => {
-                  const order = { 'M': 1, 'L': 2 }
+                // Sort variants by length_bin to ensure consistent S, M, L order
+                const sortedVariants = variants.sort((a, b) => {
+                  const order = { 'S': 0, 'M': 1, 'L': 2 }
                   return (order[a.length_bin] || 99) - (order[b.length_bin] || 99)
                 })
                 
@@ -190,6 +194,7 @@ export function PromptSelector({ selectedPrompts, onPromptsChange, scenario, len
                               {variant.scenario}
                             </span>
                             <span className={'text-xs px-2 py-0.5 rounded ' + (
+                              variant.length_bin === 'S' ? 'bg-green-100 text-green-800' :
                               variant.length_bin === 'M' ? 'bg-blue-100 text-blue-800' :
                               variant.length_bin === 'L' ? 'bg-red-100 text-red-800' :
                               'bg-gray-100 text-gray-800'
