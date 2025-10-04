@@ -15,7 +15,7 @@ As organizations adopt Large Language Models (LLMs) like GPT-4, Claude, and Gemi
 - **7-Dimension SOC/GRC Rubric**: Technical accuracy, actionability, completeness, compliance alignment, risk awareness, relevance, clarity
 - **Bias Mitigation**: Focus Sentence Prompting (FSP) for fair evaluation
 - **Length Variant Analysis**: Automatic S+M+L prompt groups for controlled length studies
-- **Static Dataset**: 951 prompts auto-loaded on startup + research-grade variants with token classification (≤300, 301-800, >800)
+- **Static Dataset**: 300 prompts auto-loaded on startup + research-grade variants with token classification (250-350, 350-500, 600-750)
 - **Adaptive Prompting**: Generate benchmarks from CTI/policy documents using Groq API
 - **KL Divergence Validation**: Statistical validation of adaptive vs static prompt distributions
 - **Experiment Grouping**: Track and compare experiments with metadata
@@ -71,7 +71,7 @@ make docker-up    # Start backend + database
 make dev-frontend # Start frontend dev server
 ```
 
-### 3. Access the Application (951 static prompts auto-loaded)
+### 3. Access the Application (300 static prompts auto-loaded)
 - **CyberCQBench UI**: http://localhost:3000
 - **API Documentation**: http://localhost:8000/docs
 - **Database Admin**: http://localhost:8081
@@ -116,7 +116,7 @@ make dev-frontend # Start frontend dev server
 **Advanced Analytics Page**: Statistical significance testing with confidence intervals, p-values, and research validation for RQ1 & RQ2.
 
 ### Length Variant Analysis
-Controlled S+M+L prompt groups (≤300, 301-800, >800 tokens) with perfect traceability. 952 research-grade prompts: 318 originals + 317 medium + 317 long variants.
+Controlled S+M+L prompt groups (250-350, 350-500, 600-750 tokens) with perfect traceability. 300 research-grade prompts: 100 originals + 100 medium + 100 long variants.
 
 ### KL Divergence Validation
 Proper implementation validates adaptive prompts from CTI/policy documents against CySecBench baseline for RQ2 research validation.
@@ -277,7 +277,7 @@ A: Each evaluation logs tokens, API pricing, and 7-dimension rubric scores. Dash
 A: AI adoption in SOC and GRC is exploding, but without transparent benchmarking, organizations risk overspending and failing compliance checks. CyberCQBench ensures responsible, cost-effective use with academic-grade reproducibility.
 
 **Q: What makes the dataset special?**  
-A: 952 research-grade prompts with controlled length variants (Short ≤300, Medium 301-800, Long >800 tokens) enabling systematic studies of prompt length effects on LLM performance and cost efficiency.
+A: 300 research-grade prompts with controlled length variants (Short 250-350, Medium 350-500, Long 600-750 tokens) enabling systematic studies of prompt length effects on LLM performance and cost efficiency.
 
 ## Configuration
 
@@ -381,7 +381,7 @@ MIT License - see [LICENSE](LICENSE) file for details.
 
 ## Research Impact
 
-*"CyberCQBench enables the first systematic study of prompt length effects on LLM cost-quality trade-offs in cybersecurity operations. With 952 research-grade prompts across controlled length variants, it makes cost–performance benchmarking as rigorous as penetration testing in modern SOC and compliance workflows."*
+*"CyberCQBench enables the first systematic study of prompt length effects on LLM cost-quality trade-offs in cybersecurity operations. With 300 research-grade prompts across controlled length variants, it makes cost–performance benchmarking as rigorous as penetration testing in modern SOC and compliance workflows."*
 
 ### Academic Applications
 - **RQ1**: Analyze how prompt length influences LLM output quality and cost efficiency

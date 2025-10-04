@@ -287,3 +287,51 @@ async def prompt_coverage(
     except Exception as e:
         logger.error(f"Error in prompt coverage analysis: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/ensemble")
+async def ensemble_analytics(
+    scenario: ScenarioType | None = None,
+    length_bin: LengthBin | None = None,
+    experiment_id: str | None = None,
+    x_api_key: str = Header(..., description="API key"),
+) -> dict:
+    """Ensemble evaluation analytics"""
+    validate_api_key_header(x_api_key)
+    
+    try:
+        from app.db.repositories import RunRepository
+        run_repo = RunRepository()
+        analytics_service = AnalyticsService(run_repo.db)
+        return await analytics_service.get_ensemble_analytics(
+            scenario=scenario,
+            length_bin=length_bin,
+            experiment_id=experiment_id
+        )
+        
+    except Exception as e:
+        logger.error(f"Error in ensemble analytics: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/ensemble/correlations")
+async def inter_judge_correlations(
+    scenario: ScenarioType | None = None,
+    min_evaluations: int = Query(10, ge=3),
+    x_api_key: str = Header(..., description="API key"),
+) -> dict:
+    """Inter-judge correlation analysis"""
+    validate_api_key_header(x_api_key)
+    
+    try:
+        from app.db.repositories import RunRepository
+        run_repo = RunRepository()
+        analytics_service = AnalyticsService(run_repo.db)
+        return await analytics_service.get_inter_judge_correlation(
+            scenario=scenario,
+            min_evaluations=min_evaluations
+        )
+        
+    except Exception as e:
+        logger.error(f"Error in inter-judge correlation analysis: {e}")
+        raise HTTPException(status_code=500, detail=str(e))

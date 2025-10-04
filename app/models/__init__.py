@@ -1,6 +1,6 @@
 from datetime import datetime
 from enum import Enum
-from typing import Any, Literal
+from typing import Any, Dict, Literal
 
 from pydantic import BaseModel, Field, field_validator
 
@@ -118,6 +118,38 @@ class BiasControls(BaseModel):
     granularity_demo: bool = False
 
 
+class JudgeResult(BaseModel):
+    """Result from a single judge evaluation"""
+    judge_model: str
+    scores: RubricScores
+    raw_response: str = ""
+    evaluation_time: datetime = Field(default_factory=datetime.utcnow)
+    tokens_used: int = 0
+    cost_usd: float = 0.0
+    fsp_used: bool = False
+
+class AggregatedScores(BaseModel):
+    """Aggregated scores from ensemble evaluation"""
+    mean_scores: RubricScores
+    median_scores: RubricScores | None = None
+    std_scores: RubricScores | None = None
+    confidence_95_ci: dict[str, tuple[float, float]] = {}
+
+class ReliabilityMetrics(BaseModel):
+    """Inter-judge reliability metrics"""
+    pearson_correlations: dict[str, float] = {}
+    fleiss_kappa: float = 0.0
+    inter_judge_agreement: str = "unknown"
+
+class EnsembleEvaluation(BaseModel):
+    """Triple-judge ensemble evaluation result"""
+    evaluation_id: str = Field(default_factory=lambda: f"ensemble_{int(datetime.utcnow().timestamp())}")
+    primary_judge: JudgeResult | None = None    # GPT-4o-mini
+    secondary_judge: JudgeResult | None = None  # Claude-3.5-Sonnet
+    tertiary_judge: JudgeResult | None = None   # Llama-3.1-70B
+    aggregated: AggregatedScores | None = None
+    reliability_metrics: ReliabilityMetrics | None = None
+
 class Run(BaseModel):
     run_id: str = Field(..., description="ULID identifier")
     prompt_id: str
@@ -142,6 +174,8 @@ class Run(BaseModel):
     seed: int | None = None
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
+    # NEW: Ensemble evaluation support
+    ensemble_evaluation: EnsembleEvaluation | None = None
 
     @field_validator("model_id", mode="before")
     @classmethod

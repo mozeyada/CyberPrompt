@@ -9,9 +9,9 @@ const LENGTH_BIN_COLORS = {
 }
 
 const LENGTH_BIN_LABELS = {
-  S: 'Short (268-362 tokens)',
-  M: 'Medium (379-485 tokens)',
-  L: 'Long (616-721 tokens)'
+  S: 'Short (250-350 tokens)',
+  M: 'Medium (350-500 tokens)',
+  L: 'Long (600-750 tokens)'
 }
 
 interface LengthStats {

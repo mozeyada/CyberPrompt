@@ -122,7 +122,7 @@ class ExperimentService:
             logger.error(f"Error planning runs: {e}")
             raise
 
-    async def execute_run(self, run_id: str) -> dict[str, Any]:
+    async def execute_run(self, run_id: str, use_ensemble: bool = False) -> dict[str, Any]:
         """Execute a single run"""
         try:
             # Get run details
@@ -200,44 +200,44 @@ class ExperimentService:
             )
             risk_metrics = RiskMetrics(hallucination_flags=risk_flags)
 
-            # Real LLM Judge evaluation
+            # Evaluation logic - either ensemble or single judge
             scores = None
-            if run.judge.type.value == "llm":
+            ensemble_evaluation = None
+            
+            if use_ensemble:
+                # Ensemble evaluation
                 try:
-                    # Get the appropriate LLM client for the judge model
-                    judge_model = run.judge.judge_model or "gpt-4o-mini"
-                    # Ensure we have a valid model name
-                    if not judge_model or judge_model == "":
-                        judge_model = "gpt-4o-mini"
-                    judge_client = self.model_runner._get_client(judge_model)
-
-                    judge = create_judge(run.judge.model_dump(), judge_client)
-
-                    # Standard evaluation
-                    judge_result = await judge.evaluate(
+                    from app.services.ensemble import EnsembleJudgeService
+                    ensemble_service = EnsembleJudgeService()
+                    
+                    ensemble_eval = await ensemble_service.evaluate_with_ensemble(
                         output=execution_result["response"],
                         scenario=prompt.scenario,
                         length_bin=prompt.length_bin,
                         bias_controls=run.bias_controls.model_dump(),
-                        context=prompt.text,
+                        run_id=run_id,
+                        context=prompt.text
                     )
-
-                    if "scores" in judge_result and "error" not in judge_result:
-                        scores = judge_result["scores"]
-                        # Only save scores if they're valid (not all zeros)
-                        if scores.get("composite", 0) > 0:
-                            pass  # Keep the scores
-                        else:
-                            logger.warning(f"Judge returned zero scores for run {run_id}, not saving")
-                            scores = None
+                    
+                    # Use ensemble aggregated scores
+                    if ensemble_eval.aggregated and ensemble_eval.aggregated.mean_scores:
+                        scores = ensemble_eval.aggregated.mean_scores.model_dump()
+                        ensemble_evaluation = ensemble_eval
+                        logger.info(f"Ensemble evaluation completed for run {run_id}")
                     else:
-                        logger.warning(f"Judge failed for run {run_id}: {judge_result.get('error', 'Unknown error')}")
-                        scores = None
-
+                        logger.warning(f"Ensemble evaluation failed to produce scores for run {run_id}")
+                        
                 except Exception as e:
-                    logger.error(f"Judge evaluation failed for run {run_id}: {e}")
-                    # Continue without scores rather than failing
-                    scores = None
+                    logger.error(f"Ensemble evaluation failed for run {run_id}: {e}")
+                    # Fall back to single judge
+                    scores = await self._evaluate_single_judge(
+                        execution_result["response"], prompt, run, run_id
+                    )
+            elif run.judge.type.value == "llm":
+                # Single judge evaluation (original logic)
+                scores = await self._evaluate_single_judge(
+                    execution_result["response"], prompt, run, run_id
+                )
 
             # Update run with results
             from app.models import RubricScores
@@ -252,6 +252,9 @@ class ExperimentService:
 
             if scores:
                 update_data["scores"] = RubricScores(**scores).model_dump()
+            
+            if ensemble_evaluation:
+                update_data["ensemble_evaluation"] = ensemble_evaluation.model_dump()
 
             await self.run_repo.update(run_id, update_data)
 
@@ -303,6 +306,44 @@ class ExperimentService:
                 processed_results.append(result)
 
         return processed_results
+
+    async def _evaluate_single_judge(self, response: str, prompt, run, run_id: str) -> dict:
+        """Evaluate using single judge model"""
+        try:
+            # Get the appropriate LLM client for the judge model
+            judge_model = run.judge.judge_model or "gpt-4o-mini"
+            # Ensure we have a valid model name
+            if not judge_model or judge_model == "":
+                judge_model = "gpt-4o-mini"
+            judge_client = self.model_runner._get_client(judge_model)
+
+            judge = create_judge(run.judge.model_dump(), judge_client)
+
+            # Standard evaluation
+            judge_result = await judge.evaluate(
+                output=response,
+                scenario=prompt.scenario,
+                length_bin=prompt.length_bin,
+                bias_controls=run.bias_controls.model_dump(),
+                context=prompt.text,
+            )
+
+            if "scores" in judge_result and "error" not in judge_result:
+                scores = judge_result["scores"]
+                # Only save scores if they're valid (not all zeros)
+                if scores.get("composite", 0) > 0:
+                    return scores
+                else:
+                    logger.warning(f"Judge returned zero scores for run {run_id}, not saving")
+                    return None
+            else:
+                logger.warning(f"Judge failed for run {run_id}: {judge_result.get('error', 'Unknown error')}")
+                return None
+
+        except Exception as e:
+            logger.error(f"Judge evaluation failed for run {run_id}: {e}")
+            # Continue without scores rather than failing
+            return None
 
 
 # Global service instance - initialized lazily

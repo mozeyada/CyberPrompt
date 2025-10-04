@@ -71,9 +71,9 @@ export function Overview({ experimentId: propExperimentId }: { experimentId?: st
 
   const getLengthBinColor = (lengthBin: string | null) => {
     switch (lengthBin) {
-      case 'S': return '#10B981' // green (268-362 tokens - Tactical)
-      case 'M': return '#3B82F6'  // blue (379-485 tokens - Analytical)
-      case 'L': return '#EF4444'  // red (616-721 tokens - Strategic)
+      case 'S': return '#10B981' // green (250-350 tokens - Tactical)
+      case 'M': return '#3B82F6'  // blue (350-500 tokens - Analytical)
+      case 'L': return '#EF4444'  // red (600-750 tokens - Strategic)
       case null:
       case undefined:
       default: return '#6B7280'  // gray for null/unknown

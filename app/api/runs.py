@@ -5,6 +5,8 @@ from fastapi import APIRouter, BackgroundTasks, Header, HTTPException, Query
 from app.core.security import validate_api_key_header
 from app.models import LengthBin, RunPlanRequest, RunStatus, ScenarioType
 from app.services.experiment import get_experiment_service
+from app.services.ensemble import EnsembleJudgeService
+import numpy as np
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/runs", tags=["runs"])
@@ -110,6 +112,121 @@ async def execute_batch(
         }
 
 
+@router.post("/execute/batch-ensemble")
+async def execute_batch_ensemble(
+    request: dict,
+    background_tasks: BackgroundTasks,
+    x_api_key: str = Header(..., description="API key"),
+) -> dict:
+    """Execute runs with ensemble evaluation"""
+    validate_api_key_header(x_api_key)
+    
+    try:
+        # Extract configuration
+        prompt_ids = request.get("prompt_ids", [])
+        model_names = request.get("model_names", [])
+        ensemble_enabled = request.get("ensemble", True)
+        
+        if not prompt_ids or not model_names:
+            raise HTTPException(status_code=400, detail="prompt_ids and model_names are required")
+        
+        # Plan runs as normal
+        from app.models import BiasControls, JudgeConfig, JudgeType, RunPlanRequest, RunSettings
+        
+        bias_controls_data = request.get("bias_controls", {})
+        settings_data = request.get("settings", {})
+        repeats = request.get("repeats", 1)
+        
+        plan_request = RunPlanRequest(
+            prompts=prompt_ids,
+            models=model_names,
+            repeats=repeats,
+            settings=RunSettings(
+                temperature=settings_data.get("temperature", 0.2),
+                max_output_tokens=settings_data.get("max_tokens", 800)
+            ),
+            judge=JudgeConfig(type=JudgeType.LLM),
+            bias_controls=BiasControls(
+                fsp=bias_controls_data.get("fsp", True),
+                granularity_demo=bias_controls_data.get("granularity_demo", False)
+            ),
+        )
+        
+        run_ids = await get_experiment_service().plan_runs(plan_request)
+        
+        results = []
+        if ensemble_enabled:
+            ensemble_service = EnsembleJudgeService()
+            
+            # Execute each run and apply ensemble evaluation
+            for run_id in run_ids:
+                try:
+                    # Execute the run first
+                    exec_result = await get_experiment_service().execute_run(run_id)
+                    
+                    if exec_result.get("status") == "succeeded":
+                        # Now add ensemble evaluation
+                        from app.db.repositories import RunRepository, OutputBlobRepository
+                        run_repo = RunRepository()
+                        run = await run_repo.get_by_id(run_id)
+                        
+                        if run and run.output_blob_id:
+                            blob_repo = OutputBlobRepository()
+                            output_blob = await blob_repo.get_by_id(run.output_blob_id)
+                            
+                            if output_blob:
+                                ensemble_eval = await ensemble_service.evaluate_with_ensemble(
+                                    output=output_blob.content,
+                                    scenario=run.scenario,
+                                    length_bin=run.prompt_length_bin,
+                                    bias_controls=run.bias_controls.model_dump(),
+                                    run_id=run_id
+                                )
+                                
+                                # Update run with ensemble results
+                                await run_repo.update(run_id, {
+                                    "ensemble_evaluation": ensemble_eval.model_dump()
+                                })
+                                
+                                results.append({
+                                    "run_id": run_id,
+                                    "status": "succeeded",
+                                    "ensemble_evaluation": ensemble_eval.model_dump(),
+                                    "ensemble_enabled": True
+                                })
+                            else:
+                                results.append({"run_id": run_id, "status": "failed", "error": "No output blob"})
+                        else:
+                            results.append({"run_id": run_id, "status": "failed", "error": "No run found or output blob ID"})
+                    else:
+                        results.append(exec_result)
+                        
+                except Exception as e:
+                    logger.error(f"Ensemble execution failed for run {run_id}: {e}")
+                    results.append({"run_id": run_id, "status": "failed", "error": str(e)})
+        else:
+            # Execute without ensemble evaluation
+            results = await get_experiment_service().execute_batch(run_ids)
+        
+        success_count = sum(1 for r in results if r.get("status") == "succeeded")
+        failed_count = len(results) - success_count
+        
+        return {
+            "message": f"Executed {len(run_ids)} runs with ensemble evaluation",
+            "results": results,
+            "ensemble_enabled": ensemble_enabled,
+            "summary": {
+                "total": len(results),
+                "succeeded": success_count,
+                "failed": failed_count,
+            }
+        }
+        
+    except Exception as e:
+        logger.error(f"Error executing batch ensemble: {e}")
+        raise HTTPException(status_code=400, detail=str(e))
+
+
 @router.post("/execute/{run_id}")
 async def execute_run(
     run_id: str,
@@ -167,6 +284,94 @@ async def list_experiments(
         }
     except Exception as e:
         logger.error(f"Error listing experiments: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/experiments/{experiment_id}/ensemble-evaluate")
+async def add_ensemble_to_existing_runs(
+    experiment_id: str,
+    x_api_key: str = Header(..., description="API key")
+) -> dict:
+    """Add ensemble evaluation to existing runs in an experiment"""
+    validate_api_key_header(x_api_key)
+    
+    try:
+        # Get experiment service
+        exp_service = get_experiment_service()
+        ensemble_service = EnsembleJudgeService()
+        
+        # Get existing runs from experiment
+        from app.db.repositories import RunRepository
+        run_repo = RunRepository()
+        runs = await run_repo.get_runs_by_experiment(experiment_id)
+        
+        if not runs:
+            raise HTTPException(status_code=404, detail=f"No runs found for experiment {experiment_id}")
+        
+        results = []
+        successful = 0
+        failed = 0
+        
+        for run in runs:
+            try:
+                if run.output_blob_id:
+                    # Get output content
+                    from app.db.repositories import OutputBlobRepository
+                    blob_repo = OutputBlobRepository()
+                    output_blob = await blob_repo.get_by_id(run.output_blob_id)
+                    if output_blob:
+                        # Perform ensemble evaluation
+                        ensemble_eval = await ensemble_service.evaluate_with_ensemble(
+                            output=output_blob.content,
+                            scenario=run.scenario,
+                            length_bin=run.prompt_length_bin,
+                            bias_controls=run.bias_controls.model_dump(),
+                            run_id=run.run_id
+                        )
+                        
+                        # Update run with ensemble results
+                        await run_repo.update(run.run_id, {
+                            "ensemble_evaluation": ensemble_eval.model_dump()
+                        })
+                        
+                        # Extract correlation data
+                        avg_correlation = 0
+                        if ensemble_eval.reliability_metrics and ensemble_eval.reliability_metrics.pearson_correlations:
+                            correlations = list(ensemble_eval.reliability_metrics.pearson_correlations.values())
+                            avg_correlation = np.mean(correlations) if correlations else 0
+                        
+                        results.append({
+                            "run_id": run.run_id,
+                            "ensemble_scores": ensemble_eval.aggregated.mean_scores.model_dump(),
+                            "reliability": ensemble_eval.reliability_metrics.inter_judge_agreement if ensemble_eval.reliability_metrics else "unknown",
+                            "avg_correlation": avg_correlation
+                        })
+                        successful += 1
+                    else:
+                        logger.warning(f"No output blob found for run {run.run_id}")
+                        failed += 1
+                else:
+                    logger.warning(f"No output blob ID for run {run.run_id}")
+                    failed += 1
+                    
+            except Exception as e:
+                logger.error(f"Ensemble evaluation failed for run {run.run_id}: {e}")
+                results.append({"run_id": run.run_id, "error": str(e)})
+                failed += 1
+        
+        return {
+            "message": f"Ensemble evaluation completed for {successful} runs, {failed} failed",
+            "experiment_id": experiment_id,
+            "results": results,
+            "summary": {
+                "total_runs": len(runs),
+                "successful": successful,
+                "failed": failed
+            }
+        }
+        
+    except Exception as e:
+        logger.error(f"Ensemble evaluation batch failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -264,6 +469,7 @@ async def list_runs(
             filter_query["experiment_id"] = experiment_id
         if dataset_version:
             filter_query["dataset_version"] = dataset_version
+        
             
         # Aggregation pipeline to join with prompts
         pipeline = [

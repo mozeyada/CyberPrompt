@@ -77,8 +77,41 @@ export interface Run {
     fsp: boolean;
     granularity_demo: boolean;
   };
+  ensemble_evaluation?: EnsembleEvaluation;
   created_at: string;
   updated_at: string;
+}
+
+export interface JudgeResult {
+  judge_model: string;
+  scores: RubricScores;
+  raw_response: string;
+  evaluation_time: string;
+  tokens_used: number;
+  cost_usd: number;
+  fsp_used: boolean;
+}
+
+export interface AggregatedScores {
+  mean_scores: RubricScores;
+  median_scores?: RubricScores;
+  std_scores?: RubricScores;
+  confidence_95_ci: Record<string, [number, number]>;
+}
+
+export interface ReliabilityMetrics {
+  pearson_correlations: Record<string, number>;
+  fleiss_kappa: number;
+  inter_judge_agreement: string;
+}
+
+export interface EnsembleEvaluation {
+  evaluation_id: string;
+  primary_judge?: JudgeResult;
+  secondary_judge?: JudgeResult;
+  tertiary_judge?: JudgeResult;
+  aggregated?: AggregatedScores;
+  reliability_metrics?: ReliabilityMetrics;
 }
 
 export interface RunPlanRequest {

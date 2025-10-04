@@ -29,7 +29,7 @@ dev:
 	@echo "⏳ Waiting for services to be ready..."
 	@sleep 10
 	@echo "Backend services started!"
-	@echo "📥 Auto-importing 951 prompts..."
+	@echo "📥 Auto-importing 300 prompts..."
 	@docker compose exec api python scripts/import_cysecbench.py || echo "Import skipped (data already exists)"
 	@echo "Starting frontend development server..."
 	@echo "Frontend will be available at: http://localhost:3000"
@@ -79,19 +79,17 @@ format:
 build:
 	docker-compose build
 
-# Database operations
-seed:
-	python scripts/seed_data.py
+# Database operations (research dataset import only)
 
 import-cysecbench:
-	@echo "📥 Importing CySecBench dataset (SOC/GRC/Incident Response scenarios)..."
-	docker compose exec api python scripts/import_cysecbench.py 50
-	@echo "✅ CySecBench dataset import complete!"
+	@echo "📥 Importing CySecBench research dataset (300 prompts)..."
+	docker compose exec api python scripts/import_cysecbench.py
+	@echo "✅ CySecBench research dataset import complete!"
 
 import-cysecbench-full:
-	@echo "📥 Importing full CySecBench dataset (may take several minutes)..."
-	docker compose exec api python scripts/import_cysecbench.py 200
-	@echo "✅ Full CySecBench dataset import complete!"
+	@echo "📥 Importing CySecBench research dataset (300 prompts)..."
+	docker compose exec api python scripts/import_cysecbench.py
+	@echo "✅ CySecBench research dataset import complete!"
 
 # Document management
 test-documents:

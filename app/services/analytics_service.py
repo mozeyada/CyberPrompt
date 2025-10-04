@@ -1,5 +1,6 @@
 import logging
 from typing import Any
+import numpy as np
 
 from motor.motor_asyncio import AsyncIOMotorDatabase
 from scipy import stats
@@ -375,6 +376,180 @@ class AnalyticsService:
             
         except Exception as e:
             logger.error(f"Error in prompt coverage analysis: {e}")
+            return {"error": str(e)}
+
+    async def get_ensemble_analytics(
+        self,
+        scenario: ScenarioType | None = None,
+        length_bin: LengthBin | None = None,
+        experiment_id: str | None = None
+    ) -> dict[str, Any]:
+        """Get ensemble evaluation analytics"""
+        
+        try:
+            # Build aggregation pipeline for ensemble evaluations
+            match_stage = {"ensemble_evaluation": {"$exists": True}}
+            if scenario:
+                match_stage["scenario"] = scenario
+            if length_bin:
+                match_stage["prompt_length_bin"] = length_bin
+            if experiment_id:
+                match_stage["experiment_id"] = experiment_id
+                
+            pipeline = [
+                {"$match": match_stage},
+                {"$project": {
+                    "run_id": 1,
+                    "scenario": 1,
+                    "prompt_length_bin": 1,
+                    "ensemble_mean": "$ensemble_evaluation.aggregated.mean_scores",
+                    "reliability": "$ensemble_evaluation.reliability_metrics",
+                    "individual_judges": {
+                        "primary": "$ensemble_evaluation.primary_judge.scores",
+                        "secondary": "$ensemble_evaluation.secondary_judge.scores", 
+                        "tertiary": "$ensemble_evaluation.tertiary_judge.scores"
+                    }
+                }}
+            ]
+            
+            cursor = self.db.runs.aggregate(pipeline)
+            results = await cursor.to_list(length=None)
+            
+            if not results:
+                return {"message": "No ensemble evaluations found", "total_ensemble_evaluations": 0}
+            
+            # Calculate overall reliability metrics
+            avg_correlations = []
+            agreement_levels = []
+            
+            for result in results:
+                if result.get("reliability", {}).get("pearson_correlations"):
+                    correlations = list(result["reliability"]["pearson_correlations"].values())
+                    mean_corr = np.mean(correlations)
+                    # Handle NaN and inf values
+                    if np.isfinite(mean_corr):
+                        avg_correlations.append(float(mean_corr))
+                agreement_levels.append(result.get("reliability", {}).get("inter_judge_agreement", "unknown"))
+            
+            # Judge comparison analysis
+            judge_performance = {}
+            dimensions = ["technical_accuracy", "actionability", "completeness", 
+                         "compliance_alignment", "risk_awareness", "relevance", "clarity", "composite"]
+            
+            for dimension in dimensions:
+                primary_scores = []
+                secondary_scores = []
+                tertiary_scores = []
+                
+                for result in results:
+                    judges = result.get("individual_judges", {})
+                    if judges.get("primary", {}).get(dimension) is not None:
+                        primary_scores.append(judges["primary"][dimension])
+                    if judges.get("secondary", {}).get(dimension) is not None:
+                        secondary_scores.append(judges["secondary"][dimension])
+                    if judges.get("tertiary", {}).get(dimension) is not None:
+                        tertiary_scores.append(judges["tertiary"][dimension])
+                
+                if primary_scores or secondary_scores or tertiary_scores:
+                    # Helper function to safely convert numpy values
+                    def safe_float(value, default=0.0):
+                        if np.isfinite(value):
+                            return float(value)
+                        return default
+                    
+                    judge_performance[dimension] = {
+                        "primary_avg": safe_float(np.mean(primary_scores)) if primary_scores else 0.0,
+                        "primary_std": safe_float(np.std(primary_scores)) if len(primary_scores) > 1 else 0.0,
+                        "secondary_avg": safe_float(np.mean(secondary_scores)) if secondary_scores else 0.0,
+                        "secondary_std": safe_float(np.std(secondary_scores)) if len(secondary_scores) > 1 else 0.0,
+                        "tertiary_avg": safe_float(np.mean(tertiary_scores)) if tertiary_scores else 0.0,
+                        "tertiary_std": safe_float(np.std(tertiary_scores)) if len(tertiary_scores) > 1 else 0.0
+                    }
+            
+            # Agreement level distribution
+            from collections import Counter
+            agreement_distribution = Counter(agreement_levels)
+            
+            return {
+                "total_ensemble_evaluations": len(results),
+                "overall_reliability": {
+                    "average_correlation": float(np.mean(avg_correlations)) if avg_correlations else 0.0,
+                    "agreement_distribution": dict(agreement_distribution)
+                },
+                "judge_performance_by_dimension": judge_performance,
+                "scenario": scenario.value if scenario else None,
+                "length_bin": length_bin.value if length_bin else None,
+                "experiment_id": experiment_id
+            }
+            
+        except Exception as e:
+            logger.error(f"Error in ensemble analytics: {e}")
+            return {"error": str(e)}
+
+    async def get_inter_judge_correlation(
+        self,
+        scenario: ScenarioType | None = None,
+        min_evaluations: int = 10
+    ) -> dict[str, Any]:
+        """Detailed correlation analysis between judges"""
+        
+        try:
+            match_stage = {
+                "ensemble_evaluation": {"$exists": True},
+                "ensemble_evaluation.aggregated.mean_scores.composite": {"$exists": True}
+            }
+            if scenario:
+                match_stage["scenario"] = scenario
+                
+            pipeline = [
+                {"$match": match_stage},
+                {"$project": {
+                    "scenario": 1,
+                    "prompt_length_bin": 1,
+                    "correlations": "$ensemble_evaluation.reliability_metrics.pearson_correlations"
+                }}
+            ]
+            
+            cursor = self.db.runs.aggregate(pipeline)
+            results = await cursor.to_list(length=None)
+            
+            if len(results) < min_evaluations:
+                return {
+                    "error": f"Insufficient data ({len(results)} evaluations, need {min_evaluations}+)",
+                    "total_evaluations": len(results)
+                }
+            
+            # Aggregate correlations across evaluations
+            correlation_pairs = {}
+            
+            for result in results:
+                correlations = result.get("correlations", {})
+                for pair, correlation in correlations.items():
+                    if pair not in correlation_pairs:
+                        correlation_pairs[pair] = []
+                    correlation_pairs[pair].append(correlation)
+            
+            # Calculate statistics
+            correlation_stats = {}
+            for pair, correlations in correlation_pairs.items():
+                correlation_stats[pair] = {
+                    "mean": round(np.mean(correlations), 4),
+                    "std": round(np.std(correlations), 4),
+                    "min": round(np.min(correlations), 4),
+                    "max": round(np.max(correlations), 4),
+                    "count": len(correlations)
+                }
+            
+            return {
+                "total_evaluations": len(results),
+                "correlation_statistics": correlation_stats,
+                "overall_mean_correlation": round(np.mean([
+                    stats["mean"] for stats in correlation_stats.values()
+                ]), 4)
+            }
+            
+        except Exception as e:
+            logger.error(f"Error in inter-judge correlation analysis: {e}")
             return {"error": str(e)}
 
 

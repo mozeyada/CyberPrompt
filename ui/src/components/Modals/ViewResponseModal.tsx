@@ -181,6 +181,87 @@ export function ViewResponseModal({ runId, isOpen, onClose }: ViewResponseModalP
                 </div>
               )}
 
+              {/* Ensemble Evaluation Details */}
+              {data.run.ensemble_evaluation && (
+                <div className="p-4 bg-purple-50 rounded-lg">
+                  <h3 className="font-medium text-gray-900 mb-3">🧠 Ensemble Evaluation Analysis</h3>
+                  
+                  {/* Individual Judge Results */}
+                  <div className="space-y-3">
+                    <h4 className="text-sm font-medium text-gray-700">Individual Judge Scores</h4>
+                    
+                    {data.run.ensemble_evaluation.primary_judge && (
+                      <div className="bg-white p-3 rounded border">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-sm font-medium text-blue-600">
+                            GPT-4o-mini (Primary)
+                          </span>
+                          <span className="text-xs text-gray-500">
+                            $${data.run.ensemble_evaluation.primary_judge.cost_usd?.toFixed(4)}
+                          </span>
+                        </div>
+                        <div className="text-xs text-gray-600">
+                          Composite: {data.run.ensemble_evaluation.primary_judge.scores?.composite?.toFixed(1)}
+                        </div>
+                      </div>
+                    )}
+
+                    {data.run.ensemble_evaluation.secondary_judge && (
+                      <div className="bg-white p-3 rounded border">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-sm font-medium text-green-600">
+                            Claude-3.5-Sonnet (Secondary)
+                          </span>
+                          <span className="text-xs text-gray-500">
+                            $${data.run.ensemble_evaluation.secondary_judge.cost_usd?.toFixed(4)}
+                          </span>
+                        </div>
+                        <div className="text-xs text-gray-600">
+                          Composite: {data.run.ensemble_evaluation.secondary_judge.scores?.composite?.toFixed(1)}
+                        </div>
+                      </div>
+                    )}
+
+                    {data.run.ensemble_evaluation.tertiary_judge && (
+                      <div className="bg-white p-3 rounded border">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-sm font-medium text-purple-600">
+                            Llama-3.1-70B (Tertiary)
+                          </span>
+                          <span className="text-xs text-gray-500">
+                            $${data.run.ensemble_evaluation.tertiary_judge.cost_usd?.toFixed(4)}
+                          </span>
+                        </div>
+                        <div className="text-xs text-gray-600">
+                          Composite: {data.run.ensemble_evaluation.tertiary_judge.scores?.composite?.toFixed(1)}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Reliability Metrics */}
+                  {data.run.ensemble_evaluation.reliability_metrics && (
+                    <div className="mt-4 pt-3 border-t">
+                      <h4 className="text-sm font-medium text-gray-700 mb-2">Reliability Metrics</h4>
+                      <div className="grid grid-cols-2 gap-4 text-sm">
+                        <div>
+                          <span className="font-medium">Agreement:</span>{' '}
+                          <span className="text-purple-600 font-medium">
+                            {data.run.ensemble_evaluation.reliability_metrics.inter_judge_agreement}
+                          </span>
+                        </div>
+                        <div>
+                          <span className="font-medium">κ Score:</span>{' '}
+                          <span className="font-medium">
+                            {data.run.ensemble_evaluation.reliability_metrics.fleiss_kappa?.toFixed(3)}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
               {/* Original Prompt */}
               <div>
                 <h3 className="font-medium text-gray-900 mb-2">Original Prompt</h3>

@@ -51,7 +51,7 @@ export function RQ2Flow() {
             <div className="text-lg font-bold text-blue-600">Static Benchmarks</div>
             <div className="text-sm text-gray-600 mt-2">
               • Fixed dataset (CySecBench)<br/>
-              • 952 research-grade prompts<br/>
+              • 300 research-grade prompts<br/>
               • Reproducible baselines<br/>
               • May miss new threats
             </div>

@@ -1,0 +1,80 @@
+Assignment 3A Research outputs report and files
+Word limit: 1000–1200 words (4-5 pages)
+Weighting: 10%
+Due date of Report Submission: 11.59pm AEST 18 October 2025
+
+Due date of files uploading to cluster folder: 11.59pm AEST 28 October 2025
+
+Assignment Overview
+Research outputs refer to the tangible products that result from research activities. They serve to communicate findings, validate existing knowledge, or contribute new insights to a particular field. These outputs not only serve to present and archive the research contributions made but also facilitate collaboration and further inquiry within the academic and professional communities. Researchers are required to document and prepare these outputs and deliver all outputs to the cluster and supervisor. 
+
+In this assignment you will write a brief report to outline all the deliverables related to the research project. Your report could be written in the format of a report. 
+
+Assignment Details
+Your report submission is to include the following major sections and include the elements listed.
+
+1 Title of you paper, name
+
+2. Literature reviewed and cited: List of key research publications and literature papers (key references)
+
+3. Project related outputs
+
+ 
+
+A. Scientific research projects
+
+Experimental procedures for data collection: Detailed protocols outlining methods used for gathering data.
+Software or tools: Developed code, applications, or algorithms to facilitate research and practical applications.
+Compiled data sets: If applicable, processed and analyzed data collected during experiments, or field observations
+Data analysis report: Detailed statistical analysis or machine learning results (descriptive statistics, inferential results, etc.), including analysis methods applied.
+Visual representations: Charts, graphs, and tables summarizing findings for clarity
+D. Case study projects
+
+Selected cases and data collections
+Compiled data sets: If applicable, processed and analyzed data collected during experiments, or field observations, or survey/interview
+Data analysis report : Detailed statistical analysis or machine learning results (descriptive statistics, inferential results, etc.), including analysis methods applied.
+Visual representations: Charts, graphs, and tables summarizing findings for clarity
+E: Artifact-oriented research projects
+
+Artifact description and documentation: Documentation that explains design, development processes, and functionality.
+Prototype or final product: The physical artifact or software product developed, including specifications.
+Open-Sources used for research: Information on any artifacts or software from public use, facilitating community contributions and modifications.
+User experience evaluations (if applicable) Summary of assessing user interactions with the artifact, including usability testing and feedback.
+Compiled data sets: If applicable, processed and analyzed data collected during testing of the artefacts and data processing
+Data analysis report: Detailed statistical analysis or machine learning results (descriptive statistics, inferential results, etc.), including analysis methods applied.
+Visual representations: Charts, graphs, and tables summarizing findings
+F. Data-oriented research projects (Survey and interview)
+
+Survey design document: Outlines the design of the survey, including objectives, format, and target audience.
+Raw data: Compiled responses, structured in suitable formats, ready for analysis.
+Data collection methods: Explanation of how data was gathered, including sample size and demographic breakdown.
+Interview Documents (if applicable): List of questions/topics, including the participant recruitment criteria and the recruitment method.
+Interview transcripts (if applicable): Detailed notes or transcripts documenting interview sessions.
+Data analysis framework: Outline for coding and analyzing qualitative data.
+G. Systematic Literature Review projects
+
+Literature summary tables: Synthesized information about studies (characteristics, methodologies, findings).
+Data extraction forms: Templates for collecting relevant data during the review process, included as supplementary material.
+Quality assessment tools: Evaluation criteria/checklists used during the review, providing insights into the strength of evidence.
+Visualizations: Graphical representations of search processes and findings, such as PRISMA flow diagrams.
+Submitting your research outputs report
+Word limit: 1000–1200 words (4-5 pages)
+Weighting: 10%
+Due date: 11.59pm AEST 18 October 2025
+
+You need to follow the above instructions to complete your research output report paper and submit it by due date.  Please name your file with your name information via this submission link
+
+Uploading your research outputs files
+Due date: 11.59pm AEST 28 October 2025
+
+You need to visit your cluster, go to "files", and find the folder "Research outputs ", then create a folder in your name, and upload all files in the folder. Name the file names properly for connivence.
+
+Markings:
+
+ The marks for the report and outputs files are allocated as follows:
+
+Title: 1%
+Literatures 1% (lists and quality and relevance, and quantity of over 10)
+Project related outputs 4% (overall contents and quality)
+Descriptions of outputs 2%
+Files prepared and upload completion 2%

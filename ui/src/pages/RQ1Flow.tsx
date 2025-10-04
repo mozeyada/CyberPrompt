@@ -408,17 +408,17 @@ export function RQ1Flow() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="bg-white rounded p-4 text-center">
             <div className="text-2xl font-bold text-green-600">100</div>
-            <div className="text-sm text-gray-600">Tactical (268-362 tokens)</div>
+            <div className="text-sm text-gray-600">Tactical (250-350 tokens)</div>
             <Badge variant="outline" className="mt-2">S</Badge>
           </div>
           <div className="bg-white rounded p-4 text-center">
             <div className="text-2xl font-bold text-blue-600">100</div>
-            <div className="text-sm text-gray-600">Analytical (379-485 tokens)</div>
+            <div className="text-sm text-gray-600">Analytical (350-500 tokens)</div>
             <Badge variant="outline" className="mt-2">M</Badge>
           </div>
           <div className="bg-white rounded p-4 text-center">
             <div className="text-2xl font-bold text-red-600">100</div>
-            <div className="text-sm text-gray-600">Strategic (616-721 tokens)</div>
+            <div className="text-sm text-gray-600">Strategic (600-750 tokens)</div>
             <Badge variant="outline" className="mt-2">L</Badge>
           </div>
         </div>
@@ -439,7 +439,7 @@ export function RQ1Flow() {
             Each original prompt has corresponding medium and long variants, 
             enabling systematic analysis of length effects.
           </p>
-          <Badge className="bg-blue-100 text-blue-800">952 Research Prompts</Badge>
+          <Badge className="bg-blue-100 text-blue-800">300 Research Prompts</Badge>
         </div>
       </div>
     </div>

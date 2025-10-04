@@ -103,13 +103,21 @@ class AnthropicClient(BaseLLMClient):
     def __init__(self, api_key: str):
         self.api_key = api_key
         self._client = None
+        self._model_mapping = {
+            "claude-3-5-sonnet": "claude-3-5-sonnet-20241022",
+            "claude-3-5-haiku": "claude-3-5-haiku-20241022", 
+            "claude-3-opus": "claude-3-opus-20240229"
+        }
         self._initialize_client()
 
     def _initialize_client(self):
         """Initialize Anthropic client"""
         try:
             import anthropic
-            self._client = anthropic.AsyncAnthropic(api_key=self.api_key)
+            self._client = anthropic.AsyncAnthropic(
+                api_key=self.api_key,
+                timeout=60.0  # Add timeout
+            )
         except ImportError:
             logger.error("Anthropic library not installed")
             raise
@@ -127,13 +135,31 @@ class AnthropicClient(BaseLLMClient):
     ) -> str:
         """Generate response using Anthropic API"""
         try:
+            # Map short model names to full names
+            actual_model = self._model_mapping.get(model, model)
+            
             start_time = time.time()
-            response = await self._client.messages.create(
-                model=model,
-                messages=[{"role": "user", "content": prompt}],
-                temperature=temperature,
-                max_tokens=max_tokens,
-            )
+            
+            # Prepare kwargs
+            kwargs = {
+                "model": actual_model,
+                "messages": [{"role": "user", "content": prompt}],
+                "temperature": temperature,
+                "max_tokens": max_tokens,
+            }
+            
+            # Only add seed for specific Claude models that support it
+            # Check against exact model names that support seed parameter
+            models_with_seed = [
+                "claude-3-5-sonnet-20241022",
+                "claude-3-5-haiku-20241022"
+            ]
+            
+            if seed is not None and model in models_with_seed:
+                kwargs["seed"] = seed
+            
+            # Make the API call
+            response = await self._client.messages.create(**kwargs)
             latency_ms = int((time.time() - start_time) * 1000)
 
             content = response.content[0].text
@@ -150,6 +176,9 @@ class AnthropicClient(BaseLLMClient):
 
         except Exception as e:
             logger.error(f"Anthropic API error: {e}")
+            logger.error(f"Model: {model}, Prompt length: {len(prompt)}")
+            if "not_found_error" in str(e):
+                logger.error("Available Claude models: claude-3-5-sonnet-20241022, claude-3-5-haiku-20241022, claude-3-opus-20240229")
             raise
 
     def get_token_counts(self, prompt: str, response: str, model: str) -> tuple[int, int]:

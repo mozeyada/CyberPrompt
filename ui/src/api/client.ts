@@ -99,6 +99,31 @@ export const runsApi = {
     return response.data;
   },
 
+  executeBatchEnsemble: async (params: {
+    prompt_ids: string[];
+    model_names: string[];
+    ensemble?: boolean;
+    bias_controls?: {
+      fsp: boolean;
+      granularity_demo?: boolean;
+    };
+    settings?: {
+      temperature?: number;
+      max_tokens?: number;
+    };
+    repeats?: number;
+  }): Promise<{ results: any[]; summary: any; ensemble_enabled: boolean }> => {
+    const response = await api.post('/runs/execute/batch-ensemble', params);
+    return response.data;
+  },
+
+  addEnsembleToExperiment: async (
+    experimentId: string
+  ): Promise<{ message: string; results: any[]; summary: any }> => {
+    const response = await api.post(`/runs/experiments/${experimentId}/ensemble-evaluate`);
+    return response.data;
+  },
+
   list: async (params: {
     model?: string;
     scenario?: string;
@@ -179,6 +204,23 @@ export const analyticsApi = {
     total_runs: number;
   }>> => {
     const response = await api.get('/analytics/coverage');
+    return response.data;
+  },
+
+  ensemble: async (params?: {
+    scenario?: string;
+    length_bin?: string;
+    experiment_id?: string;
+  }): Promise<any> => {
+    const response = await api.get('/analytics/ensemble', { params });
+    return response.data;
+  },
+
+  ensembleCorrelations: async (params?: {
+    scenario?: string;
+    min_evaluations?: number;
+  }): Promise<any> => {
+    const response = await api.get('/analytics/ensemble/correlations', { params });
     return response.data;
   },
 };

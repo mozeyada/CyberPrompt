@@ -54,9 +54,9 @@ export function Step1_Scenarios({ lengthBin, setLengthBin }: Step1Props) {
               className="w-full border border-gray-300 rounded-md px-3 py-2"
             >
               <option value="">All lengths</option>
-              <option value="S">S (268-362 tokens) - Tactical</option>
-              <option value="M">M (379-485 tokens) - Analytical</option>
-              <option value="L">L (616-721 tokens) - Strategic</option>
+              <option value="S">S (250-350 tokens) - Tactical</option>
+              <option value="M">M (350-500 tokens) - Analytical</option>
+              <option value="L">L (600-750 tokens) - Strategic</option>
             </select>
           </div>
           

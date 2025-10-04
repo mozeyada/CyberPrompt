@@ -35,7 +35,7 @@ export function WizardLanding() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="bg-white rounded p-4">
             <div className="text-2xl font-bold text-blue-600">
-              {isLoading ? '...' : stats?.available_prompts || '952'}
+              {isLoading ? '...' : stats?.available_prompts || '300'}
             </div>
             <div className="text-sm text-gray-600">Research-grade prompts</div>
           </div>
@@ -76,7 +76,7 @@ export function WizardLanding() {
             <Badge className="mb-2">Length Variants</Badge>
             <h3 className="font-semibold mb-2">Controlled Studies</h3>
             <p className="text-sm text-gray-600">
-              S+M+L prompt groups (268-362, 379-485, 616-721 tokens) - Tactical, Analytical, Strategic
+              S+M+L prompt groups (250-350, 350-500, 600-750 tokens) - Tactical, Analytical, Strategic
             </p>
           </div>
           <div className="border rounded-lg p-4">
@@ -98,7 +98,7 @@ export function WizardLanding() {
             <p className="text-gray-600">
               How does prompt length influence LLM cost-quality trade-offs in cybersecurity operations?
             </p>
-            <Badge variant="outline" className="mt-2">952 prompts with S+M+L variants</Badge>
+            <Badge variant="outline" className="mt-2">300 prompts with S+M+L variants</Badge>
           </div>
           <div className="border-l-4 border-green-500 pl-4">
             <h3 className="font-semibold text-lg">RQ2: Adaptive vs Static Benchmarking</h3>
@@ -120,7 +120,7 @@ export function WizardLanding() {
           <p className="text-gray-600 mt-2">
             Explore how prompt length influences LLM cost-quality trade-offs
           </p>
-          <Badge className="mt-3">952 Research Prompts</Badge>
+          <Badge className="mt-3">300 Research Prompts</Badge>
         </Link>
         
         <Link 

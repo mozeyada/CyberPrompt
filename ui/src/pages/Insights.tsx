@@ -12,7 +12,7 @@ import { analyticsApi, statsApi, runsApi } from '../api/client'
 import { useFilters } from '../state/useFilters'
 import { Badge } from '../components/ui/badge'
 import { Button } from '../components/ui/button'
-import { Select } from '../components/ui/select'
+
 import { ViewResponseModal } from '../components/Modals/ViewResponseModal'
 import { Eye } from 'lucide-react'
 
@@ -135,6 +135,7 @@ export function Insights() {
   const views = [
     { id: 'rq1', name: 'RQ1: Prompt Length' },
     { id: 'rq2', name: 'RQ2: Adaptive Benchmarking' },
+    { id: 'ensemble', name: 'Ensemble Evaluation' },
     { id: 'all-runs', name: 'All Runs' },
     { id: 'model-performance', name: 'Model Performance' }
   ]
@@ -297,6 +298,43 @@ export function Insights() {
           </div>
         )}
 
+        {selectedView === 'ensemble' && (
+          <div className="space-y-6">
+            {/* Ensemble Header */}
+            <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+              <h4 className="font-semibold text-purple-900 mb-2">Ensemble Evaluation Analysis</h4>
+              <p className="text-sm text-purple-800">
+                Multi-judge evaluation using GPT-4o-mini, Claude-3.5-Sonnet, and Llama-3.1-70B for enhanced scoring reliability and inter-judge correlation analysis.
+              </p>
+            </div>
+
+            {/* Ensemble Stats */}
+            <div className="bg-white shadow rounded-lg p-6">
+             <h3 className="text-lg font-semibold mb-4">Ensemble Evaluation Statistics</h3>
+              <div className="text-center py-8">
+                <p className="text-gray-500 mb-4">
+                  Ensemble evaluation analytics will be shown here.
+                </p>
+                <p className="text-sm text-gray-400">
+                  Run experiments with ensemble evaluation to see detailed multi-judge analysis.
+                </p>
+              </div>
+            </div>
+
+            {/* Inter-judge Correlation */}
+            <div className="bg-white shadow rounded-lg p-6">
+              <h3 className="text-lg font-semibold mb-4">Inter-Judge Correlation Analysis</h3>
+              <div className="text-center py-8">
+                <p className="text-gray-500 mb-4">
+                  Judge correlation and reliability metrics will be displayed here.
+                </p>
+                <p className="text-sm text-gray-400">
+                  View how consistently our three judges score cybersecurity tasks.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
 
         {selectedView === 'all-runs' && (
           <div className="space-y-6">
@@ -306,11 +344,15 @@ export function Insights() {
                   <h3 className="text-lg font-semibold">All Experiment Runs</h3>
                   <div className="flex items-center gap-2">
                     <label className="text-sm font-medium text-gray-700">Source:</label>
-                    <Select value={sourceFilter} onChange={(e) => setSourceFilter(e.target.value)} className="w-32">
+                    <select 
+                      value={sourceFilter} 
+                      onChange={(e) => setSourceFilter(e.target.value)} 
+                      className="w-32 rounded-md border border-gray-300 px-3 py-1.5 text-sm"
+                    >
                       <option value="all">All</option>
                       <option value="static">Static</option>
                       <option value="adaptive">Adaptive</option>
-                    </Select>
+                    </select>
                   </div>
                 </div>
                 <Button
@@ -325,7 +367,7 @@ export function Insights() {
 
               {runsLoading ? (
                 <div className="text-center py-8">Loading results...</div>
-              ) : !runsData?.runs?.length ? (
+              ) : !allRunsData?.runs?.length ? (
                 <div className="text-center py-8 text-gray-500">
                   No results found. Run some experiments first!
                 </div>
@@ -347,7 +389,7 @@ export function Insights() {
                         </tr>
                       </thead>
                       <tbody>
-                        {runsData.runs.map((run, index) => (
+                        {allRunsData.runs.map((run, index) => (
                           <tr key={run.run_id} className={index % 2 === 0 ? 'bg-gray-50' : 'bg-white'}>
                             <td className="py-3 px-4">
                               <Badge variant="secondary">{run.model}</Badge>
@@ -375,7 +417,29 @@ export function Insights() {
                             <td className="py-3 px-4 text-sm">{run.tokens?.total || 0}</td>
                             <td className="py-3 px-4 text-sm">${run.economics?.aud_cost?.toFixed(4) || '0.0000'}</td>
                             <td className="py-3 px-4 text-sm">
-                              {run.scores?.composite ? `${run.scores.composite.toFixed(1)}/5.0` : 'N/A'}
+                              {(() => {
+                                if (run.ensemble_evaluation?.aggregated?.mean_scores?.composite) {
+                                  return (
+                                    <div className="space-y-1">
+                                      <span className="font-medium text-purple-600">
+                                        {run.ensemble_evaluation.aggregated.mean_scores.composite.toFixed(1)}/5.0
+                                      </span>
+                                      <div className="text-xs text-purple-500">Multi-Judge</div>
+                                    </div>
+                                  )
+                                } else if (run.scores?.composite) {
+                                  return (
+                                    <div className="space-y-1">
+                                      <span className="font-medium">
+                                        {run.scores.composite.toFixed(1)}/5.0
+                                      </span>
+                                      <div className="text-xs text-gray-500">Single Judge</div>
+                                    </div>
+                                  )
+                                } else {
+                                  return 'N/A'
+                                }
+                              })()}
                             </td>
                             <td className="py-3 px-4">
                               <Button
@@ -397,7 +461,7 @@ export function Insights() {
 
                   <div className="flex justify-between items-center mt-4">
                     <span className="text-sm text-gray-500">
-                      Page {page} • {runsData?.count || 0} total runs
+                      Page {page} • {allRunsData?.count || 0} total runs
                     </span>
                     <div className="flex gap-2">
                       <Button
@@ -412,7 +476,7 @@ export function Insights() {
                         variant="outline"
                         size="sm"
                         onClick={() => setPage(p => p + 1)}
-                        disabled={runsData?.runs?.length < limit}
+                        disabled={allRunsData?.runs?.length < limit}
                       >
                         Next
                       </Button>
@@ -449,7 +513,7 @@ export function Insights() {
               <p className="text-sm text-gray-600 mb-4">
                 Models ranked by Quality per AUD. Higher = better cost-effectiveness for cybersecurity tasks.
               </p>
-              {bestQualityData?.leaderboard && bestQualityData.leaderboard.length > 0 ? (
+              {(bestQualityData?.leaderboard && bestQualityData.leaderboard.length > 0) ? (
                 <div className="overflow-x-auto">
                   <table className="w-full">
                     <thead>
@@ -494,3 +558,4 @@ export function Insights() {
     </div>
   )
 }
+

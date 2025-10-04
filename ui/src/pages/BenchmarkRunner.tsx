@@ -15,6 +15,7 @@ export function BenchmarkRunner() {
   const [promptSource, setPromptSource] = useState<'static' | 'adaptive'>('static')
   const [lengthBin, setLengthBin] = useState('')
   const [researchMode, setResearchMode] = useState(false)
+  const [enableEnsemble, setEnableEnsemble] = useState(false)
 
   useEffect(() => {
     const tab = searchParams.get('tab')
@@ -104,6 +105,49 @@ export function BenchmarkRunner() {
     }
   })
 
+  const executeEnsembleMutation = useMutation({
+    mutationFn: runsApi.executeBatchEnsemble,
+    onSuccess: (data) => {
+      const results = data.results.map((result: any) => ({
+        run_id: result.run_id,
+        status: result.status,
+        model: result.model || 'unknown',
+        cost: result.economics?.aud_cost,
+        quality: result.ensemble_evaluation?.aggregated?.mean_scores?.composite || result.scores?.composite,
+        error: result.error,
+        ensembleEnabled: !!result.ensemble_evaluation
+      }))
+      
+      const successCount = results.filter((r: any) => r.status === 'succeeded').length
+      const failCount = results.filter((r: any) => r.status === 'failed').length
+      
+      setExecutionStatus(prev => ({
+        ...prev,
+        isRunning: false,
+        completedRuns: successCount,
+        failedRuns: failCount,
+        results
+      }))
+      
+      addLog(`Completed: ${successCount} successful, ${failCount} failed`, successCount > 0 ? 'success' : 'error')
+      addLog(`Ensemble evaluation: ${data.ensemble_enabled ? 'enabled' : 'disabled'}`, 'info')
+      
+      // Log specific errors for failed runs
+      results.filter(r => r.status === 'failed').forEach(result => {
+        addLog(`Failed run ${result.run_id}: ${result.error || 'Unknown error'}`, 'error')
+      })
+      
+      if (successCount > 0) {
+        const totalCost = results.reduce((sum: number, r: any) => sum + (r.cost || 0), 0)
+        addLog(`Total cost: $${totalCost.toFixed(4)} AUD`, 'info')
+      }
+    },
+    onError: (error) => {
+      addLog(`Ensemble experiment failed: ${error}`, 'error')
+      setExecutionStatus(prev => ({ ...prev, isRunning: false }))
+    }
+  })
+
   const handleRunExperiment = () => {
     console.log('handleRunExperiment called with:', { selectedPrompts, selectedModels })
     
@@ -143,20 +187,39 @@ export function BenchmarkRunner() {
     addLog(`Config: ${experimentConfig.repeats} repeats, seed ${experimentConfig.seed}`, 'info')
     addLog(`Metadata: Hash ${metadata.configHash}, Cost ~$${metadata.estimatedCost.toFixed(4)}`, 'info')
     
-    executeBatchMutation.mutate({
-      prompt_ids: validPromptIds,
-      model_names: selectedModels,
-      include_variants: includeVariants,
-      bias_controls: {
-        fsp: experimentConfig.fspEnabled,
-        granularity_demo: false
-      },
-      settings: {
-        temperature: experimentConfig.temperature,
-        max_tokens: experimentConfig.maxTokens
-      },
-      repeats: experimentConfig.repeats
-    })
+    const mutation = enableEnsemble ? executeEnsembleMutation : executeBatchMutation
+    
+    if (enableEnsemble) {
+      executeEnsembleMutation.mutate({
+        prompt_ids: validPromptIds,
+        model_names: selectedModels,
+        ensemble: enableEnsemble,
+        bias_controls: {
+          fsp: experimentConfig.fspEnabled,
+          granularity_demo: false
+        },
+        settings: {
+          temperature: experimentConfig.temperature,
+          max_tokens: experimentConfig.maxTokens
+        },
+        repeats: experimentConfig.repeats
+      })
+    } else {
+      executeBatchMutation.mutate({
+        prompt_ids: validPromptIds,
+        model_names: selectedModels,
+        include_variants: includeVariants,
+        bias_controls: {
+          fsp: experimentConfig.fspEnabled,
+          granularity_demo: false
+        },
+        settings: {
+          temperature: experimentConfig.temperature,
+          max_tokens: experimentConfig.maxTokens
+        },
+        repeats: experimentConfig.repeats
+      })
+    }
   }
 
   const canGoNext = () => {
@@ -204,6 +267,8 @@ export function BenchmarkRunner() {
             setResearchMode={setResearchMode}
             onRunExperiment={handleRunExperiment}
             isRunning={executionStatus.isRunning}
+            enableEnsemble={enableEnsemble}
+            setEnableEnsemble={setEnableEnsemble}
           />
         )
       default:

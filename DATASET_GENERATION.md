@@ -17,8 +17,10 @@ The dataset is pre-generated and ready to use:
 data/prompts.json
 
 # Load it into MongoDB:
-python scripts/seed_data.py
+python scripts/import_cysecbench.py
 ```
+
+**Note**: The research dataset import script `scripts/import_cysecbench.py` loads the complete 300-prompt dataset into MongoDB for research experiments.
 
 ---
 
@@ -40,7 +42,7 @@ pip install tiktoken
 
 ```bash
 # Run the generation script
-python scripts/generate_academic_prompts.py
+python scripts/generate_research_dataset.py
 
 # Output: data/prompts.json (300 prompts)
 ```
@@ -126,9 +128,9 @@ with open('data/prompts.json') as f:
 
 **Expected Output**:
 ```
-S: 100 prompts, avg 287 tokens
-M: 100 prompts, avg 423 tokens
-L: 100 prompts, avg 678 tokens
+S: 100 prompts, avg 308 tokens
+M: 100 prompts, avg 418 tokens
+L: 100 prompts, avg 653 tokens
 ```
 
 ---
@@ -161,7 +163,7 @@ Based on **real SOC/GRC operational workflows**:
 
 ## Customization
 
-To modify scenarios or token ranges, edit `scripts/generate_academic_prompts.py`:
+To modify scenarios or token ranges, edit `scripts/generate_research_dataset.py`:
 
 ```python
 RESEARCH_CONFIG = {
@@ -177,7 +179,7 @@ RESEARCH_CONFIG = {
 
 Then regenerate:
 ```bash
-python scripts/generate_academic_prompts.py
+python scripts/generate_research_dataset.py
 ```
 
 ---

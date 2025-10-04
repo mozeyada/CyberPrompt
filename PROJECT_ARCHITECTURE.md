@@ -90,7 +90,7 @@ CyberCQBench/
 │   ├── conftest.py        # Test configuration
 │   └── test_evaluation.py # Evaluation logic tests
 ├── scripts/               # Utility Scripts
-│   ├── seed_data.py       # Database seeding
+│   ├── generate_research_dataset.py # Dataset generation
 │   └── import_cysecbench.py # Research data import
 ├── cysecbench-data/       # Research Dataset
 │   └── Dataset/           # CySecBench research prompts
@@ -269,10 +269,7 @@ cd ui && npm test
 
 ### 3. Data Management
 ```bash
-# Seed sample data
-docker compose exec api python scripts/seed_data.py
-
-# Import research dataset
+# Import research dataset (300 prompts)
 make import-cysecbench
 ```
 

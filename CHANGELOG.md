@@ -52,7 +52,7 @@
 
 #### **Length Variant Analysis**
 - **Enhanced**: Perfect traceability for S+M+L prompt groups (≤300, 301-800, >800 tokens)
-- **Dataset**: 952 research-grade prompts (318 originals + 317 medium + 317 long variants)
+- **Dataset**: 300 research-grade prompts (100 originals + 100 medium + 100 long variants)
 - **Purpose**: Enables systematic RQ1 prompt length studies
 
 #### **KL Divergence Validation**

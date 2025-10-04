@@ -8,7 +8,7 @@ export function About() {
         <h1 className="text-4xl font-bold text-gray-900 mb-4">About This Research</h1>
         <p className="text-xl text-gray-600 max-w-3xl mx-auto">
           CyberCQBench enables systematic study of prompt length effects on LLM cost-quality trade-offs 
-          in cybersecurity operations. With 952 research-grade prompts across controlled length variants 
+          in cybersecurity operations. With 300 research-grade prompts across controlled length variants 
           and proper FSP bias mitigation, it provides cost-effective and reproducible AI evaluation for SOC and GRC tasks.
         </p>
       </div>
@@ -20,7 +20,7 @@ export function About() {
           <div>
             <h3 className="text-lg font-semibold text-gray-800 mb-3">Length Variant Analysis</h3>
             <p className="text-gray-600">
-              Controlled S+M+L prompt groups (268-362, 379-485, 616-721 tokens) enable systematic
+              Controlled S+M+L prompt groups (250-350, 350-500, 600-750 tokens) enable systematic
               studies of how prompt length affects LLM quality and cost efficiency in cybersecurity tasks.
               Ranges reflect realistic operational workflows: Tactical (S), Analytical (M), and Strategic (L).
             </p>
@@ -47,7 +47,7 @@ export function About() {
           <div>
             <h3 className="text-lg font-semibold text-gray-800 mb-3">Research Dataset</h3>
             <p className="text-gray-600">
-              952 total prompts: 318 originals + 317 medium + 317 long variants with perfect 
+              300 total prompts: 100 originals + 100 medium + 100 long variants with perfect 
               traceability and controlled token classification for academic analysis.
             </p>
           </div>

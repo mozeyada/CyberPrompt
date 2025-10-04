@@ -209,20 +209,20 @@ STRATEGIC CONCERN: We hold classified contracts with defense agencies. A breach 
         "base_context": """
 THREAT INTELLIGENCE ANALYSIS: MALWARE IOC INVESTIGATION
 INVESTIGATION DATE: {timestamp}
-TRIGGER: Automated threat hunting detected suspicious file hash {file_hash} on three endpoints in the R&D network. The file was not flagged by endpoint protection at the time of execution.
+TRIGGER: Automated threat hunting detected suspicious file hash {file_hash} on three endpoints in the R&D network.
 IOC DETAILS:
 - File Hash (SHA256): {file_hash}
-- File Name: invoice_Q3_2024.pdf.exe (double extension - suspicious)
-- First Seen: 72 hours ago on user workstation {user_account}
-- Network Behavior: Attempted connection to {ip_address} on port 443 (HTTPS)
-- Behavioral Analysis: Created scheduled task for persistence, modified registry run keys
-- VirusTotal Detection: 12/70 vendors flag as malicious (low detection rate suggests new variant)
+- File Name: invoice_Q3_2024.pdf.exe (double extension)
+- First Seen: 72 hours ago on {user_account}
+- Network Behavior: Attempted connection to {ip_address} on port 443
+- Behavioral Analysis: Created scheduled task, modified registry run keys
+- VirusTotal Detection: 12/70 vendors flag as malicious (new variant)
 INVESTIGATION FINDINGS:
 - File appears to be a dropper for additional payloads
-- C2 infrastructure analysis shows domain registered 2 weeks ago (fresh infrastructure)
-- Similar samples found targeting aerospace and defense sectors
+- C2 infrastructure domain registered 2 weeks ago (fresh)
+- Similar samples targeting aerospace and defense sectors
 - Code similarities to known APT41 malware family
-URGENCY: R&D network contains proprietary designs for next-generation products. If this is targeted espionage, the intellectual property theft could cost $100M+ in competitive advantage.
+URGENCY: R&D network contains proprietary designs. If this is targeted espionage, intellectual property theft could cost $100M+ in competitive advantage.
 """,
         "context_layers": {
             "S": "The incident response team needs immediate guidance on this malware sample. Provide quick assessment: Is this targeted or opportunistic? What should we look for to determine if data was exfiltrated?",
@@ -237,22 +237,22 @@ URGENCY: R&D network contains proprietary designs for next-generation products. 
 STRATEGIC INTELLIGENCE BRIEFING: EMERGING THREAT LANDSCAPE
 REPORTING PERIOD: Q4 2024 Threat Landscape Analysis
 AUDIENCE: Executive Security Committee and Board Risk Committee
-INDUSTRY CONTEXT: The cybersecurity threat landscape in our sector has evolved significantly. Recent government advisories and industry intelligence sharing indicates increased targeting of organizations with our profile.
+INDUSTRY CONTEXT: Cybersecurity threat landscape has evolved significantly. Recent government advisories indicate increased targeting of organizations with our profile.
 KEY THREAT TRENDS:
-- Ransomware Evolution: Shift from encryption-only to data exfiltration and extortion (average ransom: $4.5M)
-- Supply Chain Attacks: 34% increase in compromises via third-party software providers
-- Cloud Infrastructure Targeting: 67% of incidents now involve cloud assets (AWS, Azure, O365)
-- Insider Threats: 23% of incidents involved privileged user account compromise
-- Nation-State Activity: Increased APT activity targeting defense contractors and critical infrastructure
+- Ransomware Evolution: Shift from encryption-only to data exfiltration (average ransom: $4.5M)
+- Supply Chain Attacks: 34% increase via third-party software providers
+- Cloud Targeting: 67% of incidents involve cloud assets (AWS, Azure, O365)
+- Insider Threats: 23% involved privileged user account compromise
+- Nation-State Activity: Increased APT activity targeting defense contractors
 SECTOR-SPECIFIC INTELLIGENCE:
-- Three competitors in our market segment suffered major breaches this quarter
-- Government advisories specifically warn organizations holding classified contracts
-- Average cost of breach in our sector: $12.4M (up from $9.1M last year)
+- Three competitors suffered major breaches this quarter
+- Government advisories warn organizations holding classified contracts
+- Average breach cost in our sector: $12.4M (up from $9.1M last year)
 ORGANIZATIONAL RISK FACTORS:
 - We process classified information and maintain security clearances
-- Recent M&A activity expanded our attack surface significantly
-- Hybrid work model increased remote access and cloud dependency
-- Current cybersecurity budget is 15% below industry average for organizations of our size
+- Recent M&A activity expanded attack surface
+- Hybrid work model increased remote access dependency
+- Cybersecurity budget 15% below industry average
 """,
         "context_layers": {
             "S": "The IT steering committee needs a quick threat landscape update for budget planning. Summarize the top 3 threat trends most relevant to our organization and why they matter to us specifically.",
