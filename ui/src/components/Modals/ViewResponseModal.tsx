@@ -200,21 +200,9 @@ export function ViewResponseModal({ runId, isOpen, onClose }: ViewResponseModalP
                             $${data.run.ensemble_evaluation.primary_judge.cost_usd?.toFixed(4)}
                           </span>
                         </div>
-                        <div className="text-xs text-gray-600 mb-2">
+                        <div className="text-xs text-gray-600">
                           Composite: {data.run.ensemble_evaluation.primary_judge.scores?.composite?.toFixed(1)}
                         </div>
-                        {(data.run.ensemble_evaluation.primary_judge as any).response && (
-                          <details className="text-xs">
-                            <summary className="cursor-pointer text-blue-600 hover:text-blue-800">
-                              View Response
-                            </summary>
-                            <div className="mt-2 p-2 bg-gray-50 rounded text-xs max-h-32 overflow-y-auto">
-                              <pre className="whitespace-pre-wrap">
-                                {(data.run.ensemble_evaluation.primary_judge as any).response}
-                              </pre>
-                            </div>
-                          </details>
-                        )}
                       </div>
                     )}
 
@@ -228,21 +216,9 @@ export function ViewResponseModal({ runId, isOpen, onClose }: ViewResponseModalP
                             $${data.run.ensemble_evaluation.secondary_judge.cost_usd?.toFixed(4)}
                           </span>
                         </div>
-                        <div className="text-xs text-gray-600 mb-2">
+                        <div className="text-xs text-gray-600">
                           Composite: {data.run.ensemble_evaluation.secondary_judge.scores?.composite?.toFixed(1)}
                         </div>
-                        {(data.run.ensemble_evaluation.secondary_judge as any).response && (
-                          <details className="text-xs">
-                            <summary className="cursor-pointer text-green-600 hover:text-green-800">
-                              View Response
-                            </summary>
-                            <div className="mt-2 p-2 bg-gray-50 rounded text-xs max-h-32 overflow-y-auto">
-                              <pre className="whitespace-pre-wrap">
-                                {(data.run.ensemble_evaluation.secondary_judge as any).response}
-                              </pre>
-                            </div>
-                          </details>
-                        )}
                       </div>
                     )}
 
@@ -256,21 +232,9 @@ export function ViewResponseModal({ runId, isOpen, onClose }: ViewResponseModalP
                             $${data.run.ensemble_evaluation.tertiary_judge.cost_usd?.toFixed(4)}
                           </span>
                         </div>
-                        <div className="text-xs text-gray-600 mb-2">
+                        <div className="text-xs text-gray-600">
                           Composite: {data.run.ensemble_evaluation.tertiary_judge.scores?.composite?.toFixed(1)}
                         </div>
-                        {(data.run.ensemble_evaluation.tertiary_judge as any).response && (
-                          <details className="text-xs">
-                            <summary className="cursor-pointer text-purple-600 hover:text-purple-800">
-                              View Response
-                            </summary>
-                            <div className="mt-2 p-2 bg-gray-50 rounded text-xs max-h-32 overflow-y-auto">
-                              <pre className="whitespace-pre-wrap">
-                                {(data.run.ensemble_evaluation.tertiary_judge as any).response}
-                              </pre>
-                            </div>
-                          </details>
-                        )}
                       </div>
                     )}
                   </div>
@@ -344,36 +308,170 @@ export function ViewResponseModal({ runId, isOpen, onClose }: ViewResponseModalP
               {/* LLM Response */}
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <h3 className="font-medium text-gray-900">LLM Response</h3>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleCopyResponse}
-                    disabled={!data.output}
-                    className="flex items-center gap-1"
-                  >
-                    {copied ? (
-                      <>
-                        <CheckCircle className="h-3 w-3 text-green-600" />
-                        Copied!
-                      </>
-                    ) : (
-                      <>
-                        <Copy className="h-3 w-3" />
-                        Copy Response
-                      </>
-                    )}
-                  </Button>
-                </div>
-                <div className="p-4 bg-white border rounded-lg text-sm max-h-64 overflow-y-auto">
-                  {data.output ? (
-                    <pre className="whitespace-pre-wrap font-mono text-gray-700">
-                      {data.output}
-                    </pre>
-                  ) : (
-                    <div className="text-gray-500 italic">No response content available</div>
+                  <h3 className="font-medium text-gray-900">
+                    {data.run.ensemble_evaluation ? 'Model Response & Judge Evaluations' : 'LLM Response'}
+                  </h3>
+                  {!data.run.ensemble_evaluation && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleCopyResponse}
+                      disabled={!data.output}
+                      className="flex items-center gap-1"
+                    >
+                      {copied ? (
+                        <>
+                          <CheckCircle className="h-3 w-3 text-green-600" />
+                          Copied!
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="h-3 w-3" />
+                          Copy Response
+                        </>
+                      )}
+                    </Button>
                   )}
                 </div>
+                
+                {data.run.ensemble_evaluation ? (
+                  /* Ensemble: Show model response first, then judge evaluations */
+                  <div className="space-y-6">
+                    {/* Model Response Being Evaluated */}
+                    <div className="border rounded-lg shadow-sm">
+                      <div className="bg-gray-50 px-4 py-3 border-b">
+                        <h4 className="font-semibold text-gray-800 text-base">Model Response (Being Evaluated)</h4>
+                        <p className="text-sm text-gray-600 mt-1">The actual LLM response that was evaluated by the judges</p>
+                      </div>
+                      <div className="p-4 bg-white text-sm max-h-60 overflow-y-auto">
+                        {data.output ? (
+                          <pre className="whitespace-pre-wrap font-mono text-gray-700 leading-relaxed">
+                            {data.output}
+                          </pre>
+                        ) : (
+                          <div className="text-gray-500 italic">No model response available</div>
+                        )}
+                      </div>
+                    </div>
+                    
+                    {/* Judge Evaluations */}
+                    <div>
+                      <h4 className="font-medium text-gray-900 mb-3">Judge Evaluations</h4>
+                    {data.run.ensemble_evaluation.primary_judge && (data.run.ensemble_evaluation.primary_judge as any).raw_response && (
+                      <div className="border rounded-lg shadow-sm">
+                        <div className="bg-blue-50 px-4 py-3 border-b flex items-center justify-between">
+                          <div>
+                            <h4 className="font-semibold text-blue-800 text-base">GPT-4o-mini (Primary Judge)</h4>
+                            <div className="flex items-center gap-4 mt-1">
+                              <span className="text-lg font-bold text-blue-700">
+                                {data.run.ensemble_evaluation.primary_judge.scores?.composite?.toFixed(1)}/5.0
+                              </span>
+                              <span className="text-sm text-blue-600">
+                                ${data.run.ensemble_evaluation.primary_judge.cost_usd?.toFixed(4)} • {data.run.ensemble_evaluation.primary_judge.tokens_used} tokens
+                              </span>
+                            </div>
+                          </div>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              navigator.clipboard.writeText((data.run.ensemble_evaluation?.primary_judge as any)?.raw_response || '')
+                            }}
+                            className="flex items-center gap-1 text-blue-700 border-blue-300 hover:bg-blue-100"
+                          >
+                            <Copy className="h-3 w-3" />
+                            Copy
+                          </Button>
+                        </div>
+                        <div className="p-4 bg-white text-sm max-h-60 overflow-y-auto">
+                          <pre className="whitespace-pre-wrap font-mono text-gray-700 leading-relaxed">
+                            {(data.run.ensemble_evaluation.primary_judge as any).raw_response}
+                          </pre>
+                        </div>
+                      </div>
+                    )}
+                    
+                    {data.run.ensemble_evaluation.secondary_judge && (data.run.ensemble_evaluation.secondary_judge as any).raw_response && (
+                      <div className="border rounded-lg shadow-sm">
+                        <div className="bg-green-50 px-4 py-3 border-b flex items-center justify-between">
+                          <div>
+                            <h4 className="font-semibold text-green-800 text-base">Claude-3.5-Sonnet (Secondary Judge)</h4>
+                            <div className="flex items-center gap-4 mt-1">
+                              <span className="text-lg font-bold text-green-700">
+                                {data.run.ensemble_evaluation.secondary_judge.scores?.composite?.toFixed(1)}/5.0
+                              </span>
+                              <span className="text-sm text-green-600">
+                                ${data.run.ensemble_evaluation.secondary_judge.cost_usd?.toFixed(4)} • {data.run.ensemble_evaluation.secondary_judge.tokens_used} tokens
+                              </span>
+                            </div>
+                          </div>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              navigator.clipboard.writeText((data.run.ensemble_evaluation?.secondary_judge as any)?.raw_response || '')
+                            }}
+                            className="flex items-center gap-1 text-green-700 border-green-300 hover:bg-green-100"
+                          >
+                            <Copy className="h-3 w-3" />
+                            Copy
+                          </Button>
+                        </div>
+                        <div className="p-4 bg-white text-sm max-h-60 overflow-y-auto">
+                          <pre className="whitespace-pre-wrap font-mono text-gray-700 leading-relaxed">
+                            {(data.run.ensemble_evaluation.secondary_judge as any).raw_response}
+                          </pre>
+                        </div>
+                      </div>
+                    )}
+                    
+                    {data.run.ensemble_evaluation.tertiary_judge && (data.run.ensemble_evaluation.tertiary_judge as any).raw_response && (
+                      <div className="border rounded-lg shadow-sm">
+                        <div className="bg-purple-50 px-4 py-3 border-b flex items-center justify-between">
+                          <div>
+                            <h4 className="font-semibold text-purple-800 text-base">Llama-3.1-70B (Tertiary Judge)</h4>
+                            <div className="flex items-center gap-4 mt-1">
+                              <span className="text-lg font-bold text-purple-700">
+                                {data.run.ensemble_evaluation.tertiary_judge.scores?.composite?.toFixed(1)}/5.0
+                              </span>
+                              <span className="text-sm text-purple-600">
+                                ${data.run.ensemble_evaluation.tertiary_judge.cost_usd?.toFixed(4)} • {data.run.ensemble_evaluation.tertiary_judge.tokens_used} tokens
+                              </span>
+                            </div>
+                          </div>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              navigator.clipboard.writeText((data.run.ensemble_evaluation?.tertiary_judge as any)?.raw_response || '')
+                            }}
+                            className="flex items-center gap-1 text-purple-700 border-purple-300 hover:bg-purple-100"
+                          >
+                            <Copy className="h-3 w-3" />
+                            Copy
+                          </Button>
+                        </div>
+                        <div className="p-4 bg-white text-sm max-h-60 overflow-y-auto">
+                          <pre className="whitespace-pre-wrap font-mono text-gray-700 leading-relaxed">
+                            {(data.run.ensemble_evaluation.tertiary_judge as any).raw_response}
+                          </pre>
+                        </div>
+                      </div>
+                    )}
+                    </div>
+                  </div>
+                ) : (
+                  /* Single Judge: Show regular response */
+                  <div className="p-4 bg-white border rounded-lg text-sm max-h-64 overflow-y-auto">
+                    {data.output ? (
+                      <pre className="whitespace-pre-wrap font-mono text-gray-700">
+                        {data.output}
+                      </pre>
+                    ) : (
+                      <div className="text-gray-500 italic">No response content available</div>
+                    )}
+                  </div>
+                )}
               </div>
             </>
           )}
