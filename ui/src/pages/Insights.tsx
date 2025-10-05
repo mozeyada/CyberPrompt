@@ -443,7 +443,7 @@ export function Insights() {
             {!selectedExperiment && (
               <div className="bg-white shadow rounded-lg p-6">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-semibold">📊 Evaluation Dataset</h3>
+                  <h3 className="text-lg font-semibold">Evaluation Dataset</h3>
                   <div className="flex items-center gap-2">
                     <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                       scoringMode === 'ensemble' 

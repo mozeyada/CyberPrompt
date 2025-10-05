@@ -108,7 +108,7 @@ export function Step3_Configure({
 
         {/* Bias Controls */}
         <div>
-          <h4 className="font-medium text-gray-900 mb-3">🎯 Bias Controls</h4>
+          <h4 className="font-medium text-gray-900 mb-3">Bias Controls</h4>
           <div className="space-y-2">
             <label className="flex items-center">
               <input
@@ -148,11 +148,11 @@ export function Step3_Configure({
                   className="rounded border-gray-300 text-purple-600 focus:ring-purple-500"
                 />
                 <span className="ml-2 text-sm font-medium text-gray-700">
-                  🧠 Ensemble Evaluation (Multi-Judge)
+                  Ensemble Evaluation (Multi-Judge)
                 </span>
               </label>
               <div className="ml-6 text-xs text-gray-500 mb-3">
-                Uses GPT-4o-mini, Claude-3.5-Sonnet, and Llama-3.1-70B for enhanced reliability
+                Uses GPT-4o-mini, Claude-3.5-Sonnet, and Llama-3.3-70B for enhanced reliability
               </div>
             </div>
           </div>
@@ -161,7 +161,7 @@ export function Step3_Configure({
             onClick={() => setShowAdvanced(!showAdvanced)}
             className="w-full px-4 py-3 text-left flex items-center justify-between hover:bg-gray-50"
           >
-            <span className="font-medium text-gray-900">⚙️ Advanced Settings</span>
+            <span className="font-medium text-gray-900">Advanced Settings</span>
             <span className="text-gray-500">{showAdvanced ? '−' : '+'}</span>
           </button>
           
@@ -253,7 +253,7 @@ export function Step3_Configure({
           disabled={isRunning}
           className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white px-6 py-4 rounded-md font-medium text-lg"
         >
-          {isRunning ? 'Running Experiment...' : `🚀 Run Experiment (${totalRuns} tests)`}
+          {isRunning ? 'Running Experiment...' : `Run Experiment (${totalRuns} tests)`}
         </button>
       </div>
     </div>

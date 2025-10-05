@@ -27,7 +27,8 @@ class EnsembleJudgeService:
         self.model_runner = ModelRunner(
             openai_key=settings.openai_api_key,
             anthropic_key=settings.anthropic_api_key,
-            google_key=""  # Not used for ensemble, Groq handled separately
+            google_key="",  # Not used for ensemble
+            groq_key=settings.groq_api_key  # For Llama 3.3 70B judge
         )
     
     async def evaluate_with_ensemble(

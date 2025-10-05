@@ -51,7 +51,7 @@ export function RQ1Results({ experimentResults }: RQ1ResultsProps) {
       {/* Experiment Summary */}
       <div className="bg-green-50 border border-green-200 rounded-lg p-6">
         <div className="flex items-center mb-4">
-          <span className="text-green-600 text-2xl mr-3">✅</span>
+          <span className="text-green-600 text-2xl mr-3">Success</span>
           <div>
             <h3 className="text-lg font-semibold text-green-800">RQ1 Experiment Complete!</h3>
             <p className="text-green-700">Your prompt length analysis has finished successfully.</p>

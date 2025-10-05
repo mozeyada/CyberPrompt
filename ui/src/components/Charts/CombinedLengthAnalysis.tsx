@@ -108,7 +108,7 @@ export function CombinedLengthAnalysis({ experimentId }: { experimentId?: string
       {/* EXECUTIVE SUMMARY */}
       <div className="bg-gradient-to-r from-blue-50 to-blue-100 border-2 border-blue-500 rounded-lg p-6">
         <div className="flex items-start gap-4">
-          <div className="text-4xl">💡</div>
+          <div className="text-4xl text-yellow-500">Insight</div>
           <div className="flex-1">
             <h4 className="text-xl font-bold text-blue-900 mb-3">Key Finding</h4>
             <p className="text-lg text-blue-900 mb-2">

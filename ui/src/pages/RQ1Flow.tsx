@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useQuery, useMutation } from '@tanstack/react-query'
 import { Badge } from '../components/ui/badge'
 import { runsApi, statsApi, analyticsApi } from '../api/client'
@@ -13,7 +13,7 @@ export function RQ1Flow() {
   const [experimentStep, setExperimentStep] = useState(1)
   const [lengthBin, setLengthBin] = useState('')
   const [researchMode, setResearchMode] = useState(false)
-  const [enableEnsemble, setEnableEnsemble] = useState(false)
+  const [enableEnsemble, setEnableEnsemble] = useState(true)
   
   const {
     selectedPrompts,
@@ -32,6 +32,7 @@ export function RQ1Flow() {
     totalRuns: number
     completedRuns: number
     failedRuns: number
+    currentRun: number
     logs: Array<{id: string, message: string, type: 'info' | 'success' | 'error', timestamp: string}>
     results: Array<{run_id: string, experiment_id?: string, status: string, model: string, cost?: number, quality?: number, error?: string}>
   }>({
@@ -39,6 +40,7 @@ export function RQ1Flow() {
     totalRuns: 0,
     completedRuns: 0,
     failedRuns: 0,
+    currentRun: 0,
     logs: [],
     results: []
   })
@@ -132,6 +134,7 @@ export function RQ1Flow() {
         isRunning: false,
         completedRuns: successCount,
         failedRuns: failCount,
+        currentRun: prev.totalRuns, // Mark as completed
         results
       }))
       
@@ -175,6 +178,7 @@ export function RQ1Flow() {
       totalRuns,
       completedRuns: 0,
       failedRuns: 0,
+      currentRun: 0,
       logs: [],
       results: []
     })
@@ -182,6 +186,20 @@ export function RQ1Flow() {
     const metadata = generateExperimentMetadata()
     
     addLog(`Starting RQ1 experiment with ${totalRuns} runs...`, 'info')
+    
+    // Simulate progress updates (since backend doesn't provide real-time progress)
+    let simulatedProgress = 0
+    const progressInterval = setInterval(() => {
+      simulatedProgress++
+      if (simulatedProgress <= totalRuns) {
+        setExecutionStatus(prev => ({
+          ...prev,
+          currentRun: simulatedProgress
+        }))
+      } else {
+        clearInterval(progressInterval)
+      }
+    }, 1000) // Update every second
     addLog(`Config: ${experimentConfig.repeats} repeats, seed ${experimentConfig.seed}`, 'info')
     addLog(`Metadata: Hash ${metadata.configHash}, Cost ~$${metadata.estimatedCost.toFixed(4)}`, 'info')
     
@@ -344,7 +362,7 @@ export function RQ1Flow() {
             {executionStatus.isRunning && (
               <div className="flex items-center text-blue-600">
                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 mr-2"></div>
-                Running experiment...
+                Processing run {executionStatus.currentRun + 1} of {executionStatus.totalRuns}...
               </div>
             )}
           </div>
@@ -355,11 +373,38 @@ export function RQ1Flow() {
                 <span>Progress: {executionStatus.completedRuns + executionStatus.failedRuns} / {executionStatus.totalRuns}</span>
                 <span>{Math.round(((executionStatus.completedRuns + executionStatus.failedRuns) / executionStatus.totalRuns) * 100)}%</span>
               </div>
-              <div className="w-full bg-gray-200 rounded-full h-2">
+              
+              {/* Vintage-style Loading Bar */}
+              <div className="relative w-full bg-gray-800 rounded-none h-6 border-2 border-gray-600 mb-2">
                 <div 
-                  className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                  className="bg-gradient-to-r from-green-400 to-blue-500 h-full transition-all duration-500 ease-out relative"
                   style={{ width: `${((executionStatus.completedRuns + executionStatus.failedRuns) / executionStatus.totalRuns) * 100}%` }}
-                ></div>
+                >
+                  {/* Retro scan lines effect */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent opacity-20 animate-pulse"></div>
+                  
+                  {/* Progress text overlay */}
+                  <div className="absolute inset-0 flex items-center justify-center text-white font-bold text-xs">
+                    {executionStatus.isRunning ? `${executionStatus.completedRuns + executionStatus.failedRuns}/${executionStatus.totalRuns}` : 'COMPLETE'}
+                  </div>
+                </div>
+                
+                {/* Loading indicator when running */}
+                {executionStatus.isRunning && (
+                  <div className="absolute right-2 top-1/2 transform -translate-y-1/2">
+                    <div className="flex space-x-1">
+                      <div className="w-1 h-3 bg-white animate-pulse"></div>
+                      <div className="w-1 h-3 bg-white animate-pulse" style={{ animationDelay: '0.2s' }}></div>
+                      <div className="w-1 h-3 bg-white animate-pulse" style={{ animationDelay: '0.4s' }}></div>
+                    </div>
+                  </div>
+                )}
+              </div>
+              
+              <div className="flex justify-between text-xs text-gray-500">
+                <span className="text-green-600">✓ {executionStatus.completedRuns} successful</span>
+                <span className="text-red-600">✗ {executionStatus.failedRuns} failed</span>
+                <span className="text-blue-600">⏳ {executionStatus.totalRuns - (executionStatus.completedRuns + executionStatus.failedRuns)} pending</span>
               </div>
             </div>
           )}
