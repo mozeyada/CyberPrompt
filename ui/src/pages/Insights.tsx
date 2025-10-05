@@ -152,7 +152,6 @@ export function Insights() {
   const views = [
     { id: 'rq1', name: 'RQ1: Prompt Length' },
     { id: 'rq2', name: 'RQ2: Adaptive Benchmarking' },
-    { id: 'ensemble', name: 'Ensemble Evaluation' },
     { id: 'all-runs', name: 'All Runs' },
     { id: 'model-performance', name: 'Model Performance' }
   ]
@@ -342,43 +341,6 @@ export function Insights() {
           </div>
         )}
 
-        {selectedView === 'ensemble' && (
-          <div className="space-y-6">
-            {/* Ensemble Header */}
-            <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
-              <h4 className="font-semibold text-purple-900 mb-2">Ensemble Evaluation Analysis</h4>
-              <p className="text-sm text-purple-800">
-                Multi-judge evaluation using GPT-4o-mini, Claude-3.5-Sonnet, and Llama-3.1-70B for enhanced scoring reliability and inter-judge correlation analysis.
-              </p>
-            </div>
-
-            {/* Ensemble Stats */}
-            <div className="bg-white shadow rounded-lg p-6">
-             <h3 className="text-lg font-semibold mb-4">Ensemble Evaluation Statistics</h3>
-              <div className="text-center py-8">
-                <p className="text-gray-500 mb-4">
-                  Ensemble evaluation analytics will be shown here.
-                </p>
-                <p className="text-sm text-gray-400">
-                  Run experiments with ensemble evaluation to see detailed multi-judge analysis.
-                </p>
-              </div>
-            </div>
-
-            {/* Inter-judge Correlation */}
-            <div className="bg-white shadow rounded-lg p-6">
-              <h3 className="text-lg font-semibold mb-4">Inter-Judge Correlation Analysis</h3>
-              <div className="text-center py-8">
-                <p className="text-gray-500 mb-4">
-                  Judge correlation and reliability metrics will be displayed here.
-                </p>
-                <p className="text-sm text-gray-400">
-                  View how consistently our three judges score cybersecurity tasks.
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
 
         {selectedView === 'all-runs' && (
           <div className="space-y-6">
