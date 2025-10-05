@@ -189,11 +189,11 @@ python scripts/generate_research_dataset.py
 If you use this dataset generation methodology in your research:
 
 ```bibtex
-@software{cybercqbench2025,
-  title={CyberCQBench: Cost-Quality Benchmarking for Cybersecurity AI},
-  author={Zeyada, [Your Name]},
+@software{cyberprompt2025,
+  title={CyberPrompt: Cost-Quality Benchmarking for Cybersecurity AI},
+  author={Zeyada, Mohammed},
   year={2025},
-  url={https://github.com/[your-repo]/CyberCQBench}
+  url={https://github.com/mozeyada/CyberPrompt}
 }
 ```
 

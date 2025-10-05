@@ -74,7 +74,7 @@ export function ResultsTable({ experimentId }: ResultsTableProps) {
       const url = window.URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
-      a.download = `cybercqbench_results_${new Date().toISOString().split('T')[0]}.csv`
+      a.download = `cyberprompt_results_${new Date().toISOString().split('T')[0]}.csv`
       document.body.appendChild(a)
       a.click()
       window.URL.revokeObjectURL(url)

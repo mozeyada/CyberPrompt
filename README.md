@@ -56,7 +56,7 @@ As organizations adopt Large Language Models (LLMs) like GPT-4, Claude, and Gemi
 ### 1. Clone and Setup
 ```bash
 git clone <repository-url>
-cd CyberCQBench
+cd CyberPrompt
 cp .env.example .env
 # Edit .env with your API keys and pricing config
 ```
@@ -72,7 +72,7 @@ make dev-frontend # Start frontend dev server
 ```
 
 ### 3. Access the Application (300 static prompts auto-loaded)
-- **CyberCQBench UI**: http://localhost:3000
+- **CyberPrompt UI**: http://localhost:3000
 - **API Documentation**: http://localhost:8000/docs
 - **Database Admin**: http://localhost:8081
 
@@ -381,7 +381,7 @@ MIT License - see [LICENSE](LICENSE) file for details.
 
 ## Research Impact
 
-*"CyberCQBench enables the first systematic study of prompt length effects on LLM cost-quality trade-offs in cybersecurity operations. With 300 research-grade prompts across controlled length variants, it makes cost–performance benchmarking as rigorous as penetration testing in modern SOC and compliance workflows."*
+*"CyberPrompt enables the first systematic study of prompt length effects on LLM cost-quality trade-offs in cybersecurity operations. With 300 research-grade prompts across controlled length variants, it makes cost–performance benchmarking as rigorous as penetration testing in modern SOC and compliance workflows."*
 
 ### Academic Applications
 - **RQ1**: Analyze how prompt length influences LLM output quality and cost efficiency

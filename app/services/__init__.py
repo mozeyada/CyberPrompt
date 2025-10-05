@@ -1,1 +1,1 @@
-# Research modules for CyberCQBench academic analysis
+# Research modules for CyberPrompt academic analysis

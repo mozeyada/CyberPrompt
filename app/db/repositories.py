@@ -206,6 +206,11 @@ class RunRepository:
 
         return validated_runs
 
+    async def delete_by_id(self, run_id: str) -> bool:
+        """Delete run by ID"""
+        result = await self.collection.delete_one({"run_id": run_id})
+        return result.deleted_count > 0
+
 
 class OutputBlobRepository:
     def __init__(self, db: AsyncIOMotorDatabase = None):

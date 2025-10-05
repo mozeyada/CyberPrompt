@@ -2,8 +2,8 @@ import { useFilters } from '../../state/useFilters'
 
 const AVAILABLE_MODELS = [
   'gpt-4o',
-  'gpt-3.5-turbo',
-  'gemini-2.5-flash',
+  'llama-3.3-70b-versatile',
+      'gemini-2.5-pro',
   'claude-3-5-sonnet'
 ]
 

@@ -21,7 +21,7 @@ export function PromptSelector({ selectedPrompts, onPromptsChange, scenario, len
         length_bin: lengthBin || undefined,
         ...(sourceFilter && sourceFilter !== 'all' && { prompt_type: sourceFilter }),
         include_variants: includeVariants, // Only fetch variants when needed
-        limit: 500
+        limit: 200
       }).then(data => {
         console.log('Prompts API result:', data)
         return data

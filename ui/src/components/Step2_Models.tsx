@@ -6,9 +6,9 @@ interface Step2Props {
 export function Step2_Models({ selectedModels, setSelectedModels }: Step2Props) {
   const models = [
     { id: 'gpt-4o', name: 'GPT-4o', desc: 'High quality, higher cost', color: 'bg-blue-100 text-blue-800' },
-    { id: 'gpt-3.5-turbo', name: 'GPT-3.5 Turbo', desc: 'Fast, cost-effective', color: 'bg-green-100 text-green-800' },
+      { id: 'llama-3.3-70b-versatile', name: 'Groq Llama 3.3 70B', desc: 'Fast, ultra-low cost', color: 'bg-green-100 text-green-800' },
     { id: 'claude-3-5-sonnet', name: 'Claude 3.5 Sonnet', desc: 'Excellent reasoning', color: 'bg-purple-100 text-purple-800' },
-    { id: 'gemini-2.5-flash', name: 'Gemini 2.5 Flash', desc: 'Fast, good value', color: 'bg-orange-100 text-orange-800' }
+        { id: 'gemini-2.5-pro', name: 'Gemini 2.5 Pro', desc: 'High quality, good value', color: 'bg-orange-100 text-orange-800' }
   ]
 
   const toggleModel = (modelId: string) => {

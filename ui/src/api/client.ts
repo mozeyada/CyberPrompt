@@ -143,6 +143,10 @@ export const runsApi = {
     return response.data;
   },
 
+    delete: async (runId: string): Promise<{ message: string }> => {
+      const response = await api.delete(`/runs/delete/${runId}`);
+      return response.data;
+    },
 
 };
 

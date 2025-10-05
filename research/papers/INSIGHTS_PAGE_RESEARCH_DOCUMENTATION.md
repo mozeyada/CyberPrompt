@@ -1,5 +1,5 @@
 # Insights Page: Research Documentation
-**CyberCQBench - IFN712 Research Project**  
+**CyberPrompt - IFN712 Research Project**  
 **Student**: Mohamed Zeyada (11693860)  
 **Supervisor**: Dr. Gowri Ramachandran  
 **Last Updated**: October 2025
@@ -304,7 +304,7 @@ Every chart answers a hypothesis:
 ### For Thesis Defense
 
 **Key Message**:
-> "CyberCQBench provides a reproducible framework for evaluating LLMs in SOC/GRC operations 
+> "CyberPrompt provides a reproducible framework for evaluating LLMs in SOC/GRC operations 
 > with integrated cost-quality analysis and bias mitigation. The Insights page transforms 
 > raw benchmark data into actionable research findings through statistically validated 
 > visualizations."

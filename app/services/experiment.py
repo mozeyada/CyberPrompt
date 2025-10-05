@@ -27,6 +27,7 @@ class ExperimentService:
             openai_key=settings.openai_api_key,
             anthropic_key=settings.anthropic_api_key,
             google_key=settings.google_api_key,
+            groq_key=settings.groq_api_key,
         )
         # Initialize cost calculator with current pricing
         pricing_config = settings.get_pricing()

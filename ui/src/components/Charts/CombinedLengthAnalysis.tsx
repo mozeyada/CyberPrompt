@@ -5,15 +5,16 @@ import { useFilters } from '../../state/useFilters'
 
 const LENGTH_COLORS = { S: '#10B981', M: '#3B82F6', L: '#F59E0B' }
 
-export function CombinedLengthAnalysis() {
+export function CombinedLengthAnalysis({ experimentId }: { experimentId?: string } = {}) {
   const { selectedScenario, selectedModels, scoringMode } = useFilters()
   
   const { data: runsData, isLoading } = useQuery({
-    queryKey: ['runs-length-combined', selectedScenario, selectedModels, scoringMode],
+    queryKey: ['runs-length-combined', selectedScenario, selectedModels, scoringMode, experimentId],
     queryFn: () => runsApi.list({ 
       limit: 200,
       ...(selectedScenario && { scenario: selectedScenario }),
-      ...(selectedModels.length > 0 && { model: selectedModels.join(',') })
+      ...(selectedModels.length > 0 && { model: selectedModels.join(',') }),
+      ...(experimentId && { experiment_id: experimentId })
     }),
     staleTime: 30000
   })

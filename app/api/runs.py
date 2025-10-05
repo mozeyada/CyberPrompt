@@ -528,3 +528,33 @@ async def list_runs(
     except Exception as e:
         logger.error(f"Error listing runs: {e}")
         raise HTTPException(status_code=500, detail=f"Data validation error: {e!s}")
+
+
+@router.delete("/delete/{run_id}")
+async def delete_run(
+    run_id: str,
+    x_api_key: str = Header(..., description="API key"),
+) -> dict:
+    """Delete a specific run"""
+    validate_api_key_header(x_api_key)
+
+    try:
+        from app.db.repositories import RunRepository
+        run_repo = RunRepository()
+        
+        # Check if run exists
+        run = await run_repo.get_by_id(run_id)
+        if not run:
+            raise HTTPException(status_code=404, detail="Run not found")
+        
+        # Delete the run
+        success = await run_repo.delete_by_id(run_id)
+        if not success:
+            raise HTTPException(status_code=500, detail="Failed to delete run")
+        
+        return {"message": f"Run {run_id} deleted successfully"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error deleting run {run_id}: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to delete run: {e}")

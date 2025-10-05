@@ -132,7 +132,7 @@ All sourcetypes, control IDs, and framework references are **extracted directly 
 ✅ Suitable for integration with generative AI APIs (OpenAI, Anthropic, Google)
 
 **File Locations**:
-- BOTS v3: `/home/zeyada/CyberCQBench/datasets/botsv3_data_set/`
-- NIST PDF: `/home/zeyada/CyberCQBench/datasets/nist/NIST.SP.800-53Ar5.pdf`
-- Generation Script: `/home/zeyada/CyberCQBench/scripts/generate_research_dataset.py`
-- Output Dataset: `/home/zeyada/CyberCQBench/data/prompts.json`
+- BOTS v3: `/home/zeyada/CyberPrompt/datasets/botsv3_data_set/`
+- NIST PDF: `/home/zeyada/CyberPrompt/datasets/nist/NIST.SP.800-53Ar5.pdf`
+- Generation Script: `/home/zeyada/CyberPrompt/scripts/generate_research_dataset.py`
+- Output Dataset: `/home/zeyada/CyberPrompt/data/prompts.json`

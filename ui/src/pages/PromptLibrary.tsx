@@ -19,7 +19,7 @@ export function PromptLibrary() {
       prompt_type: activeTab === 'prompts' ? 'static' : 'adaptive',
       ...(scenarioFilter !== 'all' && { scenario: scenarioFilter }),
       ...(searchQuery && { q: searchQuery }),
-      limit: 500 // Load more prompts
+      limit: 200 // Load more prompts - max limit is 200
     })
   })
 

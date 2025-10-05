@@ -122,7 +122,7 @@ async def export_runs_csv(
         
         # Prepare response
         output.seek(0)
-        filename = f"cybercqbench_runs_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
+        filename = f"cyberprompt_runs_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
         
         return StreamingResponse(
             io.BytesIO(output.getvalue().encode('utf-8')),
@@ -196,7 +196,7 @@ async def export_experiments_csv(
             writer.writerow(row)
         
         output.seek(0)
-        filename = f"cybercqbench_experiments_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
+        filename = f"cyberprompt_experiments_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
         
         return StreamingResponse(
             io.BytesIO(output.getvalue().encode('utf-8')),

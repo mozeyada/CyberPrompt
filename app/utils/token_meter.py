@@ -13,6 +13,8 @@ MODEL_ENCODINGS = {
     "claude-3-5-sonnet": "cl100k_base",  # Approximation
     "claude-3-opus": "cl100k_base",  # Approximation
     "claude-3-haiku": "cl100k_base",  # Approximation
+    "llama-3.3-70b-versatile": "cl100k_base",  # Groq model
+    "gemini-2.5-pro": "cl100k_base",  # Google model
 }
 
 

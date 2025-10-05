@@ -83,7 +83,7 @@ app.include_router(validation.router)
 async def root():
     """Root endpoint"""
     return {
-        "message": "CyberCQBench API",
+        "message": "CyberPrompt API",
         "version": "1.0.0",
         "environment": settings.app_env,
         "docs": "/docs",

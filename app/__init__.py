@@ -1,1 +1,1 @@
-# CyberCQBench Core Package
+# CyberPrompt Core Package

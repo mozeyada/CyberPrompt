@@ -6,7 +6,7 @@ import { useFilters } from '../state/useFilters'
 import { Step1_Scenarios } from '../components/Step1_Scenarios'
 import { Step2_Models } from '../components/Step2_Models'
 import { Step3_Configure } from '../components/Step3_Configure'
-import { Overview } from './Overview'
+import { Navigate } from 'react-router-dom'
 
 export function RQ1Flow() {
   const [currentStep, setCurrentStep] = useState<'intro' | 'demo' | 'experiment' | 'results'>('intro')
@@ -508,14 +508,10 @@ export function RQ1Flow() {
     const effectiveExperimentId = experimentId || null
     
     return (
-      <div>
-        <div className="mb-4 text-center">
-          <div className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-blue-100 text-blue-800">
-            {effectiveExperimentId ? `Experiment ${effectiveExperimentId} Results` : 'Latest Experiment Results'}
-          </div>
-        </div>
-        <Overview experimentId={effectiveExperimentId} />
-      </div>
+      <Navigate 
+        to={effectiveExperimentId ? `/results?experiment=${effectiveExperimentId}` : '/results'} 
+        replace 
+      />
     )
   }
 

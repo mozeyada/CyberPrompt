@@ -224,8 +224,11 @@ class GoogleClient(BaseLLMClient):
     ) -> str:
         """Generate response using Google Gemini API"""
         try:
-            # Map our model name to Google's
-            google_model = model.replace("gemini-2.5-flash", "gemini-2.0-flash-exp")
+            # Map our model name to Google's API model names
+            if model == "gemini-2.5-pro":
+                google_model = "gemini-2.5-pro"  # Official API model name
+            else:
+                google_model = model
 
             start_time = time.time()
             model_instance = self._client.GenerativeModel(google_model)
@@ -278,7 +281,7 @@ class LLMClientFactory:
     """Factory for creating LLM clients"""
 
     @staticmethod
-    def create_client(model: str, openai_key: str = "", anthropic_key: str = "", google_key: str = "") -> BaseLLMClient:
+    def create_client(model: str, openai_key: str = "", anthropic_key: str = "", google_key: str = "", groq_key: str = "") -> BaseLLMClient:
         """Create appropriate client for model"""
         if model.startswith("gpt") or "gpt" in model.lower():
             return OpenAIClient(openai_key)
@@ -286,6 +289,9 @@ class LLMClientFactory:
             return AnthropicClient(anthropic_key)
         elif "gemini" in model.lower():
             return GoogleClient(google_key)
+        elif "llama" in model.lower() or model.startswith("llama"):
+            from app.services.groq_client import GroqClient
+            return GroqClient(groq_key)
         else:
             # Default to OpenAI for unknown models
             logger.warning(f"Unknown model {model}, defaulting to OpenAI client")
@@ -295,17 +301,18 @@ class LLMClientFactory:
 class ModelRunner:
     """Manages model execution with multiple clients"""
 
-    def __init__(self, openai_key: str = "", anthropic_key: str = "", google_key: str = ""):
+    def __init__(self, openai_key: str = "", anthropic_key: str = "", google_key: str = "", groq_key: str = ""):
         self.openai_key = openai_key
         self.anthropic_key = anthropic_key
         self.google_key = google_key
+        self.groq_key = groq_key
         self._clients: dict[str, BaseLLMClient] = {}
 
     def _get_client(self, model: str) -> BaseLLMClient:
         """Get or create client for model"""
         if model not in self._clients:
             self._clients[model] = LLMClientFactory.create_client(
-                model, self.openai_key, self.anthropic_key, self.google_key,
+                model, self.openai_key, self.anthropic_key, self.google_key, self.groq_key,
             )
         return self._clients[model]
 

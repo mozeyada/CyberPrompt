@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Academic-Grade Cybersecurity Prompt Generation for CyberCQBench Research
+Academic-Grade Cybersecurity Prompt Generation for CyberPrompt Research
 
 This script generates research-quality prompts using:
 1. BOTS v3 dataset (real security data)
@@ -542,7 +542,7 @@ def main():
     # For academic reproducibility, set a fixed seed
     random.seed(42)  # Ensures identical results across runs
     
-    print("🎓 Generating Academic-Grade CyberCQBench Dataset")
+    print("🎓 Generating Academic-Grade CyberPrompt Dataset")
     print(f"📊 Target: {RESEARCH_CONFIG['total_base_prompts']} base prompts × 3 variants = {RESEARCH_CONFIG['total_base_prompts'] * 3} total")
     print("🔬 Using reproducible seed (42) and precise tokenization")
     

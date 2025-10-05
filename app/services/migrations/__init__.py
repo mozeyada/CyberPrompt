@@ -1,1 +1,1 @@
-# Migration scripts for CyberCQBench
+# Migration scripts for CyberPrompt
