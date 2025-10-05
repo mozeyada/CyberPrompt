@@ -21,7 +21,7 @@ export function PromptSelector({ selectedPrompts, onPromptsChange, scenario, len
         length_bin: lengthBin || undefined,
         ...(sourceFilter && sourceFilter !== 'all' && { prompt_type: sourceFilter }),
         include_variants: includeVariants, // Only fetch variants when needed
-        limit: 200
+        limit: 300
       }).then(data => {
         console.log('Prompts API result:', data)
         return data
@@ -74,7 +74,7 @@ export function PromptSelector({ selectedPrompts, onPromptsChange, scenario, len
   // Calculate display count based on what's actually shown
   const filteredForDisplay = prompts.filter(prompt => {
     if (includeVariants) {
-      return !prompt.metadata?.variant_of
+      return !(prompt.metadata as any)?.variant_of
     }
     return true
   })
@@ -84,7 +84,7 @@ export function PromptSelector({ selectedPrompts, onPromptsChange, scenario, len
     <div className="space-y-2">
       <div className="flex items-center justify-between">
         <label className="block text-sm font-medium text-gray-700">
-          Available Prompts ({displayCount})
+          Available Prompts ({displayCount}{displayCount === 300 ? ' - all' : ''})
         </label>
         <div className="flex gap-2">
           <button
@@ -111,10 +111,10 @@ export function PromptSelector({ selectedPrompts, onPromptsChange, scenario, len
           </div>
         ) : (
           (() => {
-            const elements = []
+            const elements: any[] = []
             const filteredPrompts = prompts.filter(prompt => {
               if (includeVariants) {
-                return !prompt.metadata?.variant_of
+                return !(prompt.metadata as any)?.variant_of
               }
               return true
             })
@@ -137,6 +137,10 @@ export function PromptSelector({ selectedPrompts, onPromptsChange, scenario, len
                       <span className="text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded">
                         {prompt.scenario}
                       </span>
+                      {/* Extract prompt number from prompt_id */}
+                      <span className="text-xs bg-gray-100 text-gray-700 px-2 py-0.5 rounded font-mono">
+                        {prompt.prompt_id.replace(/^academic_/, '').replace(/_[slm]$/i, '').toLowerCase()}
+                      </span>
                       {prompt.length_bin && (
                         <span className={'text-xs px-2 py-0.5 rounded ' + (
                           prompt.length_bin === 'S' ? 'bg-green-100 text-green-800' :
@@ -147,7 +151,7 @@ export function PromptSelector({ selectedPrompts, onPromptsChange, scenario, len
                           {prompt.length_bin}
                         </span>
                       )}
-                      {includeVariants && !prompt.metadata?.variant_of && (
+                      {includeVariants && !(prompt.metadata as any)?.variant_of && (
                         <span className="text-xs bg-purple-100 text-purple-800 px-2 py-0.5 rounded">
                           +M+L variants
                         </span>
