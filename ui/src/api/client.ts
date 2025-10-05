@@ -103,6 +103,7 @@ export const runsApi = {
     prompt_ids: string[];
     model_names: string[];
     ensemble?: boolean;
+    include_variants?: boolean;  // FIX: Add include_variants parameter
     bias_controls?: {
       fsp: boolean;
       granularity_demo?: boolean;

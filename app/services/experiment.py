@@ -39,6 +39,7 @@ class ExperimentService:
         Returns list of run_ids that were created
         """
         run_ids = []
+        logger.info(f"Planning runs with include_variants={include_variants}, prompts={plan_request.prompts}")
 
         try:
             # Generate simple experiment ID
@@ -63,9 +64,11 @@ class ExperimentService:
                 
                 # If include_variants is True, add the M and L variants for this prompt
                 if include_variants:
+                    logger.info(f"Expanding variants for prompt: {prompt_id}")
                     # Find variants by matching the base prompt ID (remove length suffix)
                     import re
                     base_prompt_id = re.sub(r'_[slm]$', '', prompt_id, flags=re.IGNORECASE)
+                    logger.info(f"Base prompt ID: {base_prompt_id}")
                     
                     # Find medium and long variants using the naming pattern
                     from app.db.connection import get_database
@@ -76,11 +79,13 @@ class ExperimentService:
                         f"{base_prompt_id}_m",  # Medium variant
                         f"{base_prompt_id}_l"   # Long variant
                     ]
+                    logger.info(f"Looking for variant IDs: {variant_ids}")
                     
                     variant_docs = await db.prompts.find({
                         'prompt_id': {'$in': variant_ids},
                         'scenario': prompt.scenario  # Ensure same scenario
                     }).to_list(None)
+                    logger.info(f"Found {len(variant_docs)} variant documents")
                     
                     for variant_doc in variant_docs:
                         try:
@@ -91,6 +96,8 @@ class ExperimentService:
                         except Exception as e:
                             logger.warning(f"Skipping invalid variant: {e}")
                             continue
+                else:
+                    logger.info(f"Variants disabled for prompt: {prompt_id}")
             
             if invalid_prompt_ids:
                 msg = f"Invalid prompt IDs: {', '.join(invalid_prompt_ids[:5])}" + (" (and more)" if len(invalid_prompt_ids) > 5 else "")

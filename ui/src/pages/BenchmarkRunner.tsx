@@ -81,6 +81,12 @@ export function BenchmarkRunner() {
       const successCount = results.filter((r: any) => r.status === 'succeeded').length
       const failCount = results.filter((r: any) => r.status === 'failed').length
       
+      // Clear progress simulation interval
+      if ((window as any).currentProgressInterval) {
+        clearInterval((window as any).currentProgressInterval)
+        delete (window as any).currentProgressInterval
+      }
+      
       setExecutionStatus(prev => ({
         ...prev,
         isRunning: false,
@@ -123,6 +129,12 @@ export function BenchmarkRunner() {
       
       const successCount = results.filter((r: any) => r.status === 'succeeded').length
       const failCount = results.filter((r: any) => r.status === 'failed').length
+      
+      // Clear progress simulation interval
+      if ((window as any).currentProgressInterval) {
+        clearInterval((window as any).currentProgressInterval)
+        delete (window as any).currentProgressInterval
+      }
       
       setExecutionStatus(prev => ({
         ...prev,
@@ -203,6 +215,9 @@ export function BenchmarkRunner() {
         clearInterval(progressInterval)
       }
     }, 1000) // Update every second
+    
+    // Store interval reference to clear it when mutation completes
+    ;(window as any).currentProgressInterval = progressInterval
     addLog(`Config: ${experimentConfig.repeats} repeats, seed ${experimentConfig.seed}`, 'info')
     addLog(`Metadata: Hash ${metadata.configHash}, Cost ~$${metadata.estimatedCost.toFixed(4)}`, 'info')
     
@@ -213,6 +228,7 @@ export function BenchmarkRunner() {
         prompt_ids: validPromptIds,
         model_names: selectedModels,
         ensemble: enableEnsemble,
+        include_variants: includeVariants,  // FIX: Add include_variants parameter
         bias_controls: {
           fsp: experimentConfig.fspEnabled,
           granularity_demo: false
