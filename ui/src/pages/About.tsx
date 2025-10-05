@@ -1,6 +1,15 @@
 import React from 'react'
+import { useQuery } from '@tanstack/react-query'
+import { researchApi } from '../api/client'
 
 export function About() {
+  // Fetch research dataset statistics
+  const { data: scenarioStats, isLoading: statsLoading } = useQuery({
+    queryKey: ['research-scenario-stats'],
+    queryFn: () => researchApi.getScenarioStats(),
+    staleTime: 300000, // Cache for 5 minutes
+  })
+
   return (
     <div className="max-w-4xl mx-auto space-y-8">
       {/* Title & Mission */}
@@ -46,10 +55,28 @@ export function About() {
           </div>
           <div>
             <h3 className="text-lg font-semibold text-gray-800 mb-3">Research Dataset</h3>
-            <p className="text-gray-600">
-              300 total prompts: 100 originals + 100 medium + 100 long variants with perfect 
-              traceability and controlled token classification for academic analysis.
-            </p>
+            {statsLoading ? (
+              <div className="text-gray-500">Loading dataset statistics...</div>
+            ) : scenarioStats ? (
+              <div className="space-y-2">
+                <p className="text-gray-600">
+                  <strong>{scenarioStats.research_dataset?.total_prompts || 0}</strong> total prompts across {Object.keys(scenarioStats.research_dataset?.scenarios || {}).length} scenarios
+                </p>
+                <div className="text-sm text-gray-500">
+                  {Object.entries(scenarioStats.research_dataset?.scenarios || {}).map(([scenario, data]: [string, any]) => (
+                    <div key={scenario} className="flex justify-between">
+                      <span>{scenario}:</span>
+                      <span>{data.total_prompts} prompts</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <p className="text-gray-600">
+                300 total prompts: 100 originals + 100 medium + 100 long variants with perfect 
+                traceability and controlled token classification for academic analysis.
+              </p>
+            )}
           </div>
         </div>
       </div>
@@ -119,6 +146,85 @@ export function About() {
             including linear regression, confidence intervals, and significance testing.
           </p>
         </div>
+      </div>
+
+      {/* Dataset Analytics */}
+      <div className="bg-white rounded-lg shadow p-8">
+        <h2 className="text-2xl font-bold text-gray-900 mb-6">Dataset Analytics</h2>
+        {statsLoading ? (
+          <div className="text-center py-8">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+            <p className="text-gray-500 mt-2">Loading dataset composition...</p>
+          </div>
+        ) : scenarioStats ? (
+          <div className="space-y-6">
+            {/* Overall Statistics */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="bg-blue-50 p-4 rounded-lg">
+                <h3 className="font-semibold text-blue-800">Total Prompts</h3>
+                <p className="text-2xl font-bold text-blue-600">{scenarioStats.research_dataset?.total_prompts || 0}</p>
+              </div>
+              <div className="bg-green-50 p-4 rounded-lg">
+                <h3 className="font-semibold text-green-800">Scenarios</h3>
+                <p className="text-2xl font-bold text-green-600">{Object.keys(scenarioStats.research_dataset?.scenarios || {}).length}</p>
+              </div>
+              <div className="bg-purple-50 p-4 rounded-lg">
+                <h3 className="font-semibold text-purple-800">Length Variants</h3>
+                <p className="text-2xl font-bold text-purple-600">3 (S/M/L)</p>
+              </div>
+            </div>
+
+            {/* Scenario Breakdown */}
+            <div>
+              <h3 className="text-lg font-semibold text-gray-800 mb-4">Scenario Composition</h3>
+              <div className="space-y-3">
+                {Object.entries(scenarioStats.research_dataset?.scenarios || {}).map(([scenario, data]: [string, any]) => (
+                  <div key={scenario} className="border rounded-lg p-4">
+                    <div className="flex justify-between items-center mb-2">
+                      <h4 className="font-medium text-gray-800">{scenario}</h4>
+                      <span className="text-sm font-semibold text-blue-600">{data.total_prompts} prompts</span>
+                    </div>
+                    <div className="grid grid-cols-3 gap-4 text-sm">
+                      {Object.entries(data.length_bins || {}).map(([lengthBin, binData]: [string, any]) => (
+                        <div key={lengthBin} className="text-center">
+                          <div className="font-medium text-gray-700">{lengthBin.toUpperCase()}</div>
+                          <div className="text-gray-600">{binData.count} prompts</div>
+                          <div className="text-xs text-gray-500">{binData.avg_tokens} avg tokens</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Research Recommendations */}
+            {scenarioStats.research_notes && (
+              <div className="bg-gray-50 rounded-lg p-4">
+                <h3 className="text-lg font-semibold text-gray-800 mb-3">Research Planning</h3>
+                <div className="space-y-2 text-sm">
+                  <div>
+                    <strong>RQ1 Analysis:</strong> {scenarioStats.research_notes.RQ1_analysis}
+                  </div>
+                  <div>
+                    <strong>RQ2 Analysis:</strong> {scenarioStats.research_notes.RQ2_analysis}
+                  </div>
+                  <div className="mt-3">
+                    <strong>Sample Recommendations:</strong>
+                    <ul className="ml-4 mt-1 space-y-1">
+                      <li>• Small experiment: {scenarioStats.research_notes.sample_recommendations?.small_experiment}</li>
+                      <li>• Full experiment: {scenarioStats.research_notes.sample_recommendations?.full_experiment}</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="text-center py-8 text-gray-500">
+            <p>Dataset analytics unavailable. Please check your connection.</p>
+          </div>
+        )}
       </div>
 
       {/* Authors & Affiliations */}
