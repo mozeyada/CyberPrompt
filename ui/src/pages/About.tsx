@@ -14,9 +14,9 @@ export function About() {
     <div className="max-w-4xl mx-auto space-y-8">
       {/* Title & Mission */}
       <div className="text-center">
-        <h1 className="text-4xl font-bold text-gray-900 mb-4">About This Research</h1>
+        <h1 className="text-4xl font-bold text-gray-900 mb-4">About CyberPrompt</h1>
         <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-          CyberCQBench enables systematic study of prompt length effects on LLM cost-quality trade-offs 
+          CyberPrompt enables systematic study of prompt length effects on LLM cost-quality trade-offs 
           in cybersecurity operations. With 300 research-grade prompts across controlled length variants 
           and proper FSP bias mitigation, it provides cost-effective and reproducible AI evaluation for SOC and GRC tasks.
         </p>
@@ -257,7 +257,7 @@ export function About() {
         <h2 className="text-2xl font-bold text-gray-900 mb-6">Citation</h2>
         <div className="bg-white rounded-lg p-6 border-l-4 border-blue-500">
           <p className="text-gray-800 font-mono text-sm leading-relaxed">
-            Zeyada, M., & Ramachandran, G. (2025). <em>CyberCQBench: Benchmarking LLMs for SOC and GRC Operations</em>. 
+            Zeyada, M., & Ramachandran, G. (2025). <em>CyberPrompt: A Benchmark for Prompt Quality in Cybersecurity Operations</em>. 
             Queensland University of Technology, Brisbane, Australia.
           </p>
         </div>

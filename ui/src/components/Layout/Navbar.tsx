@@ -23,7 +23,7 @@ export function Navbar() {
                   <span className="text-white font-bold text-sm">CB</span>
                 </div>
                 <h1 className="text-xl font-bold text-gray-900">
-                  CyberCQBench
+                  CyberPrompt
                 </h1>
               </div>
             </Link>

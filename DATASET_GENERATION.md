@@ -2,7 +2,7 @@
 
 ## Overview
 
-CyberCQBench uses a **reproducible, academic-grade dataset** of 300 cybersecurity prompts (100 base prompts × 3 length variants: Short, Medium, Long) for RQ1 and RQ2 research.
+CyberPrompt uses a **reproducible, academic-grade dataset** of 300 cybersecurity prompts (100 base prompts × 3 length variants: Short, Medium, Long) for RQ1 and RQ2 research.
 
 The dataset is **already included** in this repository at `data/prompts.json`. You only need to regenerate it if you want to modify the scenarios or validate reproducibility.
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Import CySecBench Research Dataset Script
+Import CyberPrompt Research Dataset Script
 
 This script imports the research-grade prompt dataset (300 prompts) generated
 by generate_research_dataset.py into the MongoDB database.
@@ -32,7 +32,7 @@ from app.models import Prompt, LengthBin, ScenarioType, SourceType
 async def import_cysecbench_dataset():
     """Import the CySecBench research dataset into MongoDB"""
     
-    print("🎓 CYBERSECQBENCH RESEARCH DATASET IMPORT")
+    print("🎓 CYBERPROMPT RESEARCH DATASET IMPORT")
     print("=" * 50)
     
     try:
@@ -185,7 +185,7 @@ async def main():
     
     if success:
         print()
-        print("🚀 CYBERSECQBENCH RESEARCH DATASET IMPORT COMPLETE!")
+        print("🚀 CYBERPROMPT RESEARCH DATASET IMPORT COMPLETE!")
         print("📊 The platform is ready for research experiments.")
         print("🎯 Dataset supports RQ1 (prompt length analysis) and RQ2 (cost-effectiveness).")
     else:
@@ -197,7 +197,7 @@ async def main():
 if __name__ == "__main__":
     # Handle both direct execution and import
     if __name__ == "__main__":
-        print("🎓 CyberCQBench Research Dataset Import Tool")
+        print("🎓 CyberPrompt Research Dataset Import Tool")
         print("Student: Mohamed Zeyada (11693860)")
         print("Supervisor: Dr. Gowri Ramachandran")
         print("Project: IFN712 - Research in IT Practice")

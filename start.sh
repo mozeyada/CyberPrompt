@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-echo "Starting CyberCQBench..."
+echo "Starting CyberPrompt..."
 
 # Check if .env exists
 if [ ! -f .env ]; then
@@ -32,7 +32,7 @@ if docker compose ps | grep -q "unhealthy\|exited"; then
     exit 1
 fi
 
-echo "✅ CyberCQBench is ready!"
+echo "✅ CyberPrompt is ready!"
 echo "Frontend: http://localhost:3000"
 echo "API: http://localhost:8000"
 echo "MongoDB Admin: http://localhost:8081"

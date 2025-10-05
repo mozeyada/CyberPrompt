@@ -1,4 +1,4 @@
-# CyberCQBench Research Notes & Implementation Log
+# CyberPrompt Research Notes & Implementation Log
 
 **Last Updated**: 2025-09-30  
 **Project**: IFN712 - Benchmarking Generative AI Token Use in Cybersecurity Operations  

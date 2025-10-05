@@ -3,6 +3,7 @@ services:
     build: 
       context: .
       dockerfile: Dockerfile
+    image: cyberprompt-api
     ports:
       - "8000:8000"
     environment:
@@ -17,11 +18,13 @@ services:
     volumes:
       - uploads_data:/app/uploads
     networks:
-      - cybercq-network
+      - cyberprompt-network
+    container_name: cyberprompt-api-1
     restart: unless-stopped
 
   mongo:
     image: mongo:7.0
+    container_name: cyberprompt-mongo-1
     restart: always
     ports:
       - "27017:27017"
@@ -29,7 +32,7 @@ services:
       - mongo_data:/data/db
       - ./docker/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
     networks:
-      - cybercq-network
+      - cyberprompt-network
     healthcheck:
       test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
       interval: 10s
@@ -39,6 +42,7 @@ services:
 
   mongo-express:
     image: mongo-express:latest
+    container_name: cyberprompt-mongo-express-1
     restart: always
     ports:
       - "8081:8081"
@@ -50,10 +54,10 @@ services:
     depends_on:
       - mongo
     networks:
-      - cybercq-network
+      - cyberprompt-network
 
 networks:
-  cybercq-network:
+  cyberprompt-network:
     driver: bridge
 
 volumes:

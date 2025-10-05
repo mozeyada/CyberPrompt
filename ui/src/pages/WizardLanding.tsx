@@ -14,14 +14,14 @@ export function WizardLanding() {
       {/* Hero Section */}
       <div className="text-center space-y-4">
         <h1 className="text-4xl font-bold text-gray-900">
-          CyberCQBench
+          CyberPrompt
         </h1>
         <p className="text-xl text-gray-600">
           Cost-effective AI evaluation for cybersecurity operations
         </p>
         <p className="text-lg text-gray-500 max-w-2xl mx-auto">
           Which AI is most reliable for SOC and compliance tasks, and at what cost? 
-          CyberCQBench provides systematic answers with research-grade reproducibility.
+          CyberPrompt provides systematic answers with research-grade reproducibility.
         </p>
       </div>
 
@@ -156,7 +156,7 @@ export function WizardLanding() {
       {/* Research Impact */}
       <div className="bg-gray-50 rounded-lg p-6 text-center">
         <p className="text-gray-700 italic">
-          "CyberCQBench enables the first systematic study of prompt length effects on LLM 
+          "CyberPrompt enables the first systematic study of prompt length effects on LLM 
           cost-quality trade-offs in cybersecurity operations, making cost-performance benchmarking 
           as rigorous as penetration testing in modern SOC workflows."
         </p>

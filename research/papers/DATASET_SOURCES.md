@@ -1,4 +1,4 @@
-# CyberCQBench Dataset Sources and Authenticity
+# CyberPrompt Dataset Sources and Authenticity
 
 ## Current Dataset Status - FULLY AUTHENTIC
 - **Generated**: 300 prompts (100 base scenarios × 3 length variants: S/M/L)

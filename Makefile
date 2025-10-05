@@ -1,9 +1,9 @@
-# CyberCQBench Development Commands
+# CyberPrompt Development Commands
 
 .PHONY: help dev test lint build clean seed docker-build docker-up docker-down
 
 help:
-	@echo "CyberCQBench Development Commands"
+	@echo "CyberPrompt Development Commands"
 	@echo "================================="
 	@echo "dev              - Start full development environment (backend + frontend)"
 	@echo "dev-stop         - Stop all development services"
@@ -21,7 +21,7 @@ help:
 
 # Development
 dev:
-	@echo "🚀 Starting CyberCQBench development environment..."
+	@echo "🚀 Starting CyberPrompt development environment..."
 	@if [ ! -f .env ]; then echo ".env not found. Run: cp .env.example .env"; exit 1; fi
 	@command -v node >/dev/null 2>&1 || { echo "Installing Node.js..."; curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash - >/dev/null 2>&1 && sudo apt-get install -y nodejs >/dev/null 2>&1 || echo "Auto-install failed. Install Node.js from https://nodejs.org"; }
 	@echo "📡 Starting backend services with Docker Compose..."

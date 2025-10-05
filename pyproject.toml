@@ -10,7 +10,7 @@ readme = "README.md"
 requires-python = ">=3.11"
 license = {text = "MIT"}
 authors = [
-    {name = "CyberCQBench Team"},
+    {name = "CyberPrompt Team"},
 ]
 keywords = ["llm", "evaluation", "security", "soc", "grc", "cybersecurity"]
 classifiers = [

@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 async def lifespan(app: FastAPI):
     """Application lifespan manager"""
     # Startup
-    logger.info("Starting CyberCQBench API...")
+    logger.info("Starting CyberPrompt API...")
 
     # Initialize database
     await connect_to_mongo()
@@ -43,8 +43,8 @@ async def lifespan(app: FastAPI):
 
 # Create FastAPI application
 app = FastAPI(
-    title="CyberCQBench API",
-    description="Research-grade evaluation platform for SOC/GRC LLM performance",
+    title="CyberPrompt API",
+    description="Research-grade evaluation platform for prompt quality in cybersecurity operations",
     version="1.0.0",
     docs_url="/docs",
     redoc_url="/redoc",

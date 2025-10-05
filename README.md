@@ -1,10 +1,10 @@
-# CyberCQBench
+# CyberPrompt
 
-**Cost-effective and research-compliant AI evaluation for cybersecurity operations.**
+**A Benchmark for Prompt Quality in Cybersecurity Operations**
 
-CyberCQBench is a research platform that enables Security Operations Center (SOC) analysts, compliance professionals, and cybersecurity researchers to evaluate AI models for security tasks with full reproducibility and cost tracking.
+CyberPrompt is a research platform that enables Security Operations Center (SOC) analysts, compliance professionals, and cybersecurity researchers to evaluate AI models for security tasks with full reproducibility and cost tracking.
 
-## Why CyberCQBench?
+## Why CyberPrompt?
 
 As organizations adopt Large Language Models (LLMs) like GPT-4, Claude, and Gemini for incident analysis, compliance mapping, and threat intelligence reporting, one question remains unanswered: **Which AI is the most reliable, and at what cost?**
 
@@ -257,7 +257,7 @@ make test
 
 ## FAQ
 
-**Q: Who is CyberCQBench for?**  
+**Q: Who is CyberPrompt for?**  
 A: SOC analysts, compliance auditors, cybersecurity researchers, and enterprise AI teams evaluating LLMs for security operations.
 
 **Q: What problem does it solve?**  
@@ -268,13 +268,13 @@ A:
 - **CySecBench** → Provided the rubric baseline, but static & cost-blind
 - **DefenderBench** → Added SOC-like diversity, but no GRC scoring or token analysis  
 - **Chroma** → Inspired adaptive query generation, but not tuned for cybersecurity
-- **CyberCQBench** → Unifies all three with FSP bias mitigation + cost analytics + length variant analysis for comprehensive SOC/GRC research
+- **CyberPrompt** → Unifies all three with FSP bias mitigation + cost analytics + length variant analysis for comprehensive SOC/GRC research
 
 **Q: How does it track cost vs quality?**  
 A: Each evaluation logs tokens, API pricing, and 7-dimension rubric scores. Dashboards visualize cost–quality trade-offs per model, scenario, and task length.
 
 **Q: Why is this important now?**  
-A: AI adoption in SOC and GRC is exploding, but without transparent benchmarking, organizations risk overspending and failing compliance checks. CyberCQBench ensures responsible, cost-effective use with academic-grade reproducibility.
+A: AI adoption in SOC and GRC is exploding, but without transparent benchmarking, organizations risk overspending and failing compliance checks. CyberPrompt ensures responsible, cost-effective use with academic-grade reproducibility.
 
 **Q: What makes the dataset special?**  
 A: 300 research-grade prompts with controlled length variants (Short 250-350, Medium 350-500, Long 600-750 tokens) enabling systematic studies of prompt length effects on LLM performance and cost efficiency.
@@ -391,7 +391,7 @@ MIT License - see [LICENSE](LICENSE) file for details.
 
 ## Availability
 
-CyberCQBench is available as:
+CyberPrompt is available as:
 - **Open Research Tool**: This repository (MIT License)
 - **Enterprise Service**: Contact for scalable, AWS-hosted version with Amazon Bedrock integration
 
@@ -413,4 +413,4 @@ CyberCQBench is available as:
 
 ---
 
-**CyberCQBench** - Cost-effective AI for SOC & Compliance
+**CyberPrompt** - Benchmarking Prompt Quality in Cybersecurity Operations

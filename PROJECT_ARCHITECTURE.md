@@ -1,13 +1,13 @@
-# CyberCQBench Project Architecture
+# CyberPrompt Project Architecture
 
 ## Overview
-CyberCQBench is a research-grade evaluation platform for SOC/GRC LLM performance that benchmarks AI models for cybersecurity operations with cost-quality analysis.
+CyberPrompt is a research-grade evaluation platform for SOC/GRC LLM performance that benchmarks AI models for cybersecurity operations with cost-quality analysis.
 
 ## System Architecture
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                        CyberCQBench System                     │
+│                        CyberPrompt System                     │
 ├─────────────────────────────────────────────────────────────────┤
 │                                                                 │
 │  ┌─────────────────┐    ┌─────────────────┐    ┌─────────────┐  │
@@ -27,7 +27,7 @@ CyberCQBench is a research-grade evaluation platform for SOC/GRC LLM performance
 ## Directory Structure
 
 ```
-CyberCQBench/
+CyberPrompt/
 ├── app/                    # Backend Python Application
 │   ├── api/               # FastAPI Route Handlers
 │   │   ├── analytics.py   # Cost-quality analysis endpoints

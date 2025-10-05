@@ -1,4 +1,4 @@
-# CyberCQBench Changelog
+# CyberPrompt Changelog
 
 ## [1.2.0] - 2025-01-XX - Research Enhancement & Bug Fixes
 
