@@ -22,132 +22,6 @@ export function About() {
         </p>
       </div>
 
-      {/* Methodology */}
-      <div className="bg-white rounded-lg shadow p-8">
-        <h2 className="text-2xl font-bold text-gray-900 mb-6">Methodology</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <h3 className="text-lg font-semibold text-gray-800 mb-3">Length Variant Analysis</h3>
-            <p className="text-gray-600">
-              Controlled S+M+L prompt groups (250-350, 350-500, 600-750 tokens) enable systematic
-              studies of how prompt length affects LLM quality and cost efficiency in cybersecurity tasks.
-              Ranges reflect realistic operational workflows: Tactical (S), Analytical (M), and Strategic (L).
-            </p>
-          </div>
-          <div>
-            <h3 className="text-lg font-semibold text-gray-800 mb-3">7-Dimension SOC/GRC Rubric</h3>
-            <ul className="text-gray-600 space-y-1">
-              <li>• Technical Accuracy</li>
-              <li>• Actionability</li>
-              <li>• Completeness</li>
-              <li>• Compliance Alignment</li>
-              <li>• Risk Awareness</li>
-              <li>• Relevance</li>
-              <li>• Clarity</li>
-            </ul>
-          </div>
-          <div>
-            <h3 className="text-lg font-semibold text-gray-800 mb-3">Bias Mitigation (FSP) ⚠️ Fixed</h3>
-            <p className="text-gray-600">
-              Focus Sentence Prompting now properly evaluates sentences with full context for true 
-              length-invariant scoring. Critical bug fix ensures research validity.
-            </p>
-          </div>
-          <div>
-            <h3 className="text-lg font-semibold text-gray-800 mb-3">Research Dataset</h3>
-            {statsLoading ? (
-              <div className="text-gray-500">Loading dataset statistics...</div>
-            ) : scenarioStats ? (
-              <div className="space-y-2">
-                <p className="text-gray-600">
-                  <strong>{scenarioStats.research_dataset?.total_prompts || 0}</strong> total prompts across {Object.keys(scenarioStats.research_dataset?.scenarios || {}).length} scenarios
-                </p>
-                <div className="text-sm text-gray-500">
-                  {Object.entries(scenarioStats.research_dataset?.scenarios || {}).map(([scenario, data]: [string, any]) => (
-                    <div key={scenario} className="flex justify-between">
-                      <span>{scenario}:</span>
-                      <span>{data.total_prompts} prompts</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ) : (
-              <p className="text-gray-600">
-                300 total prompts: 100 originals + 100 medium + 100 long variants with perfect 
-                traceability and controlled token classification for academic analysis.
-              </p>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* Key Features */}
-      <div className="bg-white rounded-lg shadow p-8">
-        <h2 className="text-2xl font-bold text-gray-900 mb-6">Key Features</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="flex items-start space-x-3">
-            <div className="text-2xl font-bold text-blue-600">C</div>
-            <div>
-              <h3 className="font-semibold text-gray-800">Prompt Coverage Analysis</h3>
-              <p className="text-gray-600">Track prompt usage across scenarios and sources with comprehensive coverage metrics.</p>
-            </div>
-          </div>
-          <div className="flex items-start space-x-3">
-            <div className="text-2xl font-bold text-green-600">L</div>
-            <div>
-              <h3 className="font-semibold text-gray-800">Length Bias Detection</h3>
-              <p className="text-gray-600">Statistical analysis with confidence intervals, p-values, and effect sizes. Enhanced tooltips show research-grade metrics.</p>
-            </div>
-          </div>
-          <div className="flex items-start space-x-3">
-            <div className="text-2xl font-bold text-red-600">R</div>
-            <div>
-              <h3 className="font-semibold text-gray-800">Risk vs Cost Visualization</h3>
-              <p className="text-gray-600">Interactive frontiers showing optimal balance between cost efficiency and risk mitigation.</p>
-            </div>
-          </div>
-          <div className="flex items-start space-x-3">
-            <div className="text-2xl font-bold text-purple-600">V</div>
-            <div>
-              <h3 className="font-semibold text-gray-800">Variant Group Selection</h3>
-              <p className="text-gray-600">Select original prompts to automatically include Medium and Long variants for controlled length studies.</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Technical Stack */}
-      <div className="bg-white rounded-lg shadow p-8">
-        <h2 className="text-2xl font-bold text-gray-900 mb-6">Technical Stack</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          <div>
-            <h3 className="text-lg font-semibold text-gray-800 mb-3">Backend</h3>
-            <ul className="space-y-2 text-gray-600">
-              <li className="flex items-center"><span className="w-2 h-2 bg-blue-500 rounded-full mr-3"></span>Python 3.11 + FastAPI</li>
-              <li className="flex items-center"><span className="w-2 h-2 bg-green-500 rounded-full mr-3"></span>MongoDB with Motor (async)</li>
-              <li className="flex items-center"><span className="w-2 h-2 bg-purple-500 rounded-full mr-3"></span>Pydantic v2 validation</li>
-              <li className="flex items-center"><span className="w-2 h-2 bg-orange-500 rounded-full mr-3"></span>SciPy statistical analysis</li>
-            </ul>
-          </div>
-          <div>
-            <h3 className="text-lg font-semibold text-gray-800 mb-3">Frontend</h3>
-            <ul className="space-y-2 text-gray-600">
-              <li className="flex items-center"><span className="w-2 h-2 bg-blue-500 rounded-full mr-3"></span>React 18 + TypeScript</li>
-              <li className="flex items-center"><span className="w-2 h-2 bg-green-500 rounded-full mr-3"></span>TailwindCSS + shadcn/ui</li>
-              <li className="flex items-center"><span className="w-2 h-2 bg-purple-500 rounded-full mr-3"></span>Recharts visualization</li>
-              <li className="flex items-center"><span className="w-2 h-2 bg-orange-500 rounded-full mr-3"></span>TanStack Query + Zustand</li>
-            </ul>
-          </div>
-        </div>
-        <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-          <h4 className="font-semibold text-gray-800 mb-2">Research Pipelines</h4>
-          <p className="text-gray-600">
-            MongoDB aggregation pipelines with statistical tooling for reproducible research, 
-            including linear regression, confidence intervals, and significance testing.
-          </p>
-        </div>
-      </div>
-
       {/* Dataset Analytics */}
       <div className="bg-white rounded-lg shadow p-8">
         <h2 className="text-2xl font-bold text-gray-900 mb-6">Dataset Analytics</h2>
@@ -225,6 +99,120 @@ export function About() {
             <p>Dataset analytics unavailable. Please check your connection.</p>
           </div>
         )}
+      </div>
+
+      {/* Key Features */}
+      <div className="bg-white rounded-lg shadow p-8">
+        <h2 className="text-2xl font-bold text-gray-900 mb-6">Key Features</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="flex items-start space-x-3">
+            <div className="text-2xl font-bold text-blue-600">📊</div>
+            <div>
+              <h3 className="font-semibold text-gray-800">Research-Grade Analytics</h3>
+              <p className="text-gray-600">Interactive dashboards with statistical significance testing, confidence intervals, and effect sizes for rigorous academic analysis.</p>
+            </div>
+          </div>
+          <div className="flex items-start space-x-3">
+            <div className="text-2xl font-bold text-green-600">⚖️</div>
+            <div>
+              <h3 className="font-semibold text-gray-800">Ensemble Evaluation</h3>
+              <p className="text-gray-600">Multi-judge scoring with GPT-4o-mini, Claude-3.5-Sonnet, and Llama-3.1-70B for enhanced reliability and reduced variance.</p>
+            </div>
+          </div>
+          <div className="flex items-start space-x-3">
+            <div className="text-2xl font-bold text-red-600">🔬</div>
+            <div>
+              <h3 className="font-semibold text-gray-800">Length Bias Mitigation</h3>
+              <p className="text-gray-600">Fixed Focus Sentence Prompting (FSP) ensures length-invariant scoring with proper context evaluation for research validity.</p>
+            </div>
+          </div>
+          <div className="flex items-start space-x-3">
+            <div className="text-2xl font-bold text-purple-600">🎯</div>
+            <div>
+              <h3 className="font-semibold text-gray-800">Controlled Variants</h3>
+              <p className="text-gray-600">S+M+L prompt groups (250-350, 350-500, 600-750 tokens) with perfect traceability for systematic length studies.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Methodology */}
+      <div className="bg-white rounded-lg shadow p-8">
+        <h2 className="text-2xl font-bold text-gray-900 mb-6">Methodology</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <h3 className="text-lg font-semibold text-gray-800 mb-3">Research Questions</h3>
+            <div className="space-y-3">
+              <div className="border-l-4 border-blue-500 pl-4">
+                <h4 className="font-medium text-gray-800">RQ1: Prompt Length Effects</h4>
+                <p className="text-sm text-gray-600">How does prompt length influence LLM cost-quality trade-offs in cybersecurity operations?</p>
+              </div>
+              <div className="border-l-4 border-green-500 pl-4">
+                <h4 className="font-medium text-gray-800">RQ2: Adaptive vs Static Benchmarking</h4>
+                <p className="text-sm text-gray-600">Can adaptive benchmarking from policy documents improve evaluation coverage?</p>
+              </div>
+            </div>
+          </div>
+          <div>
+            <h3 className="text-lg font-semibold text-gray-800 mb-3">7-Dimension SOC/GRC Rubric</h3>
+            <ul className="text-gray-600 space-y-1">
+              <li>• Technical Accuracy</li>
+              <li>• Actionability</li>
+              <li>• Completeness</li>
+              <li>• Compliance Alignment</li>
+              <li>• Risk Awareness</li>
+              <li>• Relevance</li>
+              <li>• Clarity</li>
+            </ul>
+          </div>
+          <div>
+            <h3 className="text-lg font-semibold text-gray-800 mb-3">Length Variant Analysis</h3>
+            <p className="text-gray-600">
+              Controlled S+M+L prompt groups (250-350, 350-500, 600-750 tokens) enable systematic
+              studies of how prompt length affects LLM quality and cost efficiency in cybersecurity tasks.
+              Ranges reflect realistic operational workflows: Tactical (S), Analytical (M), and Strategic (L).
+            </p>
+          </div>
+          <div>
+            <h3 className="text-lg font-semibold text-gray-800 mb-3">Bias Mitigation (FSP) ⚠️ Fixed</h3>
+            <p className="text-gray-600">
+              Focus Sentence Prompting now properly evaluates sentences with full context for true 
+              length-invariant scoring. Critical bug fix ensures research validity.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Technical Stack */}
+      <div className="bg-white rounded-lg shadow p-8">
+        <h2 className="text-2xl font-bold text-gray-900 mb-6">Technical Stack</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div>
+            <h3 className="text-lg font-semibold text-gray-800 mb-3">Backend</h3>
+            <ul className="space-y-2 text-gray-600">
+              <li className="flex items-center"><span className="w-2 h-2 bg-blue-500 rounded-full mr-3"></span>Python 3.11 + FastAPI</li>
+              <li className="flex items-center"><span className="w-2 h-2 bg-green-500 rounded-full mr-3"></span>MongoDB with Motor (async)</li>
+              <li className="flex items-center"><span className="w-2 h-2 bg-purple-500 rounded-full mr-3"></span>Pydantic v2 validation</li>
+              <li className="flex items-center"><span className="w-2 h-2 bg-orange-500 rounded-full mr-3"></span>SciPy statistical analysis</li>
+            </ul>
+          </div>
+          <div>
+            <h3 className="text-lg font-semibold text-gray-800 mb-3">Frontend</h3>
+            <ul className="space-y-2 text-gray-600">
+              <li className="flex items-center"><span className="w-2 h-2 bg-blue-500 rounded-full mr-3"></span>React 18 + TypeScript</li>
+              <li className="flex items-center"><span className="w-2 h-2 bg-green-500 rounded-full mr-3"></span>TailwindCSS + shadcn/ui</li>
+              <li className="flex items-center"><span className="w-2 h-2 bg-purple-500 rounded-full mr-3"></span>Recharts visualization</li>
+              <li className="flex items-center"><span className="w-2 h-2 bg-orange-500 rounded-full mr-3"></span>TanStack Query + Zustand</li>
+            </ul>
+          </div>
+        </div>
+        <div className="mt-6 p-4 bg-gray-50 rounded-lg">
+          <h4 className="font-semibold text-gray-800 mb-2">Research Pipelines</h4>
+          <p className="text-gray-600">
+            MongoDB aggregation pipelines with statistical tooling for reproducible research, 
+            including linear regression, confidence intervals, and significance testing.
+          </p>
+        </div>
       </div>
 
       {/* Authors & Affiliations */}
