@@ -8,7 +8,6 @@ interface Step3Props {
   experimentConfig: {
     repeats: number
     temperature: number
-    maxTokens: number
     seed: number
     fspEnabled: boolean
     experimentName: string
@@ -148,11 +147,11 @@ export function Step3_Configure({
                   className="rounded border-gray-300 text-purple-600 focus:ring-purple-500"
                 />
                 <span className="ml-2 text-sm font-medium text-gray-700">
-                  Ensemble Evaluation (Multi-Judge)
+                  Multi-Judge Evaluation (Recommended for Research)
                 </span>
               </label>
               <div className="ml-6 text-xs text-gray-500 mb-3">
-                Uses GPT-4o-mini, Claude-3.5-Sonnet, and Llama-3.3-70B for enhanced reliability
+                Uses 3 judges for research-grade reliability. Recommended for all experiments.
               </div>
             </div>
           </div>
@@ -181,22 +180,7 @@ export function Step3_Configure({
                 </label>
               </div>
               
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Response Length Limit
-                  </label>
-                  <input
-                    type="number"
-                    value={experimentConfig.maxTokens}
-                    onChange={(e) => setExperimentConfig({ maxTokens: parseInt(e.target.value) })}
-                    min="100"
-                    max="4000"
-                    step="100"
-                    className="w-full border border-gray-300 rounded-md px-3 py-2"
-                  />
-                </div>
-                
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {researchMode && (
                   <>
                     <div>

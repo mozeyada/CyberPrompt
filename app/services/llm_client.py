@@ -235,7 +235,6 @@ class GoogleClient(BaseLLMClient):
 
             generation_config = {
                 "temperature": temperature,
-                "max_output_tokens": max_tokens,
             }
 
             response = await model_instance.generate_content_async(
@@ -347,10 +346,20 @@ class ModelRunner:
                 model=model,
                 prompt=prompt,
                 temperature=settings.get("temperature", 0.2),
-                max_tokens=settings.get("max_output_tokens", 800),
                 seed=settings.get("seed"),
             )
             latency_ms = int((time.time() - start_time) * 1000)
+
+            # Validate response - check for empty or invalid responses
+            if not response or not response.strip():
+                logger.warning(f"Empty response from {model} - marking as failed")
+                return {
+                    "response": "",
+                    "tokens": {"input": 0, "output": 0, "total": 0},
+                    "latency_ms": latency_ms,
+                    "success": False,
+                    "error": "Empty response from model",
+                }
 
             # Get token counts
             input_tokens, output_tokens = client.get_token_counts(prompt, response, model)

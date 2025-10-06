@@ -114,7 +114,6 @@ class EconomicsMetrics(SafeBaseModel):
 
 class RunSettings(BaseModel):
     temperature: float = 0.2
-    max_output_tokens: int = 800
     seed: int = 42
 
 

@@ -67,8 +67,7 @@ async def execute_batch(
                 models=model_names,
                 repeats=repeats,
                 settings=RunSettings(
-                    temperature=settings_data.get("temperature", 0.2),
-                    max_tokens=settings_data.get("max_tokens", 800)
+                    temperature=settings_data.get("temperature", 0.2)
                 ),
                 judge=JudgeConfig(type=JudgeType.LLM),
                 bias_controls=BiasControls(
@@ -143,8 +142,7 @@ async def execute_batch_ensemble(
             models=model_names,
             repeats=repeats,
             settings=RunSettings(
-                temperature=settings_data.get("temperature", 0.2),
-                max_tokens=settings_data.get("max_tokens", 800)
+                temperature=settings_data.get("temperature", 0.2)
             ),
             judge=JudgeConfig(type=JudgeType.LLM),
             bias_controls=BiasControls(

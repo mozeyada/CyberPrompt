@@ -153,7 +153,10 @@ export function ResultsTable({ experimentId }: ResultsTableProps) {
               <TableCell>{run.tokens?.total || 0}</TableCell>
               <TableCell>${run.economics?.aud_cost?.toFixed(4) || '0.0000'}</TableCell>
               <TableCell>
-                {run.scores?.composite ? `${run.scores.composite.toFixed(1)}/5.0` : 'N/A'}
+                {(() => {
+                  const score = run.ensemble_evaluation?.aggregated?.mean_scores?.composite || run.scores?.composite
+                  return score ? `${score.toFixed(1)}/5.0` : 'N/A'
+                })()}
               </TableCell>
               <TableCell>
                 <Button

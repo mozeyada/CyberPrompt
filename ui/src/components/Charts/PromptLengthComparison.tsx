@@ -40,7 +40,12 @@ export function PromptLengthComparison() {
   }
 
   const runs = runsData?.runs || []
-  const successfulRuns = runs.filter(run => run.status === 'succeeded' && run.scores?.composite > 0)
+  const successfulRuns = runs.filter(run => {
+    if (run.status !== 'succeeded') return false
+    // Prefer ensemble, fallback to single for legacy data
+    return (run.ensemble_evaluation?.aggregated?.mean_scores?.composite && run.ensemble_evaluation.aggregated.mean_scores.composite > 0) ||
+           (run.scores?.composite && run.scores.composite > 0)
+  })
 
   if (successfulRuns.length === 0) {
     return (
@@ -65,7 +70,9 @@ export function PromptLengthComparison() {
       }
     }
 
-    acc[bin].totalQuality += run.scores.composite
+    // Get quality score - prefer ensemble, fallback to single
+    const quality = run.ensemble_evaluation?.aggregated?.mean_scores?.composite || run.scores?.composite || 0
+    acc[bin].totalQuality += quality
     acc[bin].totalCost += run.economics.aud_cost
     // Use prompt token_count (the actual prompt length), not total tokens
     acc[bin].totalPromptTokens += run.prompt?.token_count || run.tokens.input

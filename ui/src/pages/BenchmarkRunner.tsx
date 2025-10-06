@@ -235,7 +235,6 @@ export function BenchmarkRunner() {
         },
         settings: {
           temperature: experimentConfig.temperature,
-          max_tokens: experimentConfig.maxTokens
         },
         repeats: experimentConfig.repeats
       })
@@ -250,7 +249,6 @@ export function BenchmarkRunner() {
         },
         settings: {
           temperature: experimentConfig.temperature,
-          max_tokens: experimentConfig.maxTokens
         },
         repeats: experimentConfig.repeats
       })

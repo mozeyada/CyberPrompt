@@ -15,6 +15,7 @@ export function RQ1Flow() {
   const [researchMode, setResearchMode] = useState(false)
   const [enableEnsemble, setEnableEnsemble] = useState(true)
   
+  
   const {
     selectedPrompts,
     setSelectedPrompts,
@@ -35,6 +36,7 @@ export function RQ1Flow() {
     currentRun: number
     logs: Array<{id: string, message: string, type: 'info' | 'success' | 'error', timestamp: string}>
     results: Array<{run_id: string, experiment_id?: string, status: string, model: string, cost?: number, quality?: number, error?: string}>
+    individualRuns: Array<{run_id: string, status: 'pending' | 'running' | 'succeeded' | 'failed', model: string, prompt_id?: string}>
   }>({
     isRunning: false,
     totalRuns: 0,
@@ -42,7 +44,8 @@ export function RQ1Flow() {
     failedRuns: 0,
     currentRun: 0,
     logs: [],
-    results: []
+    results: [],
+    individualRuns: []
   })
   
   // Use EXISTING API calls
@@ -67,13 +70,26 @@ export function RQ1Flow() {
   }
 
   const executeBatchMutation = useMutation({
-    mutationFn: runsApi.executeBatch,
+    mutationFn: runsApi.executeBatchEnsemble,
     onSuccess: (data) => {
       // Handle background execution (status: "accepted")
       if (data.status === 'accepted') {
         addLog(`Background execution started for ${data.total_runs} runs`, 'info')
         addLog(`Run IDs: ${data.run_ids?.slice(0, 3).join(', ')}...`, 'info')
         addLog('Polling for results...', 'info')
+        
+        // Initialize individual runs with pending status
+        const initialIndividualRuns = data.run_ids?.map((runId: string, index: number) => ({
+          run_id: runId,
+          status: 'pending' as const,
+          model: selectedModels[0] || 'unknown',
+          prompt_id: `prompt_${index + 1}`
+        })) || []
+        
+        setExecutionStatus(prev => ({
+          ...prev,
+          individualRuns: initialIndividualRuns
+        }))
         
         // Poll for results
         const pollInterval = setInterval(async () => {
@@ -87,10 +103,19 @@ export function RQ1Flow() {
               r.status === 'succeeded' || r.status === 'failed'
             ).length
             
+            // Update individual run statuses
+            const updatedIndividualRuns = relevantRuns.map((run: any) => ({
+              run_id: run.run_id,
+              status: run.status as 'pending' | 'running' | 'succeeded' | 'failed',
+              model: run.model,
+              prompt_id: run.prompt_id
+            }))
+            
             setExecutionStatus(prev => ({
               ...prev,
               completedRuns: relevantRuns.filter((r: any) => r.status === 'succeeded').length,
-              failedRuns: relevantRuns.filter((r: any) => r.status === 'failed').length
+              failedRuns: relevantRuns.filter((r: any) => r.status === 'failed').length,
+              individualRuns: updatedIndividualRuns
             }))
             
             if (completed >= data.total_runs) {
@@ -99,7 +124,10 @@ export function RQ1Flow() {
               const failCount = relevantRuns.filter((r: any) => r.status === 'failed').length
               
               addLog(`Completed: ${successCount} successful, ${failCount} failed`, 'success')
-              setExecutionStatus(prev => ({ ...prev, isRunning: false }))
+              setExecutionStatus(prev => ({ 
+                ...prev, 
+                isRunning: false
+              }))
               
               if (successCount > 0) {
                 setTimeout(() => setCurrentStep('results'), 2000)
@@ -180,26 +208,15 @@ export function RQ1Flow() {
       failedRuns: 0,
       currentRun: 0,
       logs: [],
-      results: []
+      results: [],
+      individualRuns: []
     })
     
     const metadata = generateExperimentMetadata()
     
     addLog(`Starting RQ1 experiment with ${totalRuns} runs...`, 'info')
     
-    // Simulate progress updates (since backend doesn't provide real-time progress)
-    let simulatedProgress = 0
-    const progressInterval = setInterval(() => {
-      simulatedProgress++
-      if (simulatedProgress <= totalRuns) {
-        setExecutionStatus(prev => ({
-          ...prev,
-          currentRun: simulatedProgress
-        }))
-      } else {
-        clearInterval(progressInterval)
-      }
-    }, 1000) // Update every second
+    // No need for simulated progress - we'll use real-time polling data
     addLog(`Config: ${experimentConfig.repeats} repeats, seed ${experimentConfig.seed}`, 'info')
     addLog(`Metadata: Hash ${metadata.configHash}, Cost ~$${metadata.estimatedCost.toFixed(4)}`, 'info')
     
@@ -213,7 +230,6 @@ export function RQ1Flow() {
       },
       settings: {
         temperature: experimentConfig.temperature,
-        max_tokens: experimentConfig.maxTokens
       },
       repeats: experimentConfig.repeats
     })
@@ -237,7 +253,10 @@ export function RQ1Flow() {
         window.scrollTo({ top: 0, behavior: 'smooth' })
       }
     } else if (currentStep === 'results') {
-      window.location.href = '/insights'
+      const experimentId = executionStatus.results.find(r => r.experiment_id)?.experiment_id
+      window.location.href = experimentId 
+        ? `/results?experiment=${experimentId}` 
+        : '/results'
     }
   }
 
@@ -362,7 +381,7 @@ export function RQ1Flow() {
             {executionStatus.isRunning && (
               <div className="flex items-center text-blue-600">
                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 mr-2"></div>
-                Processing run {executionStatus.currentRun + 1} of {executionStatus.totalRuns}...
+                Running {executionStatus.totalRuns} experiments...
               </div>
             )}
           </div>
@@ -405,6 +424,39 @@ export function RQ1Flow() {
                 <span className="text-green-600">✓ {executionStatus.completedRuns} successful</span>
                 <span className="text-red-600">✗ {executionStatus.failedRuns} failed</span>
                 <span className="text-blue-600">⏳ {executionStatus.totalRuns - (executionStatus.completedRuns + executionStatus.failedRuns)} pending</span>
+              </div>
+            </div>
+          )}
+
+          {/* Individual Run Status */}
+          {executionStatus.individualRuns.length > 0 && (
+            <div className="mt-4">
+              <h4 className="text-sm font-medium text-gray-700 mb-2">Individual Run Status</h4>
+              <div className="grid grid-cols-1 gap-2 max-h-48 overflow-y-auto">
+                {executionStatus.individualRuns.map((run, index) => (
+                  <div key={run.run_id} className="flex items-center justify-between p-2 bg-gray-50 rounded text-xs">
+                    <div className="flex items-center space-x-2">
+                      <span className="font-mono text-gray-500">#{index + 1}</span>
+                      <span className="text-gray-600">{run.model}</span>
+                      <span className="text-gray-400">•</span>
+                      <span className="text-gray-500">{run.prompt_id}</span>
+                    </div>
+                    <div className="flex items-center space-x-1">
+                      {run.status === 'pending' && (
+                        <span className="text-gray-400">⏳ Pending</span>
+                      )}
+                      {run.status === 'running' && (
+                        <span className="text-blue-600">🔄 Running</span>
+                      )}
+                      {run.status === 'succeeded' && (
+                        <span className="text-green-600">✓ Completed</span>
+                      )}
+                      {run.status === 'failed' && (
+                        <span className="text-red-600">✗ Failed</span>
+                      )}
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           )}

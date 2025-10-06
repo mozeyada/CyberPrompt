@@ -50,7 +50,7 @@ Example format: ["prompt 1", "prompt 2", "prompt 3", "prompt 4", "prompt 5"]"""
         result = await model_runner.execute_run(
             model="gpt-4o",
             prompt=meta_prompt,
-            settings={"temperature": 0.7, "max_output_tokens": 800},
+            settings={"temperature": 0.7},
         )
 
         if not result["success"]:

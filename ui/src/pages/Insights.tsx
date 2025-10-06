@@ -22,7 +22,7 @@ export function Insights() {
   const [selectedView, setSelectedView] = useState('rq1')
   const [selectedExperiment, setSelectedExperiment] = useState<string | null>(null)
   const [selectedDimension, setSelectedDimension] = useState('composite')
-  const { selectedScenario, selectedModels, scoringMode, setScoringMode } = useFilters()
+  const { selectedScenario, selectedModels } = useFilters()
   const [searchParams] = useSearchParams()
   const queryClient = useQueryClient()
 
@@ -53,32 +53,38 @@ export function Insights() {
 
   // Calculate filtered stats with length distribution
   const statsData = React.useMemo(() => {
+    console.log('DEBUG: statsData calculation - selectedExperiment:', selectedExperiment, 'runsData?.runs length:', runsData?.runs?.length)
     let runs = runsData?.runs?.filter(r => {
       if (r.status !== 'succeeded') return false
-      
-      if (scoringMode === 'ensemble') {
-        // Ensemble mode: must have ensemble_evaluation with aggregated scores
-        return r.ensemble_evaluation?.aggregated?.mean_scores?.composite && r.ensemble_evaluation.aggregated.mean_scores.composite > 0
-      } else {
-        // Single mode: must have regular scores, no ensemble
-        return r.scores?.composite && r.scores.composite > 0 && !r.ensemble_evaluation
-      }
+      // Prefer ensemble, fallback to single for legacy data
+      return (r.ensemble_evaluation?.aggregated?.mean_scores?.composite && r.ensemble_evaluation.aggregated.mean_scores.composite > 0) ||
+             (r.scores?.composite && r.scores.composite > 0)
     }) || []
+    console.log('DEBUG: statsData - succeeded runs with scores:', runs.length)
+    
+    // Filter by experiment if one is selected
+    if (selectedExperiment) {
+      runs = runs.filter(r => r.experiment_id === selectedExperiment)
+      console.log('DEBUG: statsData - after experiment filter:', runs.length)
+    }
     
     if (selectedScenario) {
       runs = runs.filter(r => r.scenario === selectedScenario)
+      console.log('DEBUG: statsData - after scenario filter:', runs.length)
     }
     
     if (selectedModels.length > 0) {
       runs = runs.filter(r => selectedModels.includes(r.model))
+      console.log('DEBUG: statsData - after model filter:', runs.length)
     }
 
     const totalRuns = runs.length
     const avgQuality = totalRuns > 0 ? runs.reduce((sum, r) => {
-      if (scoringMode === 'ensemble' && r.ensemble_evaluation?.aggregated?.mean_scores?.composite) {
+      // Prefer ensemble score
+      if (r.ensemble_evaluation?.aggregated?.mean_scores?.composite) {
         return sum + r.ensemble_evaluation.aggregated.mean_scores.composite
-      } else if (scoringMode === 'single' && r.scores?.composite) {
-        return sum + r.scores.composite
+      } else if (r.scores?.composite) {
+        return sum + r.scores.composite  // Fallback
       }
       return sum
     }, 0) / totalRuns : 0
@@ -103,7 +109,7 @@ export function Insights() {
       length_distribution: lengthCounts,
       scenario_distribution: scenarioCounts
     }
-  }, [runsData, selectedScenario, selectedModels, scoringMode])
+  }, [runsData, selectedExperiment, selectedScenario, selectedModels])
 
   // Extract unique experiment IDs for dropdown
   const uniqueExperiments = React.useMemo(() => {
@@ -129,9 +135,12 @@ export function Insights() {
   // Dimension options for scatter plot
   const dimensionOptions = [
     { value: 'composite', label: 'Composite Score' },
-    { value: 'accuracy', label: 'Accuracy' },
-    { value: 'completeness', label: 'Completeness' },
+    { value: 'technical_accuracy', label: 'Technical Accuracy' },
     { value: 'actionability', label: 'Actionability' },
+    { value: 'completeness', label: 'Completeness' },
+    { value: 'compliance_alignment', label: 'Compliance Alignment' },
+    { value: 'risk_awareness', label: 'Risk Awareness' },
+    { value: 'relevance', label: 'Relevance' },
     { value: 'clarity', label: 'Clarity' }
   ]
 
@@ -151,25 +160,32 @@ export function Insights() {
 
   // Calculate metrics for selected experiment
   const experimentMetrics = React.useMemo(() => {
+    console.log('DEBUG: experimentMetrics calculation - selectedExperiment:', selectedExperiment, 'runsData?.runs length:', runsData?.runs?.length)
     if (!selectedExperiment || !runsData?.runs) {
+      console.log('DEBUG: experimentMetrics returning null - selectedExperiment:', selectedExperiment, 'runsData exists:', !!runsData?.runs)
       return null
     }
     
     let experimentRuns = runsData.runs.filter(run => run.experiment_id === selectedExperiment)
+    console.log('DEBUG: experimentRuns found:', experimentRuns.length, 'for experiment:', selectedExperiment)
     
-    // Apply scoring mode filter to experiment runs
-    if (scoringMode === 'ensemble') {
-      experimentRuns = experimentRuns.filter(r => !!r.ensemble_evaluation)
-    } else if (scoringMode === 'single') {
-      experimentRuns = experimentRuns.filter(r => !r.ensemble_evaluation)
-    }
+    // Prefer ensemble runs, but include legacy runs as fallback
+    // No filtering needed - we'll handle this in score calculation
     
     const totalRuns = experimentRuns.length
     const avgTokenCost = totalRuns > 0
       ? experimentRuns.reduce((sum, r) => sum + (r.economics?.aud_cost || 0), 0) / totalRuns
       : 0
     const avgScore = totalRuns > 0
-      ? experimentRuns.reduce((sum, r) => sum + (r.scores?.composite || 0), 0) / totalRuns
+      ? experimentRuns.reduce((sum, r) => {
+          // Prefer ensemble score
+          if (r.ensemble_evaluation?.aggregated?.mean_scores?.composite) {
+            return sum + r.ensemble_evaluation.aggregated.mean_scores.composite
+          } else if (r.scores?.composite) {
+            return sum + r.scores.composite  // Fallback
+          }
+          return sum
+        }, 0) / totalRuns
       : 0
     
     // Calculate actual models used in experiment
@@ -196,23 +212,46 @@ export function Insights() {
     }, {} as Record<string, number>)
     
     return { totalRuns, avgTokenCost, avgScore, promptBreakdown, experimentRuns, modelsUsed, scenarioBreakdown }
-  }, [selectedExperiment, runsData, scoringMode])
+  }, [selectedExperiment, runsData])
 
-  // Scatter data calculation for experiment metrics
+  // Scatter data calculation - works with all runs, not just experiment metrics
   const scatterData = React.useMemo(() => {
-    if (!experimentMetrics) return []
+    if (!runsData?.runs) return []
     
-    return experimentMetrics.experimentRuns.map((run, index) => {
+    // Start with all succeeded runs
+    let runs = runsData.runs.filter(r => r.status === 'succeeded')
+    
+    // Apply experiment filter if selected
+    if (selectedExperiment) {
+      runs = runs.filter(r => r.experiment_id === selectedExperiment)
+    }
+    
+    // Apply scenario filter
+    if (selectedScenario) {
+      runs = runs.filter(r => r.scenario === selectedScenario)
+    }
+    
+    // Apply model filter
+    if (selectedModels.length > 0) {
+      runs = runs.filter(r => selectedModels.includes(r.model))
+    }
+    
+    return runs.map((run, index) => {
       const lengthBin = (run as any).prompt_length_bin || null
-      const selectedScore = selectedDimension === 'composite' 
-        ? run.scores?.composite || 0
-        : (run.scores as any)?.[selectedDimension] || 0
       
-      const jitter = (index % 5 - 2) * 0.02
+      // Get score for selected dimension - prefer ensemble, fallback to single
+      let selectedScore = 0
+      if (selectedDimension === 'composite') {
+        selectedScore = run.ensemble_evaluation?.aggregated?.mean_scores?.composite || run.scores?.composite || 0
+      } else {
+        selectedScore = run.ensemble_evaluation?.aggregated?.mean_scores?.[selectedDimension as keyof typeof run.ensemble_evaluation.aggregated.mean_scores] ||
+                       (run.scores as any)?.[selectedDimension] || 0
+      }
       
       return {
         tokens: run.tokens?.total || 0,
-        score: selectedScore + jitter,
+        score: selectedScore,
+        actualScore: selectedScore,
         model: run.model,
         source: run.source || 'static',
         cost: run.economics?.aud_cost || 0,
@@ -221,7 +260,7 @@ export function Insights() {
         run_id: run.run_id
       }
     })
-  }, [experimentMetrics, selectedDimension])
+  }, [runsData, selectedExperiment, selectedScenario, selectedModels, selectedDimension])
 
   // Fetch runs data for All Runs tab
   const { data: allRunsData, isLoading: runsLoading } = useQuery({
@@ -239,13 +278,7 @@ export function Insights() {
     let runs = allRunsData.runs
     console.log('DEBUG: Total runs before filtering:', runs.length)
     
-    // Filter by scoring mode - more flexible logic
-    if (scoringMode === 'ensemble') {
-      runs = runs.filter(r => !!r.ensemble_evaluation)
-    } else if (scoringMode === 'single') {
-      runs = runs.filter(r => !r.ensemble_evaluation)
-    }
-    // If scoringMode is 'all' or undefined, don't filter by scoring mode
+    // No scoring mode filtering - show all runs with any valid scores
     
     // Filter by scenario
     if (selectedScenario) {
@@ -265,7 +298,7 @@ export function Insights() {
       runs: runs,
       count: runs.length
     }
-  }, [allRunsData, selectedScenario, selectedModels, scoringMode])
+  }, [allRunsData, selectedScenario, selectedModels])
 
   const handleDownloadCSV = async () => {
     const runs = filteredAllRunsData?.runs || []
@@ -386,20 +419,6 @@ export function Insights() {
             <ModelSelect />
             {(selectedView === 'rq1' || selectedView === 'all-runs') && (
               <>
-                <div className="col-span-1">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Scoring Mode</label>
-                  <select
-                    value={scoringMode}
-                    onChange={(e) => setScoringMode(e.target.value as 'ensemble' | 'single')}
-                    className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
-                  >
-                    <option value="ensemble">Ensemble (Multi-Judge)</option>
-                    <option value="single">Single Judge</option>
-                  </select>
-                    <div className="text-xs text-gray-500 mt-1">
-                      {scoringMode === 'ensemble' ? '3 judges, higher reliability' : '1 judge, faster'}
-                    </div>
-                  </div>
                   {selectedView === 'rq1' && (
                     <div className="col-span-1">
                       <label className="block text-sm font-medium text-gray-700 mb-2">Experiment</label>
@@ -449,12 +468,8 @@ export function Insights() {
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-lg font-semibold">Evaluation Dataset</h3>
                   <div className="flex items-center gap-2">
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                      scoringMode === 'ensemble' 
-                        ? 'bg-purple-100 text-purple-800' 
-                        : 'bg-blue-100 text-blue-800'
-                    }`}>
-                      {scoringMode === 'ensemble' ? 'Ensemble Scoring' : 'Single Judge Scoring'}
+                    <span className="px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                      Multi-Judge Scoring
                     </span>
                   </div>
                 </div>
@@ -585,43 +600,48 @@ export function Insights() {
               </div>
             )}
 
-            {/* Cost Efficiency Scatter Plot */}
-            {experimentMetrics && (
-              <div className="bg-white rounded-lg shadow p-6">
-                <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-lg font-semibold">Cost Efficiency Analysis</h3>
-                  <select
-                    value={selectedDimension}
-                    onChange={(e) => setSelectedDimension(e.target.value)}
-                    className="border border-gray-300 rounded px-3 py-1 text-sm"
-                  >
-                    {dimensionOptions.map(option => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
+            {/* Cost Efficiency Scatter Plot - Always visible */}
+            <div className="bg-white rounded-lg shadow p-6">
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="text-lg font-semibold">Cost Efficiency Analysis</h3>
+                <select
+                  value={selectedDimension}
+                  onChange={(e) => setSelectedDimension(e.target.value)}
+                  className="border border-gray-300 rounded px-3 py-1 text-sm"
+                >
+                  {dimensionOptions.map(option => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <p className="text-sm text-gray-600 mb-4">
+                Top-left = most efficient (high quality, low cost). Group by model to compare performance.
+                {selectedExperiment && <span className="font-medium"> • Filtered by: {selectedExperiment}</span>}
+              </p>
+              
+              {/* Legend */}
+              <div className="flex flex-wrap gap-4 mb-4 text-xs">
+                <div className="flex items-center gap-2">
+                  <span className="font-medium">Length:</span>
+                  {['S', 'M', 'L'].map(bin => (
+                    <div key={bin} className="flex items-center gap-1">
+                      <div 
+                        className="w-3 h-3 rounded-full border border-black"
+                        style={{ backgroundColor: getLengthBinColor(bin) }}
+                      />
+                      <span>{bin}</span>
+                    </div>
+                  ))}
                 </div>
-                <p className="text-sm text-gray-600 mb-4">
-                  Top-left = most efficient (high quality, low cost). Group by model to compare performance.
-                </p>
-                
-                {/* Legend */}
-                <div className="flex flex-wrap gap-4 mb-4 text-xs">
-                  <div className="flex items-center gap-2">
-                    <span className="font-medium">Length:</span>
-                    {['S', 'M', 'L'].map(bin => (
-                      <div key={bin} className="flex items-center gap-1">
-                        <div 
-                          className="w-3 h-3 rounded-full" 
-                          style={{ backgroundColor: getLengthBinColor(bin) }}
-                        />
-                        <span>{bin}</span>
-                      </div>
-                    ))}
-                  </div>
+              </div>
+              
+              {scatterData.length === 0 ? (
+                <div className="text-center p-8 text-gray-500">
+                  No data available. Run experiments to see cost-efficiency analysis.
                 </div>
-                
+              ) : (
                 <ResponsiveContainer width="100%" height={350}>
                   <ScatterChart>
                     <CartesianGrid strokeDasharray="3 3" />
@@ -645,7 +665,7 @@ export function Insights() {
                               <div className="font-medium text-lg mb-2">{data.model}</div>
                               <div className="grid grid-cols-2 gap-2 text-sm">
                                 <div className="text-gray-600">Score:</div>
-                                <div className="font-medium">{data.score.toFixed(2)}/5.0</div>
+                                <div className="font-medium">{data.actualScore.toFixed(2)}/5.0</div>
                                 <div className="text-gray-600">Tokens:</div>
                                 <div className="font-medium">{data.tokens}</div>
                                 <div className="text-gray-600">Cost:</div>
@@ -679,8 +699,8 @@ export function Insights() {
                     />
                   </ScatterChart>
                 </ResponsiveContainer>
-              </div>
-            )}
+              )}
+            </div>
 
             {/* Combined Length Analysis - Show after experiment summary */}
             <div className="bg-white shadow rounded-lg p-6">
@@ -847,7 +867,7 @@ export function Insights() {
                                       <span className="font-medium">
                                         {run.scores.composite.toFixed(1)}/5.0
                                       </span>
-                                      <div className="text-xs text-gray-500">Single Judge</div>
+                                      <div className="text-xs text-gray-500">Legacy</div>
                                     </div>
                                   )
                                 } else {

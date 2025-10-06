@@ -6,10 +6,10 @@ import { useFilters } from '../../state/useFilters'
 const LENGTH_COLORS = { S: '#10B981', M: '#3B82F6', L: '#F59E0B' }
 
 export function CombinedLengthAnalysis({ experimentId }: { experimentId?: string } = {}) {
-  const { selectedScenario, selectedModels, scoringMode } = useFilters()
+  const { selectedScenario, selectedModels } = useFilters()
   
   const { data: runsData, isLoading } = useQuery({
-    queryKey: ['runs-length-combined', selectedScenario, selectedModels, scoringMode, experimentId],
+    queryKey: ['runs-length-combined', selectedScenario, selectedModels, experimentId],
     queryFn: () => runsApi.list({ 
       limit: 200,
       ...(selectedScenario && { scenario: selectedScenario }),
@@ -21,26 +21,18 @@ export function CombinedLengthAnalysis({ experimentId }: { experimentId?: string
 
   if (isLoading) return <div className="flex justify-center items-center h-64">Loading...</div>
 
-  // Filter by scoring mode and status
+  // Filter by status and prefer ensemble data
   const runs = runsData?.runs?.filter(r => {
     if (r.status !== 'succeeded') return false
-    
-    if (scoringMode === 'ensemble') {
-      // Ensemble mode: must have ensemble_evaluation with aggregated scores
-      return r.ensemble_evaluation?.aggregated?.mean_scores?.composite && r.ensemble_evaluation.aggregated.mean_scores.composite > 0
-    } else {
-      // Single mode: must have regular scores, no ensemble
-      return r.scores?.composite && r.scores.composite > 0 && !r.ensemble_evaluation
-    }
+    // Prefer ensemble, fallback to single for legacy data
+    return (r.ensemble_evaluation?.aggregated?.mean_scores?.composite && r.ensemble_evaluation.aggregated.mean_scores.composite > 0) ||
+           (r.scores?.composite && r.scores.composite > 0)
   }) || []
   
   if (runs.length === 0) {
     return (
       <div className="text-center p-8 text-gray-500">
-        {scoringMode === 'ensemble' 
-          ? 'No ensemble evaluation data found. Run experiments with Ensemble Evaluation enabled.'
-          : 'Run S/M/L experiments to see analysis'
-        }
+        No multi-judge evaluation data found. Run experiments to see analysis.
       </div>
     )
   }
@@ -50,13 +42,9 @@ export function CombinedLengthAnalysis({ experimentId }: { experimentId?: string
     const bin = (r as any).prompt_length_bin as 'S' | 'M' | 'L'
     if (!bin || !r.economics?.aud_cost) return acc
     
-    // Get quality score based on scoring mode
-    let quality = 0
-    if (scoringMode === 'ensemble' && r.ensemble_evaluation?.aggregated?.mean_scores?.composite) {
-      quality = r.ensemble_evaluation.aggregated.mean_scores.composite
-    } else if (scoringMode === 'single' && r.scores?.composite) {
-      quality = r.scores.composite
-    }
+    // Get quality score - prefer ensemble, fallback to single
+    const quality = r.ensemble_evaluation?.aggregated?.mean_scores?.composite ||
+                    r.scores?.composite || 0
     
     if (quality <= 0) return acc
     
@@ -197,12 +185,8 @@ export function CombinedLengthAnalysis({ experimentId }: { experimentId?: string
         <div className="flex items-center justify-between mb-2">
           <h4 className="text-lg font-semibold text-gray-900">Cost-Efficiency Comparison</h4>
           <div className="flex items-center gap-2">
-            <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-              scoringMode === 'ensemble' 
-                ? 'bg-purple-100 text-purple-800' 
-                : 'bg-blue-100 text-blue-800'
-            }`}>
-              Scoring: {scoringMode === 'ensemble' ? 'Ensemble' : 'Single'}
+            <span className="px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+              Scoring: Multi-Judge
             </span>
             <span className="text-xs text-gray-500">n={runs.length} runs</span>
           </div>
@@ -239,7 +223,7 @@ export function CombinedLengthAnalysis({ experimentId }: { experimentId?: string
           <div className="text-xs text-gray-600 mb-3 flex justify-between">
             <span>
               Models: {selectedModels.length > 0 ? selectedModels.join(', ') : 'All'} | 
-              Scoring: {scoringMode === 'ensemble' ? 'Multi-Judge' : 'Single Judge'}
+              Scoring: Multi-Judge
             </span>
             {experimentId && <span>Experiment: {experimentId}</span>}
           </div>

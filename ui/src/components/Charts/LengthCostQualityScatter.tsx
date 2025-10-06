@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { ScatterChart, Scatter, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
 import { runsApi } from '../../api/client'
+import { useFilters } from '../../state/useFilters'
 
 const LENGTH_BIN_COLORS = {
   S: '#10B981', // Green - Short
@@ -15,9 +16,15 @@ const LENGTH_BIN_LABELS = {
 }
 
 export function LengthCostQualityScatter() {
+  const { selectedScenario, selectedModels, selectedDimension } = useFilters()
+  
   const { data: runsData, isLoading, error } = useQuery({
-    queryKey: ['runs-scatter-length'],
-    queryFn: () => runsApi.list({ limit: 200 }),
+    queryKey: ['runs-scatter-length', selectedScenario, selectedModels, selectedDimension],
+    queryFn: () => runsApi.list({ 
+      limit: 200,
+      ...(selectedScenario && { scenario: selectedScenario }),
+      ...(selectedModels.length > 0 && { model: selectedModels.join(',') })
+    }),
     retry: 1,
     staleTime: 30000
   })
@@ -31,37 +38,49 @@ export function LengthCostQualityScatter() {
   }
 
   const runs = runsData?.runs || []
-  const successfulRuns = runs.filter(run =>
-    run.status === 'succeeded' &&
-    run.scores?.composite > 0 &&
-    run.prompt_length_bin
-  )
+  const successfulRuns = runs.filter(run => {
+    if (run.status !== 'succeeded' || !(run as any).prompt_length_bin) return false
+    
+    // Check if we have any valid score for the selected dimension
+    const ensembleScore = run.ensemble_evaluation?.aggregated?.mean_scores?.[selectedDimension as keyof typeof run.ensemble_evaluation.aggregated.mean_scores]
+    const singleScore = run.scores?.[selectedDimension as keyof typeof run.scores]
+    
+    return (ensembleScore && ensembleScore > 0) || (singleScore && singleScore > 0)
+  })
 
   if (successfulRuns.length === 0) {
+    const dimensionLabel = selectedDimension.charAt(0).toUpperCase() + selectedDimension.slice(1).replace('_', ' ')
     return (
       <div className="text-center p-8">
-        <div className="text-gray-500 mb-2">No cost-quality data available</div>
-        <div className="text-sm text-gray-400">Run some experiments first to see analytics</div>
+        <div className="text-gray-500 mb-2">No {dimensionLabel.toLowerCase()} data available</div>
+        <div className="text-sm text-gray-400">
+          Run experiments with Multi-Judge Evaluation enabled to see this analysis
+        </div>
       </div>
     )
   }
 
   // Group by length bin
   const groupedData = successfulRuns.reduce((acc, run) => {
-    const bin = run.prompt_length_bin as 'S' | 'M' | 'L'
+    const bin = (run as any).prompt_length_bin as 'S' | 'M' | 'L'
     if (!bin) return acc
 
     if (!acc[bin]) {
       acc[bin] = []
     }
 
+    // Get quality score - prefer ensemble, fallback to single
+    const ensembleScore = run.ensemble_evaluation?.aggregated?.mean_scores?.[selectedDimension as keyof typeof run.ensemble_evaluation.aggregated.mean_scores]
+    const singleScore = run.scores?.[selectedDimension as keyof typeof run.scores]
+    const quality = ensembleScore || singleScore || 0
+    
     acc[bin].push({
-      x: run.economics.aud_cost,
-      y: run.scores.composite,
+      x: run.economics?.aud_cost || 0,
+      y: quality,
       run_id: run.run_id,
       model: run.model,
       length_bin: bin,
-      tokens: run.tokens.total
+      tokens: run.tokens?.total || 0
     })
 
     return acc
@@ -77,12 +96,13 @@ export function LengthCostQualityScatter() {
   const CustomTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
       const data = payload[0].payload
+      const dimensionLabel = selectedDimension.charAt(0).toUpperCase() + selectedDimension.slice(1).replace('_', ' ')
       return (
         <div className="bg-white p-3 border rounded shadow">
           <p className="font-medium text-sm mb-1">{LENGTH_BIN_LABELS[data.length_bin as keyof typeof LENGTH_BIN_LABELS]}</p>
           <p className="text-sm">Model: {data.model}</p>
           <p className="text-sm">Cost: ${data.x.toFixed(4)} AUD</p>
-          <p className="text-sm">Quality: {data.y.toFixed(2)}/5.0</p>
+          <p className="text-sm">{dimensionLabel}: {data.y.toFixed(2)}/5.0</p>
           <p className="text-sm">Tokens: {data.tokens}</p>
           <p className="text-xs text-gray-500 mt-1">Run: {data.run_id.slice(-8)}</p>
         </div>
@@ -114,7 +134,7 @@ export function LengthCostQualityScatter() {
             name="Quality Score"
             domain={[0, 5]}
             label={{
-              value: 'Quality Score (0-5)',
+              value: `${selectedDimension.charAt(0).toUpperCase() + selectedDimension.slice(1).replace('_', ' ')} Score (0-5)`,
               angle: -90,
               position: 'insideLeft',
               offset: 10,

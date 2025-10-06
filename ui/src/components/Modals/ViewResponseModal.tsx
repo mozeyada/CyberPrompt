@@ -113,7 +113,10 @@ export function ViewResponseModal({ runId, isOpen, onClose }: ViewResponseModalP
                     <div className="flex justify-between">
                       <span className="text-gray-600">Quality Score:</span>
                       <span className="font-medium">
-                        {data.run.scores?.composite ? `${data.run.scores.composite.toFixed(1)}/5.0` : 'N/A'}
+                        {(() => {
+                          const score = data.run.ensemble_evaluation?.aggregated?.mean_scores?.composite || data.run.scores?.composite
+                          return score ? `${score.toFixed(1)}/5.0` : 'N/A'
+                        })()}
                       </span>
                     </div>
                     <div className="flex justify-between">
@@ -125,55 +128,58 @@ export function ViewResponseModal({ runId, isOpen, onClose }: ViewResponseModalP
               </div>
 
               {/* Rubric Scores Breakdown */}
-              {data.run.scores && (
+              {(data.run.scores || data.run.ensemble_evaluation?.aggregated?.mean_scores) && (
                 <div className="p-4 bg-blue-50 rounded-lg">
                   <h3 className="font-medium text-gray-900 mb-3">7-Dimension Rubric Scores</h3>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
                     <div className="text-center">
                       <div className="text-lg font-semibold text-blue-600">
-                        {data.run.scores.technical_accuracy?.toFixed(1) || 'N/A'}
+                        {(data.run.ensemble_evaluation?.aggregated?.mean_scores?.technical_accuracy || data.run.scores?.technical_accuracy)?.toFixed(1) || 'N/A'}
                       </div>
                       <div className="text-gray-600">Technical Accuracy</div>
                     </div>
                     <div className="text-center">
                       <div className="text-lg font-semibold text-green-600">
-                        {data.run.scores.actionability?.toFixed(1) || 'N/A'}
+                        {(data.run.ensemble_evaluation?.aggregated?.mean_scores?.actionability || data.run.scores?.actionability)?.toFixed(1) || 'N/A'}
                       </div>
                       <div className="text-gray-600">Actionability</div>
                     </div>
                     <div className="text-center">
                       <div className="text-lg font-semibold text-purple-600">
-                        {data.run.scores.completeness?.toFixed(1) || 'N/A'}
+                        {(data.run.ensemble_evaluation?.aggregated?.mean_scores?.completeness || data.run.scores?.completeness)?.toFixed(1) || 'N/A'}
                       </div>
                       <div className="text-gray-600">Completeness</div>
                     </div>
                     <div className="text-center">
                       <div className="text-lg font-semibold text-orange-600">
-                        {data.run.scores.compliance_alignment?.toFixed(1) || 'N/A'}
+                        {(data.run.ensemble_evaluation?.aggregated?.mean_scores?.compliance_alignment || data.run.scores?.compliance_alignment)?.toFixed(1) || 'N/A'}
                       </div>
                       <div className="text-gray-600">Compliance</div>
                     </div>
                     <div className="text-center">
                       <div className="text-lg font-semibold text-red-600">
-                        {data.run.scores.risk_awareness?.toFixed(1) || 'N/A'}
+                        {(data.run.ensemble_evaluation?.aggregated?.mean_scores?.risk_awareness || data.run.scores?.risk_awareness)?.toFixed(1) || 'N/A'}
                       </div>
                       <div className="text-gray-600">Risk Awareness</div>
                     </div>
                     <div className="text-center">
                       <div className="text-lg font-semibold text-indigo-600">
-                        {data.run.scores.relevance?.toFixed(1) || 'N/A'}
+                        {(data.run.ensemble_evaluation?.aggregated?.mean_scores?.relevance || data.run.scores?.relevance)?.toFixed(1) || 'N/A'}
                       </div>
                       <div className="text-gray-600">Relevance</div>
                     </div>
                     <div className="text-center">
                       <div className="text-lg font-semibold text-teal-600">
-                        {data.run.scores.clarity?.toFixed(1) || 'N/A'}
+                        {(data.run.ensemble_evaluation?.aggregated?.mean_scores?.clarity || data.run.scores?.clarity)?.toFixed(1) || 'N/A'}
                       </div>
                       <div className="text-gray-600">Clarity</div>
                     </div>
                     <div className="text-center">
                       <div className="text-xl font-bold text-gray-900">
-                        {data.run.scores.composite?.toFixed(1) || 'N/A'}
+                        {(() => {
+                          const score = data.run.ensemble_evaluation?.aggregated?.mean_scores?.composite || data.run.scores?.composite
+                          return score?.toFixed(1) || 'N/A'
+                        })()}
                       </div>
                       <div className="text-gray-600 font-medium">Composite</div>
                     </div>

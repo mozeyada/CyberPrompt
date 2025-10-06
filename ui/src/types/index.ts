@@ -59,7 +59,6 @@ export interface Run {
   dataset_version?: string;
   settings: {
     temperature: number;
-    max_output_tokens: number;
     seed: number;
   };
   status: 'queued' | 'running' | 'succeeded' | 'failed';
@@ -120,7 +119,6 @@ export interface RunPlanRequest {
   repeats: number;
   settings: {
     temperature: number;
-    max_output_tokens: number;
     seed: number;
   };
   judge: {

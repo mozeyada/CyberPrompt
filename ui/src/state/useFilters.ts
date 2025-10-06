@@ -33,7 +33,6 @@ export interface FilterState {
   experimentConfig: {
     repeats: number;
     temperature: number;
-    maxTokens: number;
     seed: number;
     fspEnabled: boolean;
     experimentName: string;
@@ -83,7 +82,6 @@ export const useFilters = create<FilterState>((set, get) => ({
   experimentConfig: {
     repeats: 3,
     temperature: 0.2,
-    maxTokens: 800,
     seed: 42,
     fspEnabled: false,
     experimentName: '',
@@ -135,7 +133,6 @@ export const useFilters = create<FilterState>((set, get) => ({
     experimentConfig: {
       repeats: 3,
       temperature: 0.2,
-      maxTokens: 800,
       seed: 42,
       fspEnabled: false,
       experimentName: '',
