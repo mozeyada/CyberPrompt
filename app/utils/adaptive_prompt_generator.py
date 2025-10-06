@@ -49,8 +49,7 @@ async def generate_adaptive_prompts(
             response = await client.generate(
                 model=model,
                 prompt=meta_prompt,
-                temperature=0.7,
-                max_tokens=1200
+                temperature=0.7
             )
         
         # Parse response into individual prompts

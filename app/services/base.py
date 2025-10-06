@@ -90,7 +90,6 @@ class LLMJudge(BaseJudge):
             model=self.judge_model,
             prompt=judge_prompt,
             temperature=0.1,
-            max_tokens=500,
         )
 
         # Parse and normalize scores
@@ -142,7 +141,6 @@ class LLMJudge(BaseJudge):
                 model=self.judge_model,
                 prompt=judge_prompt,
                 temperature=0.1,
-                max_tokens=500,
             )
             
             sentence_score = self._parse_judge_response(response)

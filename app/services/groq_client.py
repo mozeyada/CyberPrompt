@@ -23,7 +23,6 @@ class GroqClient(BaseLLMClient):
         model: str,
         prompt: str,
         temperature: float = 0.2,
-        max_tokens: int = 800,
         seed: int | None = None,
         **kwargs
     ) -> str:
@@ -37,8 +36,7 @@ class GroqClient(BaseLLMClient):
         payload = {
             "model": model,
             "messages": [{"role": "user", "content": prompt}],
-            "temperature": temperature,
-            "max_tokens": max_tokens
+            "temperature": temperature
         }
         
         if seed is not None:
