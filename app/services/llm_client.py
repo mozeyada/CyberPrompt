@@ -244,7 +244,22 @@ class GoogleClient(BaseLLMClient):
             )
             latency_ms = int((time.time() - start_time) * 1000)
 
-            content = response.text
+            # Handle Google's response structure - avoid .text property
+            try:
+                if hasattr(response, 'parts') and response.parts:
+                    # Use the parts accessor as suggested by the error message
+                    content = ''.join([part.text for part in response.parts if hasattr(part, 'text')])
+                elif hasattr(response, 'candidates') and response.candidates:
+                    candidate = response.candidates[0]
+                    if hasattr(candidate, 'content') and hasattr(candidate.content, 'parts'):
+                        content = ''.join([part.text for part in candidate.content.parts if hasattr(part, 'text')])
+                    else:
+                        content = str(candidate)
+                else:
+                    content = str(response)
+            except Exception as e:
+                logger.warning(f"Error extracting content from Google response: {e}")
+                content = str(response)
 
             # Store usage info (Gemini doesn't provide detailed token counts in all regions)
             # We'll estimate for now

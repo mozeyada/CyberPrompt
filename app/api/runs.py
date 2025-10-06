@@ -161,6 +161,7 @@ async def execute_batch_ensemble(
             
             # Execute each run and apply ensemble evaluation
             for run_id in run_ids:
+                run = None  # Initialize run variable for error handling
                 try:
                     # Execute the run first
                     exec_result = await get_experiment_service().execute_run(run_id)

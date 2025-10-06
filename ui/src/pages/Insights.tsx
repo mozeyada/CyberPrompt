@@ -237,6 +237,7 @@ export function Insights() {
     if (!allRunsData?.runs) return { runs: [], page: 1, limit: 200, count: 0 }
     
     let runs = allRunsData.runs
+    console.log('DEBUG: Total runs before filtering:', runs.length)
     
     // Filter by scoring mode - more flexible logic
     if (scoringMode === 'ensemble') {
@@ -253,9 +254,12 @@ export function Insights() {
     
     // Filter by models
     if (selectedModels.length > 0) {
+      console.log('DEBUG: Filtering by models:', selectedModels)
       runs = runs.filter(r => selectedModels.includes(r.model))
+      console.log('DEBUG: Runs after model filtering:', runs.length)
     }
     
+    console.log('DEBUG: Final filtered runs count:', runs.length)
     return {
       ...allRunsData,
       runs: runs,
