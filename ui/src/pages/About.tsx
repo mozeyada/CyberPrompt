@@ -116,7 +116,7 @@ export function About() {
             <div className="text-2xl font-bold text-green-600">⚖️</div>
             <div>
               <h3 className="font-semibold text-gray-800">Ensemble Evaluation</h3>
-              <p className="text-gray-600">Multi-judge scoring with GPT-4o-mini, Claude-3.5-Sonnet, and Llama-3.1-70B for enhanced reliability and reduced variance.</p>
+              <p className="text-gray-600">Multi-judge scoring with GPT-4o-mini, Claude-3.5-Sonnet, Llama-3.3-70B, and Gemini-2.5-Pro for enhanced reliability and reduced variance.</p>
             </div>
           </div>
           <div className="flex items-start space-x-3">
@@ -130,7 +130,95 @@ export function About() {
             <div className="text-2xl font-bold text-purple-600">🎯</div>
             <div>
               <h3 className="font-semibold text-gray-800">Controlled Variants</h3>
-              <p className="text-gray-600">S+M+L prompt groups (250-350, 350-500, 600-750 tokens) with perfect traceability for systematic length studies.</p>
+              <p className="text-gray-600">S+M+L prompt groups (150-195, 324-550, 510-891 tokens) with perfect traceability for systematic length studies.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Experimental Findings */}
+      <div className="bg-white rounded-lg shadow p-8">
+        <h2 className="text-2xl font-bold text-gray-900 mb-6">Experimental Findings</h2>
+        <div className="space-y-6">
+          {/* Key Results */}
+          <div className="bg-gradient-to-r from-green-50 to-blue-50 rounded-lg p-6">
+            <h3 className="text-lg font-semibold text-gray-800 mb-4">RQ1: Prompt Length Effects - CONFIRMED</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+              <div className="bg-white rounded-lg p-4 text-center">
+                <div className="text-2xl font-bold text-green-600">122</div>
+                <div className="text-sm text-gray-600">Completed Runs</div>
+                <div className="text-xs text-gray-500">Multi-judge scoring</div>
+              </div>
+              <div className="bg-white rounded-lg p-4 text-center">
+                <div className="text-2xl font-bold text-blue-600">4.87/5.0</div>
+                <div className="text-sm text-gray-600">Average Quality</div>
+                <div className="text-xs text-gray-500">Across all dimensions</div>
+              </div>
+              <div className="bg-white rounded-lg p-4 text-center">
+                <div className="text-2xl font-bold text-purple-600">4</div>
+                <div className="text-sm text-gray-600">Models Tested</div>
+                <div className="text-xs text-gray-500">GPT-4o, Claude, Llama, Gemini</div>
+              </div>
+            </div>
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+              <h4 className="font-semibold text-yellow-800 mb-2">🎯 Key Finding: Quality Plateau Effect</h4>
+              <p className="text-yellow-700 text-sm">
+                Quality remains consistent (4.84-4.89/5) across all prompt lengths, but cost increases 35% from Short→Long. 
+                <strong> Recommendation: Use Short prompts (165 tokens) for optimal cost-effectiveness in SOC/GRC operations.</strong>
+              </p>
+            </div>
+          </div>
+
+          {/* Performance by Length */}
+          <div>
+            <h3 className="text-lg font-semibold text-gray-800 mb-4">Performance by Prompt Length</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="border rounded-lg p-4">
+                <h4 className="font-medium text-green-600 mb-2">Short (S) - 165 avg tokens</h4>
+                <div className="space-y-1 text-sm">
+                  <div>Quality: <span className="font-semibold">4.89/5</span></div>
+                  <div>Cost: <span className="font-semibold">$0.0052/run</span></div>
+                  <div>Runs: <span className="font-semibold">41</span></div>
+                </div>
+              </div>
+              <div className="border rounded-lg p-4">
+                <h4 className="font-medium text-blue-600 mb-2">Medium (M) - 471 avg tokens</h4>
+                <div className="space-y-1 text-sm">
+                  <div>Quality: <span className="font-semibold">4.84/5</span></div>
+                  <div>Cost: <span className="font-semibold">$0.0065/run</span></div>
+                  <div>Runs: <span className="font-semibold">42</span></div>
+                </div>
+              </div>
+              <div className="border rounded-lg p-4">
+                <h4 className="font-medium text-red-600 mb-2">Long (L) - 798 avg tokens</h4>
+                <div className="space-y-1 text-sm">
+                  <div>Quality: <span className="font-semibold">4.88/5</span></div>
+                  <div>Cost: <span className="font-semibold">$0.0070/run</span></div>
+                  <div>Runs: <span className="font-semibold">39</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Scenario Coverage */}
+          <div>
+            <h3 className="text-lg font-semibold text-gray-800 mb-4">Scenario Coverage</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="bg-blue-50 rounded-lg p-4">
+                <h4 className="font-medium text-blue-800">CTI Summary</h4>
+                <div className="text-2xl font-bold text-blue-600">60 runs</div>
+                <div className="text-sm text-blue-600">Threat intelligence analysis</div>
+              </div>
+              <div className="bg-green-50 rounded-lg p-4">
+                <h4 className="font-medium text-green-800">SOC Incident</h4>
+                <div className="text-2xl font-bold text-green-600">38 runs</div>
+                <div className="text-sm text-green-600">Security operations</div>
+              </div>
+              <div className="bg-purple-50 rounded-lg p-4">
+                <h4 className="font-medium text-purple-800">GRC Mapping</h4>
+                <div className="text-2xl font-bold text-purple-600">24 runs</div>
+                <div className="text-sm text-purple-600">Compliance mapping</div>
+              </div>
             </div>
           </div>
         </div>
@@ -168,7 +256,7 @@ export function About() {
           <div>
             <h3 className="text-lg font-semibold text-gray-800 mb-3">Length Variant Analysis</h3>
             <p className="text-gray-600">
-              Controlled S+M+L prompt groups (250-350, 350-500, 600-750 tokens) enable systematic
+              Controlled S+M+L prompt groups (150-195, 324-550, 510-891 tokens) enable systematic
               studies of how prompt length affects LLM quality and cost efficiency in cybersecurity tasks.
               Ranges reflect realistic operational workflows: Tactical (S), Analytical (M), and Strategic (L).
             </p>

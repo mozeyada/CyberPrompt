@@ -15,6 +15,7 @@ class BaseLLMClient(ABC):
         model: str,
         prompt: str,
         temperature: float = 0.2,
+        max_tokens: int = 2000,
         seed: int | None = None,
     ) -> str:
         """Generate response from model"""
@@ -49,6 +50,7 @@ class OpenAIClient(BaseLLMClient):
         model: str,
         prompt: str,
         temperature: float = 0.2,
+        max_tokens: int = 2000,
         seed: int | None = None,
     ) -> str:
         """Generate response using OpenAI API"""
@@ -57,6 +59,7 @@ class OpenAIClient(BaseLLMClient):
                 "model": model,
                 "messages": [{"role": "user", "content": prompt}],
                 "temperature": temperature,
+                "max_tokens": max_tokens,
             }
 
             if seed is not None:
@@ -127,6 +130,7 @@ class AnthropicClient(BaseLLMClient):
         model: str,
         prompt: str,
         temperature: float = 0.2,
+        max_tokens: int = 2000,
         seed: int | None = None,
     ) -> str:
         """Generate response using Anthropic API"""
@@ -141,6 +145,7 @@ class AnthropicClient(BaseLLMClient):
                 "model": actual_model,
                 "messages": [{"role": "user", "content": prompt}],
                 "temperature": temperature,
+                "max_tokens": max_tokens,
             }
             
             # Only add seed for specific Claude models that support it
@@ -214,6 +219,7 @@ class GoogleClient(BaseLLMClient):
         model: str,
         prompt: str,
         temperature: float = 0.2,
+        max_tokens: int = 2000,
         seed: int | None = None,
     ) -> str:
         """Generate response using Google Gemini API"""
@@ -229,6 +235,7 @@ class GoogleClient(BaseLLMClient):
 
             generation_config = {
                 "temperature": temperature,
+                "max_output_tokens": max_tokens,
             }
 
             response = await model_instance.generate_content_async(
@@ -340,6 +347,7 @@ class ModelRunner:
                 model=model,
                 prompt=prompt,
                 temperature=settings.get("temperature", 0.2),
+                max_tokens=settings.get("max_output_tokens", 2000),
                 seed=settings.get("seed"),
             )
             latency_ms = int((time.time() - start_time) * 1000)

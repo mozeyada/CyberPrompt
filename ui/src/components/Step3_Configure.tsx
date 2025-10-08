@@ -9,6 +9,7 @@ interface Step3Props {
     repeats: number
     temperature: number
     seed: number
+    maxTokens: number
     fspEnabled: boolean
     experimentName: string
   }
@@ -98,63 +99,25 @@ export function Step3_Configure({
               onChange={(e) => setExperimentConfig({ repeats: parseInt(e.target.value) })}
               className="w-full border border-gray-300 rounded-md px-3 py-2"
             >
-              <option value={1}>1 run (quick test)</option>
-              <option value={3}>3 runs (recommended)</option>
-              <option value={5}>5 runs (high confidence)</option>
+              <option value={1}>1 run</option>
+              <option value={3}>3 runs</option>
+              <option value={5}>5 runs</option>
             </select>
           </div>
         </div>
 
-        {/* Bias Controls */}
-        <div>
-          <h4 className="font-medium text-gray-900 mb-3">Bias Controls</h4>
-          <div className="space-y-2">
-            <label className="flex items-center">
-              <input
-                type="checkbox"
-                checked={experimentConfig.fspEnabled}
-                onChange={(e) => setExperimentConfig({ fspEnabled: e.target.checked })}
-                className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-              />
-              <span className="ml-2 text-sm text-gray-700">
-                Enable Fair Scoring (prevents bias toward longer responses)
-              </span>
-            </label>
-            
-            {includeVariants && (
-              <div className="bg-yellow-50 border border-yellow-200 rounded p-3">
-                <div className="flex items-center text-yellow-800">
-                  <span className="mr-2">⚠️</span>
-                  <span className="text-sm font-medium">
-                    Length variants enabled: Each selected prompt will include S+M+L versions (×3 multiplier)
-                  </span>
-                </div>
-              </div>
-            )}
+        {/* Multi-Judge Evaluation Info */}
+        <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+          <div className="flex items-center text-purple-800">
+            <span className="mr-2">🔬</span>
+            <span className="text-sm font-medium">
+              Multi-Judge Evaluation: Uses 3 judges for research-grade reliability
+            </span>
           </div>
         </div>
 
         {/* Advanced Settings Accordion */}
         <div className="border border-gray-200 rounded-lg">
-          {/* Ensemble Evaluation - Always Visible */}
-          <div className="px-4 pb-4 border-b border-gray-200">
-            <div>
-              <label className="flex items-center mb-3">
-                <input
-                  type="checkbox"
-                  checked={enableEnsemble}
-                  onChange={(e) => setEnableEnsemble(e.target.checked)}
-                  className="rounded border-gray-300 text-purple-600 focus:ring-purple-500"
-                />
-                <span className="ml-2 text-sm font-medium text-gray-700">
-                  Multi-Judge Evaluation (Recommended for Research)
-                </span>
-              </label>
-              <div className="ml-6 text-xs text-gray-500 mb-3">
-                Uses 3 judges for research-grade reliability. Recommended for all experiments.
-              </div>
-            </div>
-          </div>
 
           <button
             onClick={() => setShowAdvanced(!showAdvanced)}
@@ -166,6 +129,35 @@ export function Step3_Configure({
           
           {showAdvanced && (
             <div className="px-4 pb-4 border-t border-gray-200 space-y-4">
+              {/* Bias Controls */}
+              <div>
+                <h4 className="font-medium text-gray-900 mb-3">Bias Controls</h4>
+                <div className="space-y-2">
+                  <label className="flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={experimentConfig.fspEnabled}
+                      onChange={(e) => setExperimentConfig({ fspEnabled: e.target.checked })}
+                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                    />
+                    <span className="ml-2 text-sm text-gray-700">
+                      Enable Fair Scoring (prevents bias toward longer responses)
+                    </span>
+                  </label>
+                  
+                  {includeVariants && (
+                    <div className="bg-yellow-50 border border-yellow-200 rounded p-3">
+                      <div className="flex items-center text-yellow-800">
+                        <span className="mr-2">⚠️</span>
+                        <span className="text-sm font-medium">
+                          Length variants enabled: Each selected prompt will include S+M+L versions (×3 multiplier)
+                        </span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
               <div>
                 <label className="flex items-center mb-3">
                   <input
@@ -206,6 +198,21 @@ export function Step3_Configure({
                         type="number"
                         value={experimentConfig.seed}
                         onChange={(e) => setExperimentConfig({ seed: parseInt(e.target.value) })}
+                        className="w-full border border-gray-300 rounded-md px-3 py-2"
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Max Tokens
+                      </label>
+                      <input
+                        type="number"
+                        value={experimentConfig.maxTokens}
+                        onChange={(e) => setExperimentConfig({ maxTokens: parseInt(e.target.value) })}
+                        min="100"
+                        max="4000"
+                        step="100"
                         className="w-full border border-gray-300 rounded-md px-3 py-2"
                       />
                     </div>

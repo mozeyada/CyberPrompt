@@ -34,6 +34,7 @@ export interface FilterState {
     repeats: number;
     temperature: number;
     seed: number;
+    maxTokens: number;
     fspEnabled: boolean;
     experimentName: string;
   };
@@ -80,9 +81,10 @@ export const useFilters = create<FilterState>((set, get) => ({
   setIncludeVariants: (include) => set({ includeVariants: include }),
   
   experimentConfig: {
-    repeats: 3,
+    repeats: 1,
     temperature: 0.2,
     seed: 42,
+    maxTokens: 2000,
     fspEnabled: false,
     experimentName: '',
   },
@@ -131,9 +133,10 @@ export const useFilters = create<FilterState>((set, get) => ({
     selectedPrompts: [],
     includeVariants: false,
     experimentConfig: {
-      repeats: 3,
+      repeats: 1,
       temperature: 0.2,
       seed: 42,
+      maxTokens: 2000,
       fspEnabled: false,
       experimentName: '',
     },

@@ -235,6 +235,7 @@ export function BenchmarkRunner() {
         },
         settings: {
           temperature: experimentConfig.temperature,
+          max_output_tokens: experimentConfig.maxTokens,
         },
         repeats: experimentConfig.repeats
       })
@@ -249,6 +250,7 @@ export function BenchmarkRunner() {
         },
         settings: {
           temperature: experimentConfig.temperature,
+          max_output_tokens: experimentConfig.maxTokens,
         },
         repeats: experimentConfig.repeats
       })
@@ -528,7 +530,7 @@ export function BenchmarkRunner() {
                     <h4 className="font-medium text-gray-900">Test Results</h4>
                     {!executionStatus.isRunning && executionStatus.completedRuns > 0 && (
                       <a 
-                        href={`/overview?experiment=${executionStatus.results[0]?.run_id?.split('_')[0] || 'latest'}`}
+                        href={`/results?experiment=${executionStatus.results[0]?.run_id?.split('_')[0] || 'latest'}`}
                         className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 text-sm font-medium"
                       >
                         View RQ1 Results →

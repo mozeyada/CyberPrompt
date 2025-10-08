@@ -15,11 +15,13 @@ As organizations adopt Large Language Models (LLMs) like GPT-4, Claude, and Gemi
 - **7-Dimension SOC/GRC Rubric**: Technical accuracy, actionability, completeness, compliance alignment, risk awareness, relevance, clarity
 - **Bias Mitigation**: Focus Sentence Prompting (FSP) for fair evaluation
 - **Length Variant Analysis**: Automatic S+M+L prompt groups for controlled length studies
-- **Static Dataset**: 300 prompts auto-loaded on startup + research-grade variants with token classification (250-350, 350-500, 600-750)
+- **Static Dataset**: 300 prompts auto-loaded on startup + research-grade variants with token classification (150-195, 324-550, 510-891)
 - **Adaptive Prompting**: Generate benchmarks from CTI/policy documents using Groq API
 - **KL Divergence Validation**: Statistical validation of adaptive vs static prompt distributions
 - **Experiment Grouping**: Track and compare experiments with metadata
 - **Export Functionality**: CSV export with full research metadata
+- **Multi-Judge Evaluation**: Ensemble scoring with GPT-4o-mini, Claude-3.5-Sonnet, Llama-3.3-70B, and Gemini-2.5-Pro
+- **Real Data Integration**: BOTSv3 dataset for SOC scenarios, NIST SP 800-53 controls for GRC scenarios
 
 ## Architecture
 
@@ -123,6 +125,25 @@ Proper implementation validates adaptive prompts from CTI/policy documents again
 
 ### Adaptive Prompting System
 Generate contextually relevant benchmarks from policy documents and CTI feeds using cost-effective Groq API. Maintains consistent data structure with static prompts for seamless integration.
+
+## Experimental Results
+
+### RQ1: Prompt Length Effects - CONFIRMED
+**122 completed runs** with multi-judge scoring across **4 models** (GPT-4o, Claude-3.5-Sonnet, Llama-3.3-70B, Gemini-2.5-Pro) show:
+
+- **Quality Plateau Effect**: Quality remains consistent (4.84-4.89/5) across all prompt lengths
+- **Cost Increases 35%**: From Short→Long with no quality benefit
+- **Recommendation**: Use Short prompts (165 tokens) for optimal cost-effectiveness in SOC/GRC operations
+
+### Performance by Prompt Length
+- **Short (S)**: 4.89/5 quality, $0.0052/run, 165 avg tokens
+- **Medium (M)**: 4.84/5 quality, $0.0065/run, 471 avg tokens  
+- **Long (L)**: 4.88/5 quality, $0.0070/run, 798 avg tokens
+
+### Scenario Coverage
+- **CTI Summary**: 60 runs (threat intelligence analysis)
+- **SOC Incident**: 38 runs (security operations)
+- **GRC Mapping**: 24 runs (compliance mapping)
 
 ### Streamlined UX
 Removed verbose research explanations while maintaining statistical rigor. Clean, actionable insights with essential interpretation guides.

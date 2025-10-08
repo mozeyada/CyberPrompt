@@ -1,0 +1,127 @@
+
+THE 5TH CONFERENCE ON RESEARCH IN IT PRACTICE, 22-25 OCT 2024, BRISBANE
+
+
+
+
+Instructions for preparing papers for IFN712
+
+Author Name, Faculty of Science, Queensland University of Technology, Brisbane
+
+
+Abstract
+
+
+Keywords
+Instructions, research methods, results and discussion.
+
+
+1. Introduction
+In this section, you need to clearly describe the general background/context of your research topic, present the specific area of their research, reveal a research gap, state a research problem and specify research questions or research hypotheses. This is followed by the author’s statement for intention to fill the gap or answer the questions. After that, the author should make a clear statement of how the paper represents new knowledge and outputs with respect to the current knowledge. In a separate paragraph the objectives of your research should be given. The final paragraph is about the structure of the rest of the paper. This section may include 600-800 words.
+
+2.Related Work (Literature Review)
+This section is dedicated to review of literatures or related work about your research topic areas. Your literature review should generally answer the following questions and use the answers to these questions to structure your Literature Review. What are the original works on your topic? What progress has been made since these original works? What are the most relevant recent works to your research problems and questions? What are the achievements and limitations of these recent works? What gap do these limitations reveal? How does your work intend to fill this gap? This section may include 800-1000 words. You can introduce sub-headline 2.1 and 2.2 etc.
+
+3. Methods
+
+You should avoid copying your research plan in Assessment 2 here as this part state what you have done instead of what you will do. Directly moving Research Design from Assessment 2 to here will receive very low or no mark for this section. This section can include 800-1000 words. You can use sub-headlines for subsections. The example is shown in 3.1 as follows.
+
+3.1 Bregman Iterative Approach
+Bregman iterative approach is employed to gain the optimal energy segmentation of infrared and visible image contours. The NSCT transform is taken to decompose the source image, and the corresponding rules are utilized to integrate the coefficients in the light of the segmented background. Fig. 2 shows Partitions of devices in Remote Device Management (RDM).
+
+
+ 
+Fig. 1. Partitions of devices in remote device management (RDM).
+
+To evaluate the performance of the proposed scheme, we compared the device discovery time for the existing binary search scheme and the proposed partition-based scheme in a variety of network conditions. For numerical analysis, we used MATLAB (MathWorks, Natick, MA, USA), and we performed five test instances and obtained the averaged values in simulations.
+
+S=201log_10 (256/ε), ε= √(1/N^2  〖(S_k-D_k)〗^2 )                                    (1)
+
+This is because the proposed scheme can reduce the attempts made for device discovery by dividing all devices into several partitions and can also minimize the possibility of multiple responses (collisions) from the devices, as compared to the existing binary search scheme. Table 1 shows Units for Magnetic Properties.
+
+Table 1.  Units for magnetic properties 
+Symbol	Quantity	Conversion from Gaussian and
+CGS EMU to SI a
+	magnetic flux	1 Mx  108 Wb = 108 V·s
+B	magnetic flux density, 
+  magnetic induction	1 G  104 T = 104 Wb/m2
+H	magnetic field strength	1 Oe  103/(4) A/m
+m	magnetic moment	1 erg/G = 1 emu   103 A·m2 = 103 J/T
+M	magnetization	1 erg/(G·cm3) = 1 emu/cm3
+   103 A/m
+4M	magnetization	1 G  103/(4) A/m
+	specific magnetization	1 erg/(G·g) = 1 emu/g  1 A·m2/kg
+j	magnetic dipole 
+  moment	1 erg/G = 1 emu   4  1010 Wb·m
+J	magnetic polarization	1 erg/(G·cm3) = 1 emu/cm3  4  104 T
+, 	susceptibility	1  4
+	mass susceptibility	1 cm3/g  4  103 m3/kg
+	permeability	1  4  107 H/m  = 4  107 Wb/(A·m)
+r	relative permeability	  r
+w, W	energy density	1 erg/cm3  101 J/m3
+N, D	demagnetizing factor	1  1/(4)
+
+3.1.1 Engaging multimedia design model
+Researchers introduced various tools from psychology and educational theories to make models explaining why games are so immersive. These approaches help us to understand dynamics between games and players and provided base camp for our study. Following researches suggest good points describing what are essential for good games.
+
+4. Results and Discussion
+Your results are things that you have not found before you started writing the paper. These include diagrams, figures and tables and your comments on, and interpretation to the data. In this section, you present your results in the following structure recommended: 
+	Highlight those results that answer your research questions
+	Outline secondary results that does not answer your research questions, but relevant
+	Give supporting information and comments
+	Mention any results that contradict your hypothesis and explain why they are anomalous
+Your discussion/analysis should answer the following questions, and possibly in the following order. 
+	What are my most important findings?
+	Do these findings support what I set out to demonstrate at the beginning of the paper?
+	How do my findings compare with what others have found?  How consistent are they?
+	What is my personal interpretation of my findings?
+	What are the limitations of my study? What other factors could have influenced my findings? Have I reported everything that could make my findings invalid?
+	Do any of the interpretations reveal a possible flaw (i.e. defect, error) in my experiment?
+This section my include 1200-1500 words.
+ 
+Fig. 2. Comparison between MOFI vs. proposed scheme: total cost.
+
+
+5. Conclusions
+The conclusions section typically incorporates one or more of the following:
+	a very brief revisit of the most important findings pointing out how these advance your field from the present state of knowledge
+	a final judgment on the importance and significance those findings in terms of their implications and impact, along with possible applications to other areas
+	suggestions for improvements (perhaps in relation to the limitations)
+	recommendations for future work (either for the author, and/or the community)
+	recommendations for policy changes if applicable.
+The order these items appear is likely to be the same as suggested above. This section includes 250-400 words.
+Acknowledgements 
+You acknowledge your supervisor team or these who have helped your 
+
+Author’s biography
+This section is optional, may include 40-60 words.
+
+References
+Basic format for journals 
+[1] K. K. Lim, J. Park, and J. G. Shon, “Differential data processing technique to improve the performance of wireless sensor networks,” The Journal of Supercomputing, vol. 75, no. 8, pp. 4489-4504, 2019.
+[2] W. P. Risk, G. S. Kino, and H. J. Shaw, “Fiber-optic frequency shifter using a surface acoustic wave incident at an oblique angle,” Optics Letter, vol. 11, no. 2, pp. 115-117, 1986.
+
+Basic format for journals (when available online): 
+[3] F. Hao, D. S. Park, and Z. Pei, “When social computing meets soft computing: opportunities and insights,” Human-centric Computing and Information Sciences, vol. 8, 2018. https://doi.org/10.1186/s13673-018-0131-z
+[4] P. Kopyt, B. Salski, P. Zagrajek, D. Janczak, M. Sloma, M. Jakubowska, M. Olszewska-Placha, and W. Gwarek, “Electric properties of graphene-based conductive layers from DC up to terahertz range,” IEEE Transactions on Terahertz Science and Technology, vol. 6, no. 3, pp. 480-490, 2016. https://doi.org/10.1109/TTHZ.2016.2544142
+
+Basic format for books
+[5] W. K. Chen, Linear Networks and Systems. Belmont, CA: Wadsworth, 1993.
+[6] G. O. Young, “Synthetic structure of industrial plastics,” in Plastics, 2nd ed. New York, NY: McGraw-Hill, 1964. pp. 15-64.
+
+Basic format for conference proceedings
+[7] D. B. Payne and J. R. Stern, “Wavelength-switched passively coupled single-mode optical network,” in Proceedings of the 5th International Conference on Integrated Optics and Optical Fibre Communication (IOOC-ECOC), Venezia, Italy, 1985, pp. 585-590.
+
+Basic format for online references
+[8] M. Rouse “Introduction to 5G: your guide to fifth-generation wireless,” 2020 [Online]. Available: https://searchnetworking.techtarget.com/definition/5G.
+[9] A. Mars, A. Abadleh, and W. Adi, “Operator and manufacturer independent D2D private link for future 5G networks,” 2019 [Online]. Available: https://arxiv.org/abs/1911.00303.
+
+Basic format for thesis (B.S., M.S.) and dissertation (Ph.D.)
+[10] J. O. Williams, “Narrow-band analyzer,” Ph.D. dissertation, Department of Electrical Engineering, Harvard University, Cambridge, MA, 1993.
+[11] N. Kawasaki, “Parametric study of thermal and chemical nonequilibrium nozzle flow,” M.S. thesis, Department of Electronic Engineering, Osaka University, Osaka, Japan, 1993.
+
+Basic format for Standards
+[12] IEEE Criteria for Class IE Electric Systems, IEEE Standard 308, 1969.
+
+Basic format for AI-generative formation (
+[13] OpenAI's ChatGPT, “Discussion on climate change implications.” OpenAI, 2023.
