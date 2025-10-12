@@ -806,56 +806,88 @@ export function Insights() {
                     <table className="w-full">
                       <thead>
                         <tr className="border-b border-gray-200">
+                          <th className="text-left py-3 px-4 font-medium text-gray-600">Run ID</th>
+                          <th className="text-left py-3 px-4 font-medium text-gray-600">Prompt ID</th>
+                          <th className="text-left py-3 px-4 font-medium text-gray-600">Length</th>
+                          <th className="text-left py-3 px-4 font-medium text-gray-600">Scenario</th>
                           <th className="text-left py-3 px-4 font-medium text-gray-600">Model</th>
-                          <th className="text-left py-3 px-4 font-medium text-gray-600">Source</th>
-                          <th className="text-left py-3 px-4 font-medium text-gray-600">Experiment</th>
-                          <th className="text-left py-3 px-4 font-medium text-gray-600">Dataset</th>
                           <th className="text-left py-3 px-4 font-medium text-gray-600">Status</th>
                           <th className="text-left py-3 px-4 font-medium text-gray-600">Tokens</th>
-                          <th className="text-left py-3 px-4 font-medium text-gray-600">Cost (AUD)</th>
-                          <th className="text-left py-3 px-4 font-medium text-gray-600">Quality Score</th>
+                          <th className="text-left py-3 px-4 font-medium text-gray-600">Quality</th>
                           <th className="text-left py-3 px-4 font-medium text-gray-600">Actions</th>
                         </tr>
                       </thead>
                       <tbody>
                         {filteredAllRunsData.runs.map((run, index) => (
                           <tr key={run.run_id} className={index % 2 === 0 ? 'bg-gray-50' : 'bg-white'}>
+                            {/* NEW: Run ID Cell */}
+                            <td className="py-3 px-4">
+                              <span 
+                                className="text-xs font-mono text-gray-700 cursor-help" 
+                                title={run.run_id}
+                              >
+                                {run.run_id.substring(4)}
+                              </span>
+                            </td>
+                            
+                            {/* NEW: Prompt ID Cell */}
+                            <td className="py-3 px-4">
+                              <span 
+                                className="text-xs font-mono text-blue-600 cursor-help"
+                                title={run.prompt_id}
+                              >
+                                {run.prompt_id?.replace('academic_soc_0', '').replace('academic_', '') || 'N/A'}
+                              </span>
+                            </td>
+                            
+                            {/* NEW: Length Bin Cell */}
+                            <td className="py-3 px-4">
+                              <Badge 
+                                variant="outline"
+                                className={
+                                  run.prompt_length_bin === 'S' ? 'bg-green-100 text-green-800 border-green-300' :
+                                  run.prompt_length_bin === 'M' ? 'bg-blue-100 text-blue-800 border-blue-300' :
+                                  run.prompt_length_bin === 'L' ? 'bg-orange-100 text-orange-800 border-orange-300' :
+                                  'bg-gray-100 text-gray-600'
+                                }
+                              >
+                                {run.prompt_length_bin || '?'}
+                              </Badge>
+                            </td>
+                            
+                            {/* NEW: Scenario Cell */}
+                            <td className="py-3 px-4">
+                              <Badge variant="secondary" className="text-xs">
+                                {run.scenario?.replace('_', ' ') || 'N/A'}
+                              </Badge>
+                            </td>
+                            
+                            {/* KEEP: Model Cell */}
                             <td className="py-3 px-4">
                               <Badge variant="secondary">{run.model}</Badge>
                             </td>
-                            <td className="py-3 px-4">
-                              <div className="flex flex-col gap-1">
-                                <Badge variant={run.source === 'adaptive' ? 'default' : 'outline'}>
-                                  {run.source || 'static'}
-                                </Badge>
-                                <Badge variant={run.ensemble_evaluation ? 'default' : 'secondary'} className="text-xs">
-                                  {run.ensemble_evaluation ? 'Ensemble' : 'Single'}
-                                </Badge>
-                              </div>
-                            </td>
-                            <td className="py-3 px-4">
-                              <span className="text-xs text-gray-600">
-                                {run.experiment_id ? run.experiment_id.split('_').slice(-1)[0] : 'N/A'}
-                              </span>
-                            </td>
-                            <td className="py-3 px-4">
-                              <span className="text-xs text-gray-600">
-                                {run.dataset_version || 'N/A'}
-                              </span>
-                            </td>
+                            
+                            {/* KEEP: Status Cell */}
                             <td className="py-3 px-4">
                               <Badge variant={run.status === 'succeeded' ? 'default' : 'destructive'}>
                                 {run.status}
                               </Badge>
                             </td>
-                            <td className="py-3 px-4 text-sm">{run.tokens?.total || 0}</td>
-                            <td className="py-3 px-4 text-sm">${run.economics?.aud_cost?.toFixed(4) || '0.0000'}</td>
+                            
+                            {/* KEEP: Tokens Cell (with formatting) */}
+                            <td className="py-3 px-4">
+                              <span className="font-mono text-sm">
+                                {(run.tokens?.total || 0).toLocaleString()}
+                              </span>
+                            </td>
+                            
+                            {/* KEEP: Quality Cell (with ensemble indicator) */}
                             <td className="py-3 px-4 text-sm">
                               {(() => {
                                 if (run.ensemble_evaluation?.aggregated?.mean_scores?.composite) {
                                   return (
                                     <div className="space-y-1">
-                                      <span className="font-medium text-purple-600">
+                                      <span className="font-semibold text-purple-600">
                                         {run.ensemble_evaluation.aggregated.mean_scores.composite.toFixed(1)}/5.0
                                       </span>
                                       <div className="text-xs text-purple-500">Multi-Judge</div>
@@ -864,7 +896,7 @@ export function Insights() {
                                 } else if (run.scores?.composite) {
                                   return (
                                     <div className="space-y-1">
-                                      <span className="font-medium">
+                                      <span className="font-semibold">
                                         {run.scores.composite.toFixed(1)}/5.0
                                       </span>
                                       <div className="text-xs text-gray-500">Legacy</div>
@@ -875,6 +907,8 @@ export function Insights() {
                                 }
                               })()}
                             </td>
+                            
+                            {/* KEEP: Actions Cell */}
                             <td className="py-3 px-4">
                               <div className="flex items-center gap-2">
                                 <Button

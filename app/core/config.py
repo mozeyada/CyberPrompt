@@ -24,7 +24,7 @@ class Settings(BaseSettings):
 
     # Judge settings
     default_judge_model: str = "gpt-4o-mini"
-    judge_prompt_version: str = "v2"
+    judge_prompt_version: str = "optimized"  # Single optimized prompt
 
     # Security
     secret_key: str = "dev-secret-key"

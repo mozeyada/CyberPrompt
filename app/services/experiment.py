@@ -62,7 +62,7 @@ class ExperimentService:
                     
                 prompts.append(prompt)
                 
-                # If include_variants is True, add the M and L variants for this prompt
+                # If include_variants is True, add ALL variants (S, M, L) for this prompt
                 if include_variants:
                     logger.info(f"Expanding variants for prompt: {prompt_id}")
                     # Find variants by matching the base prompt ID (remove length suffix)
@@ -70,16 +70,17 @@ class ExperimentService:
                     base_prompt_id = re.sub(r'_[slm]$', '', prompt_id, flags=re.IGNORECASE)
                     logger.info(f"Base prompt ID: {base_prompt_id}")
                     
-                    # Find medium and long variants using the naming pattern
+                    # Find ALL variants (S, M, L) using the naming pattern
                     from app.db.connection import get_database
                     db = get_database()
                     
-                    # Create the variant IDs based on naming pattern
+                    # Search for ALL three variants
                     variant_ids = [
+                        f"{base_prompt_id}_s",  # Short variant
                         f"{base_prompt_id}_m",  # Medium variant
                         f"{base_prompt_id}_l"   # Long variant
                     ]
-                    logger.info(f"Looking for variant IDs: {variant_ids}")
+                    logger.info(f"Looking for all variant IDs: {variant_ids}")
                     
                     variant_docs = await db.prompts.find({
                         'prompt_id': {'$in': variant_ids},
@@ -91,6 +92,12 @@ class ExperimentService:
                         try:
                             from app.models import Prompt
                             variant_prompt = Prompt(**variant_doc)
+                            
+                            # Skip if this variant is already in prompts list (avoid duplicates)
+                            if variant_prompt.prompt_id == prompt_id:
+                                logger.info(f"Skipping duplicate variant: {variant_prompt.prompt_id}")
+                                continue
+                            
                             prompts.append(variant_prompt)
                             logger.info(f"Added variant: {variant_prompt.prompt_id} ({variant_prompt.length_bin})")
                         except Exception as e:
@@ -143,8 +150,8 @@ class ExperimentService:
             logger.error(f"Error planning runs: {e}")
             raise
 
-    async def execute_run(self, run_id: str, use_ensemble: bool = False) -> dict[str, Any]:
-        """Execute a single run"""
+    async def execute_run(self, run_id: str) -> dict[str, Any]:
+        """Execute a single run with 3-judge ensemble evaluation"""
         try:
             # Get run details
             run = await self.run_repo.get_by_id(run_id)
@@ -164,12 +171,18 @@ class ExperimentService:
                 msg = f"Prompt not found: {run.prompt_id}"
                 raise ValueError(msg)
 
+            # VERIFICATION: Log prompt details for variant testing
+            logger.info(f"[VARIANT-CHECK] Executing {run_id}: prompt_id={run.prompt_id}, length_bin={prompt.length_bin}, prompt_length={len(prompt.text)} chars, model={run.model}")
+
             # Execute real LLM model
             execution_result = await self.model_runner.execute_run(
                 model=run.model,
                 prompt=prompt.text,
                 settings=run.settings.model_dump(),
             )
+            
+            # VERIFICATION: Log LLM response details
+            logger.info(f"[VARIANT-CHECK] LLM response for {run_id}: response_length={len(execution_result.get('response', ''))} chars, success={execution_result.get('success', False)}")
 
             if not execution_result["success"]:
                 await self.run_repo.update(run_id, {
@@ -191,6 +204,9 @@ class ExperimentService:
                 },
             )
             await self.blob_repo.store(blob)
+            
+            # VERIFICATION: Log blob storage details
+            logger.info(f"[VARIANT-CHECK] Stored blob for {run_id}: blob_id={blob_id[:16]}..., content_length={len(execution_result['response'])} chars")
 
             # Calculate costs
             tokens = TokenMetrics(**execution_result["tokens"])
@@ -221,44 +237,45 @@ class ExperimentService:
             )
             risk_metrics = RiskMetrics(hallucination_flags=risk_flags)
 
-            # Evaluation logic - either ensemble or single judge
+            # ALWAYS use 3-judge ensemble evaluation (no legacy single-judge)
             scores = None
             ensemble_evaluation = None
             
-            if use_ensemble:
-                # Ensemble evaluation
-                try:
-                    from app.services.ensemble import EnsembleJudgeService
-                    ensemble_service = EnsembleJudgeService()
-                    
-                    ensemble_eval = await ensemble_service.evaluate_with_ensemble(
-                        output=execution_result["response"],
-                        scenario=prompt.scenario,
-                        length_bin=prompt.length_bin,
-                        bias_controls=run.bias_controls.model_dump(),
-                        run_id=run_id,
-                        context=prompt.text
-                    )
-                    
-                    # Use ensemble aggregated scores
-                    if ensemble_eval.aggregated and ensemble_eval.aggregated.mean_scores:
-                        scores = ensemble_eval.aggregated.mean_scores.model_dump()
-                        ensemble_evaluation = ensemble_eval
-                        logger.info(f"Ensemble evaluation completed for run {run_id}")
-                    else:
-                        logger.warning(f"Ensemble evaluation failed to produce scores for run {run_id}")
-                        
-                except Exception as e:
-                    logger.error(f"Ensemble evaluation failed for run {run_id}: {e}")
-                    # Fall back to single judge
-                    scores = await self._evaluate_single_judge(
-                        execution_result["response"], prompt, run, run_id
-                    )
-            elif run.judge.type.value == "llm":
-                # Single judge evaluation (original logic)
-                scores = await self._evaluate_single_judge(
-                    execution_result["response"], prompt, run, run_id
+            try:
+                from app.services.ensemble import EnsembleJudgeService
+                ensemble_service = EnsembleJudgeService()
+                
+                # VERIFICATION: Log ensemble evaluation trigger
+                logger.info(f"[ENSEMBLE] Starting 3-judge evaluation for {run_id}: length_bin={prompt.length_bin}, output_len={len(execution_result['response'])}, context_len={len(prompt.text)}")
+                
+                ensemble_eval = await ensemble_service.evaluate_with_ensemble(
+                    output=execution_result["response"],
+                    scenario=prompt.scenario,
+                    length_bin=prompt.length_bin,
+                    bias_controls=run.bias_controls.model_dump(),
+                    run_id=run_id,
+                    context=prompt.text
                 )
+                
+                # Use ONLY ensemble aggregated scores
+                if ensemble_eval.aggregated and ensemble_eval.aggregated.mean_scores:
+                    scores = ensemble_eval.aggregated.mean_scores.model_dump()
+                    ensemble_evaluation = ensemble_eval
+                    # Log ensemble scores
+                    logger.info(f"[ENSEMBLE] {run_id} ensemble scores: composite={scores.get('composite'):.3f}, technical_accuracy={scores.get('technical_accuracy'):.3f}, completeness={scores.get('completeness'):.3f}")
+                else:
+                    logger.error(f"[ENSEMBLE] {run_id} failed - no aggregated scores produced!")
+                    raise Exception("Ensemble evaluation failed to produce aggregated scores")
+                    
+            except Exception as e:
+                logger.error(f"[ENSEMBLE] {run_id} evaluation failed: {e}")
+                # Mark run as FAILED if ensemble fails (no fallback to single-judge)
+                await self.run_repo.update(run_id, {
+                    "status": RunStatus.FAILED,
+                    "error": f"Ensemble evaluation failed: {e}",
+                    "updated_at": datetime.utcnow()
+                })
+                raise
 
             # Update run with results
             from app.models import RubricScores
@@ -273,11 +290,13 @@ class ExperimentService:
 
             if scores:
                 update_data["scores"] = RubricScores(**scores).model_dump()
+                logger.info(f"[SCORE-DEBUG] {run_id} update_data['scores'] set: composite={update_data['scores'].get('composite'):.3f}")
             
             if ensemble_evaluation:
                 update_data["ensemble_evaluation"] = ensemble_evaluation.model_dump()
 
             await self.run_repo.update(run_id, update_data)
+            logger.info(f"[SCORE-DEBUG] {run_id} update sent to DB with fields: {list(update_data.keys())}")
 
             return {
                 "run_id": run_id,
@@ -343,43 +362,6 @@ class ExperimentService:
 
         return processed_results
 
-    async def _evaluate_single_judge(self, response: str, prompt, run, run_id: str) -> dict:
-        """Evaluate using single judge model"""
-        try:
-            # Get the appropriate LLM client for the judge model
-            judge_model = run.judge.judge_model or "gpt-4o-mini"
-            # Ensure we have a valid model name
-            if not judge_model or judge_model == "":
-                judge_model = "gpt-4o-mini"
-            judge_client = self.model_runner._get_client(judge_model)
-
-            judge = create_judge(run.judge.model_dump(), judge_client)
-
-            # Standard evaluation
-            judge_result = await judge.evaluate(
-                output=response,
-                scenario=prompt.scenario,
-                length_bin=prompt.length_bin,
-                bias_controls=run.bias_controls.model_dump(),
-                context=prompt.text,
-            )
-
-            if "scores" in judge_result and "error" not in judge_result:
-                scores = judge_result["scores"]
-                # Only save scores if they're valid (not all zeros)
-                if scores.get("composite", 0) > 0:
-                    return scores
-                else:
-                    logger.warning(f"Judge returned zero scores for run {run_id}, not saving")
-                    return None
-            else:
-                logger.warning(f"Judge failed for run {run_id}: {judge_result.get('error', 'Unknown error')}")
-                return None
-
-        except Exception as e:
-            logger.error(f"Judge evaluation failed for run {run_id}: {e}")
-            # Continue without scores rather than failing
-            return None
 
 
 # Global service instance - initialized lazily

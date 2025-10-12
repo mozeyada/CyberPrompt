@@ -120,7 +120,7 @@ class RunSettings(BaseModel):
 class JudgeConfig(BaseModel):
     type: JudgeType
     judge_model: str | None = None
-    prompt_ver: str = "v2"
+    prompt_ver: str = "balanced"  # Balanced prompt with Low/High anchors
 
 
 class RubricScores(SafeBaseModel):
@@ -152,6 +152,7 @@ class JudgeResult(BaseModel):
     tokens_used: int = 0
     cost_usd: float = 0.0
     fsp_used: bool = False
+    evaluation_failed: bool = False
 
 class AggregatedScores(SafeBaseModel):
     """Aggregated scores from ensemble evaluation"""

@@ -131,7 +131,7 @@ export function ViewResponseModal({ runId, isOpen, onClose }: ViewResponseModalP
               {(data.run.scores || data.run.ensemble_evaluation?.aggregated?.mean_scores) && (
                 <div className="p-4 bg-blue-50 rounded-lg">
                   <h3 className="font-medium text-gray-900 mb-3">7-Dimension Rubric Scores</h3>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+                  <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-3 text-sm">
                     <div className="text-center">
                       <div className="text-lg font-semibold text-blue-600">
                         {(data.run.ensemble_evaluation?.aggregated?.mean_scores?.technical_accuracy || data.run.scores?.technical_accuracy)?.toFixed(1) || 'N/A'}
@@ -249,7 +249,7 @@ export function ViewResponseModal({ runId, isOpen, onClose }: ViewResponseModalP
                   {data.run.ensemble_evaluation.aggregated && (
                     <div className="mt-4 pt-3 border-t">
                       <h4 className="text-sm font-medium text-gray-700 mb-2">Aggregated Ensemble Scores</h4>
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+                      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-3 text-sm">
                         <div className="text-center">
                           <div className="text-lg font-semibold text-blue-600">
                             {data.run.ensemble_evaluation.aggregated.mean_scores?.technical_accuracy?.toFixed(1) || 'N/A'}
@@ -267,6 +267,30 @@ export function ViewResponseModal({ runId, isOpen, onClose }: ViewResponseModalP
                             {data.run.ensemble_evaluation.aggregated.mean_scores?.completeness?.toFixed(1) || 'N/A'}
                           </div>
                           <div className="text-gray-600">Completeness</div>
+                        </div>
+                        <div className="text-center">
+                          <div className="text-lg font-semibold text-orange-600">
+                            {data.run.ensemble_evaluation.aggregated.mean_scores?.compliance_alignment?.toFixed(1) || 'N/A'}
+                          </div>
+                          <div className="text-gray-600">Compliance</div>
+                        </div>
+                        <div className="text-center">
+                          <div className="text-lg font-semibold text-red-600">
+                            {data.run.ensemble_evaluation.aggregated.mean_scores?.risk_awareness?.toFixed(1) || 'N/A'}
+                          </div>
+                          <div className="text-gray-600">Risk Awareness</div>
+                        </div>
+                        <div className="text-center">
+                          <div className="text-lg font-semibold text-indigo-600">
+                            {data.run.ensemble_evaluation.aggregated.mean_scores?.relevance?.toFixed(1) || 'N/A'}
+                          </div>
+                          <div className="text-gray-600">Relevance</div>
+                        </div>
+                        <div className="text-center">
+                          <div className="text-lg font-semibold text-teal-600">
+                            {data.run.ensemble_evaluation.aggregated.mean_scores?.clarity?.toFixed(1) || 'N/A'}
+                          </div>
+                          <div className="text-gray-600">Clarity</div>
                         </div>
                         <div className="text-center">
                           <div className="text-xl font-bold text-gray-900">

@@ -886,6 +886,24 @@ REGULATORY CONTEXT: Irish Data Protection Commission has increased enforcement a
 
             "M": """DETAILED ANALYSIS CONTEXT:
 
+Specific GDPR Violations & Legal Basis:
+- Article 5(1)(a): Lawfulness principle violated in 12 processing activities lacking documented legal basis
+- Article 15: Data Subject Access Rights - current 45-day response time violates 30-day requirement under Article 12(3)
+- Article 30: Records of Processing Activities - 35 of 47 activities lack complete documentation
+- Article 32: Security of Processing - inconsistent TLS implementation creates breach risk
+- Article 33: Breach Notification - current IR plan lacks required 72-hour DPC notification workflow
+
+Data Classification & Volumes:
+- PII Categories: names (2.5M records), email addresses (2.5M), phone numbers (1.8M), billing addresses (2.2M)
+- Special Category Data: health data (15K records) under Article 9 requiring enhanced protections
+- Cross-Border Transfers: 850K EU citizen records processed in US data centers (SCCs required)
+- Data Retention: Average retention period 7 years exceeds business necessity for 60% of activities
+
+Technology Stack & Control Gaps:
+- Primary Systems: Office 365, Salesforce CRM, Azure SQL databases
+- Encryption Status: AES-256 at rest (compliant), TLS 1.0/1.1 in transit on legacy systems (non-compliant)
+- Access Controls: RBAC implemented but 23% of users have excessive permissions
+
 Remediation Requirements:
 - Improving data subject rights response procedures (currently 45-day avg, need 30)
 - Enhancing vendor management and DPA processes (8 of 23 processors missing agreements)
@@ -900,9 +918,9 @@ Timeline & Resources:
 - Budget allocation for technology upgrades and personnel training
 
 Operational Details:
-- Sample vendor list includes 23 processors across EU and US jurisdictions with inconsistent DPAs
-- Recommended technical controls: TLS 1.2+ enforcement, encryption key rotation policy, and centralized logging retention of 365 days
-- Evidence required for regulatory reporting: access logs, change request approvals, data processing inventories, and DPA execution records
+- 23 processors across EU and US jurisdictions with inconsistent DPAs
+- Recommended controls: TLS 1.2+ enforcement, encryption key rotation, centralized logging (365 days)
+- Evidence required: access logs, change approvals, data processing inventories, DPA records
 
 Business Impact:
 - Irish DPC has increased enforcement activities in our sector
@@ -913,9 +931,46 @@ Business Impact:
 Stakeholder Coordination:
 - Legal counsel involvement for breach notification timelines and public disclosures
 - HR and business unit leaders to support data subject access request workflows
-- IT and DevOps to prioritize configuration fixes and automated monitoring for data-in-transit protections""",
+- IT and DevOps to prioritize configuration fixes and automated monitoring""",
 
             "L": """COMPREHENSIVE ORGANIZATIONAL CONTEXT:
+
+Regulatory Engagement History:
+- Irish DPC Audit History: Last audit in 2021 resulted in €2.3M fine for inadequate breach notification procedures
+- Current DPC Communications: 3 pending data subject complaints escalated to formal investigations
+- Industry Enforcement Trends: Recent fines in similar companies: Company A (€15M), Company B (€8.5M), Company C (€12M)
+- Regulatory Expectations: DPC has indicated focus on breach notification timing, DPA quality, and technical safeguards
+
+Detailed Data Flow Mapping:
+- Customer Data Journey: Collection (web forms, mobile apps) → Storage (Azure SQL EU-West) → Processing (Salesforce EU instance) → Analytics (AWS US-East via SCCs) → Archival (Azure Blob Storage)
+- Third-Party Processor Landscape: 23 processors across 8 jurisdictions including US (8), UK (6), EU (7), India (2)
+- High-Risk Flows: Marketing automation (US processor), payment processing (UK processor), cloud backup (US processor)
+- Data Subject Rights Workflow: Intake (ServiceNow) → Identity Verification (manual) → Data Discovery (semi-automated) → Review (legal + business units) → Response (email)
+
+Technical Control Implementation Details:
+- Encryption Standards: AES-256-GCM for data at rest, TLS 1.2+ required for data in transit (15 legacy systems non-compliant)
+- Key Management: Azure Key Vault for production, 90-day rotation policy, HSM-backed keys for payment data
+- Access Control Matrix: 450 employees with PII access, RBAC implemented, quarterly access reviews (last review found 23% excess permissions)
+- Monitoring & Detection: SIEM deployed (Splunk), DLP rules for PII (12 rules active), automated alerts for bulk exports (threshold: 1000 records)
+- Logging & Retention: Centralized logging to Azure Log Analytics, 365-day retention, audit trail for all PII access events
+
+Board & Executive Governance:
+- Risk Committee: Quarterly privacy risk reviews with Board Risk Committee
+- Executive Sponsors: CIO (technical remediation), General Counsel (legal/regulatory), CFO (budget allocation)
+- Risk Appetite: Board has approved €5M remediation budget with 12-month timeline, zero tolerance for regulatory enforcement actions
+- KPI Targets: 100% DPA coverage by Q2, <30-day DSAR response by Q3, zero critical findings by Q4
+
+Business Continuity & Operational Impact:
+- Revenue at Risk: €25M annual revenue from EU customers subject to GDPR compliance requirements
+- Customer Contracts: 85% of enterprise contracts include GDPR compliance warranties and indemnification clauses
+- Reputational Risk: Public breach disclosure could result in 15-25% customer churn based on industry benchmarks
+- Operational Continuity: Remediation requires coordination across 15 business units, temporary slowdown of new feature releases
+
+Cost-Benefit Analysis of Remediation Options:
+- Option A (Comprehensive): €2.5M investment, 12-month timeline, full certification readiness, low residual risk
+- Option B (Targeted): €1.2M investment, 6-month timeline, addresses critical findings only, moderate residual risk
+- Option C (Minimal): €600K investment, 3-month timeline, addresses imminent enforcement risks only, high residual risk
+- Recommended: Option A based on Board risk appetite, regulatory expectations, and customer contractual requirements
 
 Gap Analysis & Risk Prioritization:
 - Data Processing Activities: 47 processing activities identified; 12 lack documented legal basis for processing (high priority remediation items)

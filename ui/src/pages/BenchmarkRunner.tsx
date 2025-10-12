@@ -43,6 +43,7 @@ export function BenchmarkRunner() {
     currentRun: number
     logs: Array<{id: string, message: string, type: 'info' | 'success' | 'error', timestamp: string}>
     results: Array<{run_id: string, status: string, model: string, cost?: number, quality?: number, error?: string}>
+    individualRuns: Array<{run_id: string, status: 'pending' | 'running' | 'succeeded' | 'failed', model: string, prompt_id?: string}>
   }>({
     isRunning: false,
     totalRuns: 0,
@@ -50,7 +51,8 @@ export function BenchmarkRunner() {
     failedRuns: 0,
     currentRun: 0,
     logs: [],
-    results: []
+    results: [],
+    individualRuns: []
   })
 
   const addLog = (message: string, type: 'info' | 'success' | 'error' = 'info') => {
@@ -194,7 +196,8 @@ export function BenchmarkRunner() {
       failedRuns: 0,
       currentRun: 0,
       logs: [],
-      results: []
+      results: [],
+      individualRuns: []
     })
     
     // Generate experiment metadata for reproducibility
@@ -522,6 +525,35 @@ export function BenchmarkRunner() {
                   )}
                 </div>
               </div>
+
+              {/* Individual Run Status Cards */}
+              {executionStatus.individualRuns.length > 0 && (
+                <div className="mt-4">
+                  <h4 className="font-medium text-gray-900 mb-2">Individual Runs</h4>
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+                    {executionStatus.individualRuns.map((run, idx) => (
+                      <div 
+                        key={run.run_id}
+                        className={`p-2 rounded border text-xs ${
+                          run.status === 'succeeded' ? 'bg-green-50 border-green-300' :
+                          run.status === 'running' ? 'bg-blue-50 border-blue-300 animate-pulse' :
+                          run.status === 'failed' ? 'bg-red-50 border-red-300' :
+                          'bg-gray-50 border-gray-200'
+                        }`}
+                      >
+                        <div className="font-medium">Run {idx + 1}</div>
+                        <div className="text-gray-600 truncate">{run.prompt_id}</div>
+                        <div className="flex items-center mt-1">
+                          {run.status === 'succeeded' && <span className="text-green-600">✓ Done</span>}
+                          {run.status === 'running' && <span className="text-blue-600">⏳ Running...</span>}
+                          {run.status === 'failed' && <span className="text-red-600">✗ Failed</span>}
+                          {run.status === 'queued' && <span className="text-gray-500">○ Queued</span>}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
           
               {/* Results Summary */}
               {executionStatus.results.length > 0 && (

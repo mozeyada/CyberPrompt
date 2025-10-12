@@ -30,10 +30,10 @@ class BaseJudge(ABC):
 class LLMJudge(BaseJudge):
     """LLM-based judge using another model for evaluation"""
 
-    def __init__(self, judge_model: str, llm_client, prompt_version: str = "v2"):
+    def __init__(self, judge_model: str, llm_client):
         self.judge_model = judge_model
         self.llm_client = llm_client
-        self.prompt_version = prompt_version
+        self.prompt_version = "balanced"  # Balanced prompt with Low/High anchors
 
     async def evaluate(
         self,
@@ -68,8 +68,11 @@ class LLMJudge(BaseJudge):
         context: str | None = None,
     ) -> dict[str, Any]:
         """Standard evaluation without FSP"""
-        # Get base prompt
-        prompt_template = get_judge_prompt(self.prompt_version)
+        # VERIFICATION: Log judge evaluation inputs
+        logger.info(f"[VARIANT-CHECK] Judge {self.judge_model} standard eval: output_len={len(output)}, context_len={len(context) if context else 0}, length_bin={length_bin}, scenario={scenario}")
+        
+        # Get base prompt (single optimized version)
+        prompt_template = get_judge_prompt()
 
         # Add granularity demos if enabled
         granularity_demos = ""
@@ -83,6 +86,7 @@ class LLMJudge(BaseJudge):
             focus_desc=focus_desc,
             model_output=output,
             granularity_demos=granularity_demos,
+            context=context or "",
         )
 
         # Call judge model
@@ -95,6 +99,9 @@ class LLMJudge(BaseJudge):
         # Parse and normalize scores
         scores = self._parse_judge_response(response)
         scores = normalize_rubric_scores(scores)
+        
+        # VERIFICATION: Log judge scores
+        logger.info(f"[VARIANT-CHECK] Judge {self.judge_model} scores: composite={scores.get('composite', 0):.3f}, technical_accuracy={scores.get('technical_accuracy', 0):.3f}, completeness={scores.get('completeness', 0):.3f}, clarity={scores.get('clarity', 0):.3f}")
 
         return {
             "scores": scores,
@@ -134,6 +141,7 @@ class LLMJudge(BaseJudge):
                 focus_desc="Focus Sentence Prompting: Evaluate the target sentence within full document context",
                 model_output=fsp_prompt,
                 granularity_demos="",
+                context=context or "",
             )
             
             # Evaluate focused sentence
@@ -195,6 +203,7 @@ class LLMJudge(BaseJudge):
             "judge_model": self.judge_model,
             "prompt_version": self.prompt_version,
             "error": error,
+            "evaluation_failed": True,
         }
 
 
@@ -223,8 +232,7 @@ def create_judge(judge_config: dict[str, Any], llm_client=None) -> BaseJudge:
 
     if judge_type == "llm":
         judge_model = judge_config.get("judge_model", "gpt-4o-mini")
-        prompt_version = judge_config.get("prompt_ver", "v2")
-        return LLMJudge(judge_model, llm_client, prompt_version)
+        return LLMJudge(judge_model, llm_client)
     elif judge_type == "human":
         return HumanJudge()
     else:

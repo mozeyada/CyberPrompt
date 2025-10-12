@@ -153,79 +153,12 @@ async def execute_batch_ensemble(
         
         run_ids = await get_experiment_service().plan_runs(plan_request, include_variants)
         
-        results = []
-        if ensemble_enabled:
-            ensemble_service = EnsembleJudgeService()
-            
-            # Execute each run and apply ensemble evaluation
-            for run_id in run_ids:
-                run = None  # Initialize run variable for error handling
-                try:
-                    # Execute the run first
-                    exec_result = await get_experiment_service().execute_run(run_id)
-                    
-                    if exec_result.get("status") == "succeeded":
-                        # Now add ensemble evaluation
-                        from app.db.repositories import RunRepository, OutputBlobRepository
-                        run_repo = RunRepository()
-                        run = await run_repo.get_by_id(run_id)
-                        
-                        if run and run.output_blob_id:
-                            blob_repo = OutputBlobRepository()
-                            output_blob = await blob_repo.get_by_id(run.output_blob_id)
-                            
-                            if output_blob:
-                                ensemble_eval = await ensemble_service.evaluate_with_ensemble(
-                                    output=output_blob.content,
-                                    scenario=run.scenario,
-                                    length_bin=run.prompt_length_bin,
-                                    bias_controls=run.bias_controls.model_dump(),
-                                    run_id=run_id
-                                )
-                                
-                                # Update run with ensemble results
-                                await run_repo.update(run_id, {
-                                    "ensemble_evaluation": ensemble_eval.model_dump()
-                                })
-                                
-                                results.append({
-                                    "run_id": run_id,
-                                    "status": "succeeded",
-                                    "model": run.model,
-                                    "ensemble_evaluation": ensemble_eval.model_dump(),
-                                    "ensemble_enabled": True
-                                })
-                            else:
-                                results.append({
-                                    "run_id": run_id, 
-                                    "status": "failed", 
-                                    "model": run.model if run else "unknown",
-                                    "error": "No output blob"
-                                })
-                        else:
-                            results.append({
-                                "run_id": run_id, 
-                                "status": "failed", 
-                                "model": run.model if run else "unknown",
-                                "error": "No run found or output blob ID"
-                            })
-                    else:
-                        # For non-succeeded runs, add model info from exec_result if available
-                        if "model" not in exec_result:
-                            exec_result["model"] = run.model if run else "unknown"
-                        results.append(exec_result)
-                        
-                except Exception as e:
-                    logger.error(f"Ensemble execution failed for run {run_id}: {e}")
-                    results.append({
-                        "run_id": run_id, 
-                        "status": "failed", 
-                        "model": run.model if run else "unknown",
-                        "error": str(e)
-                    })
-        else:
-            # Execute without ensemble evaluation
-            results = await get_experiment_service().execute_batch(run_ids)
+        # Execute batch (ensemble evaluation now happens INSIDE execute_run, not separately)
+        # Note: ensemble_enabled parameter is now ignored - system ALWAYS uses 3-judge ensemble
+        if not ensemble_enabled:
+            logger.warning("ensemble_enabled=False ignored - system ALWAYS uses 3-judge ensemble")
+        
+        results = await get_experiment_service().execute_batch(run_ids)
         
         success_count = sum(1 for r in results if r.get("status") == "succeeded")
         failed_count = len(results) - success_count
@@ -335,9 +268,15 @@ async def add_ensemble_to_existing_runs(
             try:
                 if run.output_blob_id:
                     # Get output content
-                    from app.db.repositories import OutputBlobRepository
+                    from app.db.repositories import OutputBlobRepository, PromptRepository
                     blob_repo = OutputBlobRepository()
                     output_blob = await blob_repo.get_by_id(run.output_blob_id)
+                    
+                    # Get prompt for context
+                    prompt_repo = PromptRepository()
+                    prompt = await prompt_repo.get_by_id(run.prompt_id)
+                    prompt_context = prompt.text if prompt else None
+                    
                     if output_blob:
                         # Perform ensemble evaluation
                         ensemble_eval = await ensemble_service.evaluate_with_ensemble(
@@ -345,7 +284,8 @@ async def add_ensemble_to_existing_runs(
                             scenario=run.scenario,
                             length_bin=run.prompt_length_bin,
                             bias_controls=run.bias_controls.model_dump(),
-                            run_id=run.run_id
+                            run_id=run.run_id,
+                            context=prompt_context  # Add context
                         )
                         
                         # Update run with ensemble results

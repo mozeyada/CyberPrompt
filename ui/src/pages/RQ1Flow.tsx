@@ -115,6 +115,9 @@ export function RQ1Flow() {
               ...prev,
               completedRuns: relevantRuns.filter((r: any) => r.status === 'succeeded').length,
               failedRuns: relevantRuns.filter((r: any) => r.status === 'failed').length,
+              currentRun: relevantRuns.filter((r: any) => 
+                r.status === 'succeeded' || r.status === 'failed' || r.status === 'running'
+              ).length,  // NEW: Count up to current running
               individualRuns: updatedIndividualRuns
             }))
             
@@ -483,6 +486,35 @@ export function RQ1Flow() {
               ))}
             </div>
           </div>
+
+          {/* Individual Run Status Cards */}
+          {executionStatus.individualRuns.length > 0 && (
+            <div className="mt-4">
+              <h4 className="font-medium text-gray-900 mb-2">Individual Runs</h4>
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+                {executionStatus.individualRuns.map((run, idx) => (
+                  <div 
+                    key={run.run_id}
+                    className={`p-2 rounded border text-xs ${
+                      run.status === 'succeeded' ? 'bg-green-50 border-green-300' :
+                      run.status === 'running' ? 'bg-blue-50 border-blue-300 animate-pulse' :
+                      run.status === 'failed' ? 'bg-red-50 border-red-300' :
+                      'bg-gray-50 border-gray-200'
+                    }`}
+                  >
+                    <div className="font-medium">Run {idx + 1}</div>
+                    <div className="text-gray-600 truncate">{run.prompt_id}</div>
+                    <div className="flex items-center mt-1">
+                      {run.status === 'succeeded' && <span className="text-green-600">✓ Done</span>}
+                      {run.status === 'running' && <span className="text-blue-600">⏳ Running...</span>}
+                      {run.status === 'failed' && <span className="text-red-600">✗ Failed</span>}
+                      {run.status === 'queued' && <span className="text-gray-500">○ Queued</span>}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>

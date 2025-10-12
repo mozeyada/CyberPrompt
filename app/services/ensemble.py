@@ -42,6 +42,8 @@ class EnsembleJudgeService:
     ) -> EnsembleEvaluation:
         """Execute ensemble evaluation with all three judges"""
         
+        # VERIFICATION: Log ensemble evaluation inputs
+        logger.info(f"[VARIANT-CHECK] Ensemble evaluation start for {run_id}: length_bin={length_bin}, output_len={len(output)}, context_len={len(context) if context else 0}, scenario={scenario}")
         logger.info(f"Starting ensemble evaluation for run {run_id}")
         
         # Define judge configurations  
@@ -69,6 +71,10 @@ class EnsembleJudgeService:
                     judge_results[config['type']] = self.create_fallback_result(config['model'], str(result))
                 else:
                     judge_results[config['type']] = result
+                    # VERIFICATION: Log individual judge scores
+                    if not isinstance(result, Exception):
+                        scores = result.scores
+                        logger.info(f"[VARIANT-CHECK] Judge {config['model']} ({config['type']}) scores for {run_id}: composite={scores.composite:.3f}, technical_accuracy={scores.technical_accuracy:.3f}, completeness={scores.completeness:.3f}")
             
             # Calculate aggregated scores
             aggregated = self.calculate_ensemble_metrics(judge_results)
@@ -101,6 +107,9 @@ class EnsembleJudgeService:
         context: str = None
     ) -> JudgeResult:
         """Evaluate with a single judge model"""
+        
+        # VERIFICATION: Log judge evaluation start
+        logger.info(f"[VARIANT-CHECK] Judge {config['model']} evaluating {run_id}: output_len={len(output)}, length_bin={length_bin}")
         
         try:
             # Handle Groq models separately
@@ -139,7 +148,8 @@ class EnsembleJudgeService:
                 evaluation_time=datetime.utcnow(),
                 tokens_used=tokens_used,
                 cost_usd=cost_usd,
-                fsp_used=result.get("fsp_used", False)
+                fsp_used=result.get("fsp_used", False),
+                evaluation_failed=result.get("evaluation_failed", False)
             )
             
         except Exception as e:
@@ -148,6 +158,9 @@ class EnsembleJudgeService:
     
     def calculate_ensemble_metrics(self, judge_results: Dict[str, JudgeResult]) -> AggregatedScores:
         """Calculate mean, median, std, and confidence intervals"""
+        
+        # VERIFICATION: Log before aggregation
+        logger.info(f"[VARIANT-CHECK] Calculating ensemble metrics from {len(judge_results)} judges")
         
         def safe_float(value, default=0.0):
             """Convert numpy values to JSON-safe floats"""
@@ -162,17 +175,30 @@ class EnsembleJudgeService:
         std_scores = {}
         ci_95 = {}
         
+        # Collect only successful judge scores
+        successful_judges = [j for j in judge_results.values() 
+                           if j and not j.evaluation_failed]
+        
+        if len(successful_judges) < 2:
+            # Not enough judges - mark run as failed
+            logger.error(f"Insufficient successful judges ({len(successful_judges)}), marking run as failed")
+            raise Exception("Less than 2 judges succeeded")
+        else:
+            logger.info(f"Calculating from {len(successful_judges)} successful judges")
+        
         for dim in dimensions:
             scores = []
             for judge_type in ["primary", "secondary", "tertiary"]:
                 if judge_type in judge_results and judge_results[judge_type]:
-                    score_value = getattr(judge_results[judge_type].scores, dim, 0)
-                    if score_value > 0:  # Only include valid scores
+                    # Only include successful judges
+                    if not judge_results[judge_type].evaluation_failed:
+                        score_value = getattr(judge_results[judge_type].scores, dim, 0)
                         scores.append(score_value)
             
             if len(scores) >= 2:  # Need at least 2 scores for meaningful aggregation
                 mean_scores[dim] = safe_float(np.mean(scores))
-                std_scores[dim] = safe_float(np.std(scores))
+                # Use sample std (ddof=1) for small sample size (n=3 judges)
+                std_scores[dim] = safe_float(np.std(scores, ddof=1))
                 
                 # 95% confidence interval
                 ci_95[dim] = (
@@ -185,15 +211,19 @@ class EnsembleJudgeService:
                 std_scores[dim] = 0.0
                 ci_95[dim] = (mean_scores[dim], mean_scores[dim])
         
-        # Composite score aggregation
-        eligible_scores = [v for v in mean_scores.values() if v > 0]
+        # Composite score aggregation - include ALL dimension scores (zeros are valid)
+        eligible_scores = list(mean_scores.values())
         mean_scores["composite"] = safe_float(np.mean(eligible_scores)) if eligible_scores else 0.0
-        std_scores["composite"] = safe_float(np.std(eligible_scores)) if len(eligible_scores) > 1 else 0.0
+        # Use sample std (ddof=1) for small sample size
+        std_scores["composite"] = safe_float(np.std(eligible_scores, ddof=1)) if len(eligible_scores) > 1 else 0.0
         
         ci_95["composite"] = (
             safe_float(mean_scores["composite"] - 1.96 * std_scores["composite"]),
             safe_float(mean_scores["composite"] + 1.96 * std_scores["composite"])
         )
+        
+        # VERIFICATION: Log aggregated scores
+        logger.info(f"[VARIANT-CHECK] Ensemble aggregation complete: mean_composite={mean_scores['composite']:.3f}, std_composite={std_scores['composite']:.3f}, mean_tech_acc={mean_scores.get('technical_accuracy', 0):.3f}")
         
         return AggregatedScores(
             mean_scores=RubricScores(**mean_scores),
@@ -225,9 +255,9 @@ class EnsembleJudgeService:
                     score1 = getattr(judge1.scores, dim, 0)
                     score2 = getattr(judge2.scores, dim, 0)
                     
-                    if score1 > 0 and score2 > 0:  # Only valid scores
-                        scores1.append(score1)
-                        scores2.append(score2)
+                    # Include all valid scores in 0-5 range (zero is valid)
+                    scores1.append(score1)
+                    scores2.append(score2)
                 
                 if len(scores1) >= 2:
                     try:

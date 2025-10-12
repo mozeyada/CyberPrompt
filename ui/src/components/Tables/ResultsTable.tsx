@@ -64,7 +64,7 @@ export function ResultsTable({ experimentId }: ResultsTableProps) {
       params.append('export_timestamp', new Date().toISOString())
       params.append('total_records', validRuns.length.toString())
       
-      const response = await fetch(`${API_BASE_URL}/results/export?${params}`, {
+      const response = await fetch(`${API_BASE_URL}/export/runs.csv?${params}`, {
         headers: { 'x-api-key': API_KEY }
       })
       
@@ -113,51 +113,95 @@ export function ResultsTable({ experimentId }: ResultsTableProps) {
       <Table>
         <TableHeader>
           <TableRow>
+            <TableHead>Run ID</TableHead>
+            <TableHead>Prompt ID</TableHead>
+            <TableHead>Length</TableHead>
+            <TableHead>Scenario</TableHead>
             <TableHead>Model</TableHead>
-            <TableHead>Source</TableHead>
-            <TableHead>Experiment</TableHead>
-            <TableHead>Dataset</TableHead>
             <TableHead>Status</TableHead>
             <TableHead>Tokens</TableHead>
-            <TableHead>Cost (AUD)</TableHead>
-            <TableHead>Quality Score</TableHead>
+            <TableHead>Quality</TableHead>
             <TableHead>Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {runs.map((run) => (
             <TableRow key={run.run_id}>
+              {/* NEW: Run ID Cell */}
+              <TableCell>
+                <span 
+                  className="text-xs font-mono text-gray-700 cursor-help" 
+                  title={run.run_id}
+                >
+                  {run.run_id.substring(4)}
+                </span>
+              </TableCell>
+              
+              {/* NEW: Prompt ID Cell */}
+              <TableCell>
+                <span 
+                  className="text-xs font-mono text-blue-600 cursor-help"
+                  title={run.prompt_id}
+                >
+                  {run.prompt_id?.replace('academic_soc_0', '').replace('academic_', '') || 'N/A'}
+                </span>
+              </TableCell>
+              
+              {/* NEW: Length Bin Cell */}
+              <TableCell>
+                <Badge 
+                  variant="outline"
+                  className={
+                    run.prompt_length_bin === 'S' ? 'bg-green-100 text-green-800 border-green-300' :
+                    run.prompt_length_bin === 'M' ? 'bg-blue-100 text-blue-800 border-blue-300' :
+                    run.prompt_length_bin === 'L' ? 'bg-orange-100 text-orange-800 border-orange-300' :
+                    'bg-gray-100 text-gray-600'
+                  }
+                >
+                  {run.prompt_length_bin || '?'}
+                </Badge>
+              </TableCell>
+              
+              {/* NEW: Scenario Cell */}
+              <TableCell>
+                <Badge variant="secondary" className="text-xs">
+                  {run.scenario?.replace('_', ' ') || 'N/A'}
+                </Badge>
+              </TableCell>
+              
+              {/* KEEP: Model Cell */}
               <TableCell>
                 <Badge variant="secondary">{run.model}</Badge>
               </TableCell>
-              <TableCell>
-                <Badge variant={run.source === 'adaptive' ? 'default' : 'outline'}>
-                  {run.source || 'static'}
-                </Badge>
-              </TableCell>
-              <TableCell>
-                <span className="text-xs text-gray-600">
-                  {run.experiment_id ? run.experiment_id.split('_').slice(-1)[0] : 'N/A'}
-                </span>
-              </TableCell>
-              <TableCell>
-                <span className="text-xs text-gray-600">
-                  {run.dataset_version || 'N/A'}
-                </span>
-              </TableCell>
+              
+              {/* KEEP: Status Cell */}
               <TableCell>
                 <Badge variant={run.status === 'succeeded' ? 'default' : 'destructive'}>
                   {run.status}
                 </Badge>
               </TableCell>
-              <TableCell>{run.tokens?.total || 0}</TableCell>
-              <TableCell>${run.economics?.aud_cost?.toFixed(4) || '0.0000'}</TableCell>
-              <TableCell>
-                {(() => {
-                  const score = run.ensemble_evaluation?.aggregated?.mean_scores?.composite || run.scores?.composite
-                  return score ? `${score.toFixed(1)}/5.0` : 'N/A'
-                })()}
+              
+              {/* KEEP: Tokens Cell (with formatting) */}
+              <TableCell className="font-mono text-sm">
+                {(run.tokens?.total || 0).toLocaleString()}
               </TableCell>
+              
+              {/* KEEP: Quality Cell (with ensemble indicator) */}
+              <TableCell>
+                <div className="flex flex-col">
+                  <span className="font-semibold">
+                    {(() => {
+                      const score = run.ensemble_evaluation?.aggregated?.mean_scores?.composite || run.scores?.composite
+                      return score ? `${score.toFixed(1)}/5.0` : 'N/A'
+                    })()}
+                  </span>
+                  {run.ensemble_evaluation && (
+                    <span className="text-xs text-green-600">Multi-Judge</span>
+                  )}
+                </div>
+              </TableCell>
+              
+              {/* KEEP: Actions Cell */}
               <TableCell>
                 <Button
                   variant="ghost"

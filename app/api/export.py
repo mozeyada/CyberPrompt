@@ -68,15 +68,13 @@ async def export_runs_csv(
         output = io.StringIO()
         writer = csv.writer(output)
         
-        # CSV Headers with full research metadata
+        # CSV Headers with full research metadata (reordered to match table)
         headers = [
-            "run_id", "experiment_id", "dataset_version", "prompt_id", "model",
-            "prompt_scenario", "prompt_length_bin", "status", "created_at",
-            "input_tokens", "output_tokens", "total_tokens", "aud_cost",
-            "technical_accuracy", "actionability", "completeness", 
+            "run_id", "prompt_id", "prompt_length_bin", "prompt_scenario", "model", "status", "total_tokens", "composite_score",
+            "ensemble_evaluation", "aud_cost", "experiment_id", "dataset_version", "source",
+            "input_tokens", "output_tokens", "technical_accuracy", "actionability", "completeness", 
             "compliance_alignment", "risk_awareness", "relevance", "clarity", 
-            "composite_score", "fsp_enabled", "temperature", "seed",
-            "judge_model", "judge_prompt_ver", "latency_ms"
+            "fsp_enabled", "temperature", "seed", "judge_model", "judge_prompt_ver", "latency_ms", "created_at"
         ]
         writer.writerow(headers)
         
@@ -89,20 +87,25 @@ async def export_runs_csv(
             bias_controls = run.get("bias_controls", {}) or {}
             judge = run.get("judge", {}) or {}
             
+            # Check if ensemble evaluation exists
+            has_ensemble = bool(run.get("ensemble_evaluation"))
+            
             row = [
                 run.get("run_id", ""),
+                run.get("prompt_id", ""),
+                run.get("prompt_length_bin", ""),
+                run.get("prompt_scenario", ""),
+                run.get("model", ""),
+                run.get("status", ""),
+                tokens.get("total", 0),
+                scores.get("composite", ""),
+                "Yes" if has_ensemble else "No",
+                economics.get("aud_cost", 0.0),
                 run.get("experiment_id", ""),
                 run.get("dataset_version", ""),
-                run.get("prompt_id", ""),
-                run.get("model", ""),
-                run.get("prompt_scenario", ""),
-                run.get("prompt_length_bin", ""),
-                run.get("status", ""),
-                run.get("created_at", ""),
+                run.get("source", "static"),
                 tokens.get("input", 0),
                 tokens.get("output", 0),
-                tokens.get("total", 0),
-                economics.get("aud_cost", 0.0),
                 scores.get("technical_accuracy", ""),
                 scores.get("actionability", ""),
                 scores.get("completeness", ""),
@@ -110,13 +113,13 @@ async def export_runs_csv(
                 scores.get("risk_awareness", ""),
                 scores.get("relevance", ""),
                 scores.get("clarity", ""),
-                scores.get("composite", ""),
                 bias_controls.get("fsp", False),
                 settings.get("temperature", ""),
                 settings.get("seed", ""),
                 judge.get("judge_model", ""),
                 judge.get("prompt_ver", ""),
-                economics.get("latency_ms", "")
+                economics.get("latency_ms", ""),
+                run.get("created_at", "")
             ]
             writer.writerow(row)
         

@@ -14,10 +14,14 @@ RUBRIC_DIMENSIONS = [
 
 
 def composite_from(scores: dict[str, float]) -> float:
-    """Calculate composite score as mean of 7 dimensions"""
+    """Calculate composite score as mean of present dimensions"""
     try:
-        total = sum(scores[dim] for dim in RUBRIC_DIMENSIONS if dim in scores)
-        return round(total / len(RUBRIC_DIMENSIONS), 3)
+        present_dims = [dim for dim in RUBRIC_DIMENSIONS if dim in scores]
+        if not present_dims:
+            return 0.0
+        
+        total = sum(scores[dim] for dim in present_dims)
+        return round(total / len(present_dims), 3)
     except Exception as e:
         logger.error(f"Error calculating composite score: {e}")
         return 0.0
@@ -39,6 +43,9 @@ def validate_rubric_scores(scores: dict[str, float]) -> bool:
 
 def normalize_rubric_scores(scores: dict[str, float]) -> dict[str, float]:
     """Normalize scores to ensure they're within [0, 5] range"""
+    # VERIFICATION: Log input scores
+    logger.debug(f"[VARIANT-CHECK] Normalizing scores: input={scores}")
+    
     normalized = {}
     for dim in RUBRIC_DIMENSIONS:
         if dim in scores:
@@ -49,4 +56,8 @@ def normalize_rubric_scores(scores: dict[str, float]) -> dict[str, float]:
 
     # Calculate composite
     normalized["composite"] = composite_from(normalized)
+    
+    # VERIFICATION: Log normalized scores
+    logger.debug(f"[VARIANT-CHECK] Normalized scores: composite={normalized['composite']:.3f}, dimensions={sum(1 for v in normalized.values() if v > 0)}/7 non-zero")
+    
     return normalized
