@@ -205,19 +205,44 @@ export function BenchmarkRunner() {
     
     addLog(`Starting experiment with ${totalRuns} runs...`, 'info')
     
-    // Simulate progress updates (since backend doesn't provide real-time progress)
-    let simulatedProgress = 0
-    const progressInterval = setInterval(() => {
-      simulatedProgress++
-      if (simulatedProgress <= totalRuns) {
+    // Poll for real-time progress (using experiment_id if available)
+    const progressInterval = setInterval(async () => {
+      try {
+        const queryParams = metadata.experimentId
+          ? { experiment_id: metadata.experimentId, limit: 200 }
+          : { limit: Math.max(totalRuns, 200) }
+        
+        const runsData = await runsApi.list(queryParams)
+        const relevantRuns = runsData.runs || []
+        
+        const succeededCount = relevantRuns.filter((r: any) => r.status === 'succeeded').length
+        const failedCount = relevantRuns.filter((r: any) => r.status === 'failed').length
+        const runningCount = relevantRuns.filter((r: any) => r.status === 'running').length
+        
+        // currentRun = completed + currently running (cap at 1 for display)
+        const currentRun = succeededCount + failedCount + Math.min(runningCount, 1)
+        
         setExecutionStatus(prev => ({
           ...prev,
-          currentRun: simulatedProgress
+          completedRuns: succeededCount,
+          failedRuns: failedCount,
+          currentRun: Math.min(currentRun, totalRuns),
+          individualRuns: relevantRuns.map((run: any) => ({
+            run_id: run.run_id,
+            status: run.status,
+            model: run.model,
+            prompt_id: run.prompt_id
+          }))
         }))
-      } else {
-        clearInterval(progressInterval)
+        
+        // Stop polling when all complete
+        if (succeededCount + failedCount >= totalRuns) {
+          clearInterval(progressInterval)
+        }
+      } catch (error) {
+        console.error('Progress polling error:', error)
       }
-    }, 1000) // Update every second
+    }, 2000) // Poll every 2 seconds
     
     // Store interval reference to clear it when mutation completes
     ;(window as any).currentProgressInterval = progressInterval
