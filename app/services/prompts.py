@@ -1,6 +1,6 @@
 # app/judges/prompts.py
 
-# Balanced judge prompt - concise with clear Low/High anchors for calibration
+# Calibrated judge prompt with 5-point scale for better discrimination
 JUDGE_PROMPT = """You are an expert evaluator for cybersecurity outputs.
 
 PROMPT:
@@ -11,35 +11,30 @@ RESPONSE:
 
 TASK: Evaluate how well the response addresses the prompt for {scenario}.
 
-Score each dimension (0-5):
+Score each dimension (0-5 scale, use FULL range):
 
 1. TECHNICAL_ACCURACY: Factual correctness, terminology, real-world alignment
-   Low: Hallucinated threats/tools, misused concepts (hashing vs encryption)
-   High: Verified claims with MITRE, CVE, or NIST references
+   0-2: Hallucinations, wrong concepts | 3: Basic facts correct | 4: Accurate with some citations | 5: Perfect with multiple verified references (CVE/MITRE/NIST)
 
 2. ACTIONABILITY: Step-by-step, operationally usable security guidance
-   Low: Generic summaries without task guidance
-   High: Detailed instructions (containment, triage, ISO/NIST controls)
+   0-2: Generic advice | 3: Some steps provided | 4: Clear process with tools | 5: Complete playbook with commands/configs
 
-3. COMPLETENESS: Fulfills all prompt requirements and security context
-   Low: Omits prompt tasks or partial information
-   High: Every aspect addressed with contextual security details
+3. COMPLETENESS: Fulfills ALL prompt requirements including context nuances
+   0-2: Missing key requirements | 3: Literal requirements met | 4: Requirements + some context | 5: Every requirement + ALL contextual details addressed
 
-4. COMPLIANCE_ALIGNMENT: Adherence to regulatory frameworks and policies
-   Low: Policy-violating suggestions
-   High: Explicitly maps to NIST 800-53, ISO 27001, GDPR
+4. COMPLIANCE_ALIGNMENT: Adherence to regulatory frameworks
+   0-2: No frameworks | 3: Generic mention (e.g., "follow GDPR") | 4: Specific framework cited | 5: Multiple frameworks with control mappings
 
 5. RISK_AWARENESS: Identifies, analyzes, and mitigates risks
-   Low: Ignores threat implications, impact, likelihood
-   High: Threat modeling, risk matrices, control strategies
+   0-2: No risk analysis | 3: Risk mentioned | 4: Risk with impact/likelihood | 5: Complete risk matrix with mitigation strategies
 
 6. RELEVANCE: Alignment with specific prompt context and goal
-   Low: Drifts from prompt intent or unrelated content
-   High: Directly addresses task with domain-relevant terminology
+   0-2: Off-topic | 3: Generally relevant | 4: On-target for prompt | 5: Perfectly tailored to specific context/scenario
 
 7. CLARITY: Structural clarity for practitioners
-   Low: Ambiguous, jargon-heavy, convoluted language
-   High: Clear, concise, readable; proper formatting
+   0-2: Confusing | 3: Readable | 4: Clear structure | 5: Professional formatting with visual aids
+
+BE STRICT: Reserve 5 for truly exceptional responses. Most good responses should score 3-4.
 
 Return JSON only:
 {{

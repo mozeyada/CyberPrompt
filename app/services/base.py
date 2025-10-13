@@ -33,7 +33,7 @@ class LLMJudge(BaseJudge):
     def __init__(self, judge_model: str, llm_client):
         self.judge_model = judge_model
         self.llm_client = llm_client
-        self.prompt_version = "balanced"  # Balanced prompt with Low/High anchors
+        self.prompt_version = "calibrated"  # Calibrated with 5-point scale
 
     async def evaluate(
         self,

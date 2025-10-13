@@ -120,7 +120,7 @@ class RunSettings(BaseModel):
 class JudgeConfig(BaseModel):
     type: JudgeType
     judge_model: str | None = None
-    prompt_ver: str = "balanced"  # Balanced prompt with Low/High anchors
+    prompt_ver: str = "calibrated"  # Calibrated with 5-point scale
 
 
 class RubricScores(SafeBaseModel):
