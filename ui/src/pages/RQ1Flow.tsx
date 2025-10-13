@@ -94,10 +94,17 @@ export function RQ1Flow() {
         // Poll for results
         const pollInterval = setInterval(async () => {
           try {
-            const runsData = await runsApi.list({ limit: data.total_runs })
-            const relevantRuns = runsData.runs.filter((r: any) => 
-              data.run_ids.includes(r.run_id)
-            )
+            // Use experiment_id for reliable polling if available
+            const queryParams = data.experiment_id 
+              ? { experiment_id: data.experiment_id, limit: 200 }
+              : { limit: Math.max(data.total_runs, 200) }
+            
+            const runsData = await runsApi.list(queryParams)
+            
+            // Filter by run_ids if no experiment_id (backward compatibility)
+            const relevantRuns = data.experiment_id
+              ? runsData.runs
+              : runsData.runs.filter((r: any) => data.run_ids.includes(r.run_id))
             
             const completed = relevantRuns.filter((r: any) => 
               r.status === 'succeeded' || r.status === 'failed'

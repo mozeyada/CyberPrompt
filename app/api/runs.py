@@ -83,12 +83,20 @@ async def execute_batch(
         # Execute in background for large batches
         if len(final_run_ids) > 10:
             from app.services.background_jobs import execute_batch_background
+            
+            # Get experiment_id from first run for frontend polling
+            from app.db.repositories import RunRepository
+            run_repo = RunRepository()
+            first_run = await run_repo.get_by_id(final_run_ids[0]) if final_run_ids else None
+            experiment_id = first_run.experiment_id if first_run else None
+            
             background_tasks.add_task(execute_batch_background, final_run_ids, max_concurrent)
             return {
                 "message": f"Started background execution of {len(final_run_ids)} runs",
                 "status": "accepted",
                 "run_ids": final_run_ids,
-                "total_runs": len(final_run_ids)
+                "total_runs": len(final_run_ids),
+                "experiment_id": experiment_id
             }
         else:
             # Execute synchronously for small batches
@@ -163,10 +171,17 @@ async def execute_batch_ensemble(
         success_count = sum(1 for r in results if r.get("status") == "succeeded")
         failed_count = len(results) - success_count
         
+        # Get experiment_id from first run for frontend polling
+        from app.db.repositories import RunRepository
+        run_repo = RunRepository()
+        first_run = await run_repo.get_by_id(run_ids[0]) if run_ids else None
+        experiment_id = first_run.experiment_id if first_run else None
+        
         return {
             "message": f"Executed {len(run_ids)} runs with ensemble evaluation",
             "results": results,
             "ensemble_enabled": ensemble_enabled,
+            "experiment_id": experiment_id,
             "summary": {
                 "total": len(results),
                 "succeeded": success_count,
