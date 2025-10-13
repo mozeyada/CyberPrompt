@@ -118,13 +118,18 @@ export function RQ1Flow() {
               prompt_id: run.prompt_id
             }))
             
+            const succeededCount = relevantRuns.filter((r: any) => r.status === 'succeeded').length
+            const failedCount = relevantRuns.filter((r: any) => r.status === 'failed').length
+            const runningCount = relevantRuns.filter((r: any) => r.status === 'running').length
+            
+            // currentRun = completed + currently running (but cap at 1 running for display)
+            const currentRun = succeededCount + failedCount + Math.min(runningCount, 1)
+            
             setExecutionStatus(prev => ({
               ...prev,
-              completedRuns: relevantRuns.filter((r: any) => r.status === 'succeeded').length,
-              failedRuns: relevantRuns.filter((r: any) => r.status === 'failed').length,
-              currentRun: relevantRuns.filter((r: any) => 
-                r.status === 'succeeded' || r.status === 'failed' || r.status === 'running'
-              ).length,  // NEW: Count up to current running
+              completedRuns: succeededCount,
+              failedRuns: failedCount,
+              currentRun: currentRun,
               individualRuns: updatedIndividualRuns
             }))
             
