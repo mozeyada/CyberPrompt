@@ -119,6 +119,11 @@ export function BenchmarkRunner() {
   const executeEnsembleMutation = useMutation({
     mutationFn: runsApi.executeBatchEnsemble,
     onSuccess: (data) => {
+      // Store experiment_id for polling
+      if (data.experiment_id && (window as any).currentProgressInterval) {
+        (window as any).currentExperimentId = data.experiment_id
+      }
+      
       const results = data.results.map((result: any) => ({
         run_id: result.run_id,
         status: result.status,
@@ -132,10 +137,11 @@ export function BenchmarkRunner() {
       const successCount = results.filter((r: any) => r.status === 'succeeded').length
       const failCount = results.filter((r: any) => r.status === 'failed').length
       
-      // Clear progress simulation interval
+      // Clear progress interval
       if ((window as any).currentProgressInterval) {
         clearInterval((window as any).currentProgressInterval)
         delete (window as any).currentProgressInterval
+        delete (window as any).currentExperimentId
       }
       
       setExecutionStatus(prev => ({
@@ -205,11 +211,17 @@ export function BenchmarkRunner() {
     
     addLog(`Starting experiment with ${totalRuns} runs...`, 'info')
     
+    // Store experiment_id for polling (will be set from API response)
+    let currentExperimentId: string | null = null
+    
     // Poll for real-time progress (using experiment_id if available)
     const progressInterval = setInterval(async () => {
       try {
-        const queryParams = metadata.experimentId
-          ? { experiment_id: metadata.experimentId, limit: 200 }
+        // Get experiment_id from window if set by mutation response
+        const expId = (window as any).currentExperimentId || currentExperimentId
+        
+        const queryParams = expId
+          ? { experiment_id: expId, limit: 200 }
           : { limit: Math.max(totalRuns, 200) }
         
         const runsData = await runsApi.list(queryParams)
