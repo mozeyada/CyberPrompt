@@ -38,9 +38,9 @@ export function CombinedLengthAnalysis({ experimentId }: { experimentId?: string
   }
 
   // Aggregate by length
-  const stats = runs.reduce((acc, r) => {
+  const stats = runs.length > 0 ? runs.reduce((acc, r) => {
     const bin = (r as any).prompt_length_bin as 'S' | 'M' | 'L'
-    if (!bin || !r.economics?.aud_cost) return acc
+    if (!bin || r.economics?.aud_cost === undefined || r.economics?.aud_cost === null) return acc
     
     // Get quality score - prefer ensemble, fallback to single
     const quality = r.ensemble_evaluation?.aggregated?.mean_scores?.composite ||
@@ -54,7 +54,11 @@ export function CombinedLengthAnalysis({ experimentId }: { experimentId?: string
     acc[bin].tokens += r.tokens?.input || 0  // ADD: Actual prompt tokens
     acc[bin].count += 1
     return acc
-  }, {} as Record<string, { quality: number; cost: number; tokens: number; count: number }>)
+  }, {} as Record<string, { quality: number; cost: number; tokens: number; count: number }>) : {}
+
+  if (Object.keys(stats).length === 0) {
+    return <div className="text-center p-8 text-gray-500">No data available for analysis</div>
+  }
 
   const data = Object.entries(stats).map(([bin, s]) => {
     const avgQuality = s.quality / s.count
@@ -65,10 +69,11 @@ export function CombinedLengthAnalysis({ experimentId }: { experimentId?: string
       quality: avgQuality,
       cost: avgCost,
       tokens: avgTokens,  // ACTUAL token count, not hardcoded
-      // Cost per quality point (lower is better) - guard against zero quality
-      costPerQuality: avgQuality > 0 ? avgCost / avgQuality : null,
-      // Relative efficiency (higher is better) - guard against zero cost
-      rawEfficiency: avgCost > 0 ? avgQuality / avgCost : 0,
+      // Tokens per quality point (lower is better) - guard against zero quality
+      tokensPerQuality: avgQuality > 0 ? avgTokens / avgQuality : null,
+      avgTokens: avgTokens,
+      // Relative efficiency (higher is better) - guard against zero tokens
+      rawEfficiency: avgTokens > 0 ? avgQuality / avgTokens : 0,
       count: s.count,
       efficiency: 0 // Will be calculated below
     }
@@ -86,24 +91,24 @@ export function CombinedLengthAnalysis({ experimentId }: { experimentId?: string
     data.forEach(d => {
       (d as any).tokenIncrease = ((d.tokens - baseline.tokens) / baseline.tokens) * 100;
       (d as any).qualityChange = ((d.quality - baseline.quality) / baseline.quality) * 100;
-      (d as any).costIncrease = (d as any).tokenIncrease  // Cost increases same % as tokens
+      (d as any).tokenIncreasePercent = (d as any).tokenIncrease  // Token increase percentage
     })
   } else {
     // Fallback if no baseline exists
     data.forEach(d => {
       (d as any).tokenIncrease = 0;
       (d as any).qualityChange = 0;
-      (d as any).costIncrease = 0
+      (d as any).tokenIncreasePercent = 0
     })
   }
 
-  const maxEfficiency = Math.max(...data.map(d => d.efficiency))
+  const maxEfficiency = data.length > 0 ? Math.max(...data.map(d => d.efficiency)) : 0
 
   // Calculate insights
   const bestLength = data.find(d => d.efficiency === maxEfficiency)
-  const worstLength = data.reduce((min, d) => d.efficiency < min.efficiency ? d : min)
+  const worstLength = data.length > 0 ? data.reduce((min, d) => d.efficiency < min.efficiency ? d : min) : null
   
-  if (!bestLength || data.length === 0) {
+  if (!bestLength || !worstLength || data.length === 0) {
     return <div className="text-center p-8 text-gray-500">Insufficient data for analysis</div>
   }
   
@@ -183,7 +188,7 @@ export function CombinedLengthAnalysis({ experimentId }: { experimentId?: string
       {/* PRIMARY FINDING: RQ1 Answer */}
       <div className="border border-gray-300 rounded-lg p-6 bg-white">
         <div className="flex items-center justify-between mb-2">
-          <h4 className="text-lg font-semibold text-gray-900">Cost-Efficiency Comparison</h4>
+          <h4 className="text-lg font-semibold text-gray-900">Token-Efficiency Comparison</h4>
           <div className="flex items-center gap-2">
             <span className="px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
               Scoring: Multi-Judge
@@ -191,12 +196,12 @@ export function CombinedLengthAnalysis({ experimentId }: { experimentId?: string
             <span className="text-xs text-gray-500">n={runs.length} runs</span>
           </div>
         </div>
-        <p className="text-sm text-gray-600 mb-4">Which prompt length gives you the best value for money?</p>
+        <p className="text-sm text-gray-600 mb-4">Which prompt length gives you the best quality per token?</p>
         <ResponsiveContainer width="100%" height={200}>
           <BarChart data={data} margin={{ top: 10, right: 30, left: 20, bottom: 20 }}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="bin" label={{ value: 'Prompt Length', position: 'insideBottom', offset: -10 }} />
-            <YAxis label={{ value: 'Efficiency Index (%)', angle: -90, position: 'insideLeft' }} />
+            <YAxis label={{ value: 'Token Efficiency Index (%)', angle: -90, position: 'insideLeft' }} />
             <Tooltip content={({ active, payload }) => {
               if (!active || !payload?.[0]) return null
               const d = payload[0].payload
@@ -205,8 +210,8 @@ export function CombinedLengthAnalysis({ experimentId }: { experimentId?: string
                   <p className="font-bold">{d.bin} Prompts</p>
                   <p className="text-sm">Efficiency: <strong>{d.efficiency.toFixed(1)}%</strong></p>
                   <p className="text-sm">Quality: {d.quality.toFixed(2)}/5.0</p>
-                  <p className="text-sm">Cost: <strong>${d.cost.toFixed(4)} AUD</strong></p>
-                  <p className="text-sm">Cost/Quality: {d.costPerQuality ? `$${d.costPerQuality.toFixed(5)} AUD/point` : 'N/A'}</p>
+                  <p className="text-sm">Avg Tokens: <strong>{d.avgTokens?.toLocaleString() || 'N/A'}</strong></p>
+                  <p className="text-sm">Tokens/Quality: {d.tokensPerQuality ? `${d.tokensPerQuality.toFixed(0)} tokens/point` : 'N/A'}</p>
                   <p className="text-xs text-gray-600 mt-1">n={d.count} runs</p>
                 </div>
               )
@@ -233,7 +238,7 @@ export function CombinedLengthAnalysis({ experimentId }: { experimentId?: string
               <tr className="border-b-2 border-gray-400">
                 <th className="text-left py-2 font-semibold">Length</th>
                 <th className="text-left py-2 font-semibold">Quality Score</th>
-                <th className="text-left py-2 font-semibold">Token Usage & Cost</th>
+                <th className="text-left py-2 font-semibold">Token Usage</th>
                 <th className="text-left py-2 font-semibold">Efficiency Index</th>
                 <th className="text-left py-2 font-semibold">Trade-off Analysis</th>
               </tr>
@@ -263,14 +268,14 @@ export function CombinedLengthAnalysis({ experimentId }: { experimentId?: string
                       ) : (
                         <div className="text-xs">
                           <div className="text-orange-600">+{(d as any).tokenIncrease.toFixed(0)}% tokens</div>
-                          <div className="text-red-600">→ +{(d as any).costIncrease.toFixed(0)}% cost</div>
+                          <div className="text-blue-600">→ {(d.tokensPerQuality || 0).toFixed(0)} tokens/quality</div>
                         </div>
                       )}
                     </td>
                     
                     <td className="py-3">
                       <div className="font-bold text-xl">{d.efficiency.toFixed(0)}%</div>
-                      <div className="text-xs text-gray-600">quality/cost</div>
+                      <div className="text-xs text-gray-600">quality/tokens</div>
                     </td>
                     
                     <td className="py-3">
@@ -278,7 +283,7 @@ export function CombinedLengthAnalysis({ experimentId }: { experimentId?: string
                         <div className="text-blue-700 font-semibold">
                           Most Efficient
                           <div className="text-xs font-normal text-gray-600">
-                            Lowest tokens, lowest cost
+                            Lowest tokens, highest efficiency
                           </div>
                         </div>
                       )}
@@ -306,8 +311,8 @@ export function CombinedLengthAnalysis({ experimentId }: { experimentId?: string
           </table>
           
           <div className="text-xs text-gray-500 mt-3 p-2 bg-white rounded border border-gray-300">
-            <strong>Methodology:</strong> Efficiency Index = (Quality Score / Cost) normalized to best performer. 
-            Token counts are actual averages from {runs.length} runs. Cost increases proportionally with token usage.
+            <strong>Methodology:</strong> Efficiency Index = (Quality Score / Token Usage) normalized to best performer. 
+            Token counts are actual averages from {runs.length} runs. Higher tokens indicate more computational effort.
             Quality changes shown relative to Short (S) prompts as baseline.
           </div>
         </div>

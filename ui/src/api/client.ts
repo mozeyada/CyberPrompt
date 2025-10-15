@@ -167,7 +167,12 @@ export const analyticsApi = {
     scenario?: string;
     model?: string;
   } = {}): Promise<{ data: CostQualityPoint[] }> => {
-    const response = await api.get('/analytics/cost_quality', { params });
+    // Convert comma-separated model string to array for backend
+    const apiParams = { ...params };
+    if (apiParams.model && typeof apiParams.model === 'string') {
+      apiParams.model = apiParams.model.split(',');
+    }
+    const response = await api.get('/analytics/cost_quality', { params: apiParams });
     return response.data;
   },
 
@@ -175,7 +180,12 @@ export const analyticsApi = {
     scenario?: string;
     model?: string;
   } = {}): Promise<{ data: LengthBiasData }> => {
-    const response = await api.get('/analytics/length_bias', { params });
+    // Convert comma-separated model string to array for backend
+    const apiParams = { ...params };
+    if (apiParams.model && typeof apiParams.model === 'string') {
+      apiParams.model = apiParams.model.split(',');
+    }
+    const response = await api.get('/analytics/length_bias', { params: apiParams });
     return response.data;
   },
 
@@ -183,7 +193,12 @@ export const analyticsApi = {
     scenario?: string;
     model?: string;
   } = {}): Promise<{ data: RiskCurvesData }> => {
-    const response = await api.get('/analytics/risk_curves', { params });
+    // Convert comma-separated model string to array for backend
+    const apiParams = { ...params };
+    if (apiParams.model && typeof apiParams.model === 'string') {
+      apiParams.model = apiParams.model.split(',');
+    }
+    const response = await api.get('/analytics/risk_curves', { params: apiParams });
     return response.data;
   },
 
