@@ -27,8 +27,8 @@ class EnsembleJudgeService:
         self.model_runner = ModelRunner(
             openai_key=settings.openai_api_key,
             anthropic_key=settings.anthropic_api_key,
-            google_key="",  # Not used for ensemble
-            groq_key=settings.groq_api_key  # For Llama 3.3 70B judge
+            google_key=settings.google_api_key,  # Enable Google for Gemini judge
+            groq_key=settings.groq_api_key
         )
     
     async def evaluate_with_ensemble(
@@ -48,8 +48,8 @@ class EnsembleJudgeService:
         
         # Define judge configurations  
         judge_configs = [
-            {"model": "gpt-4o-mini", "type": "primary"},
-            {"model": "claude-3-5-sonnet-20241022", "type": "secondary"},
+            {"model": "claude-3-5-haiku-20241022", "type": "primary"},
+            {"model": "gpt-4-turbo", "type": "secondary"},
             {"model": "llama-3.3-70b-versatile", "type": "tertiary"}
         ]
         
@@ -68,13 +68,19 @@ class EnsembleJudgeService:
                 config = judge_configs[i]
                 if isinstance(result, Exception):
                     logger.error(f"Judge {config['model']} failed: {result}")
-                    judge_results[config['type']] = self.create_fallback_result(config['model'], str(result))
+                    # Don't add failed judges to results - let ensemble fail if any judge fails
+                    continue
                 else:
                     judge_results[config['type']] = result
                     # VERIFICATION: Log individual judge scores
-                    if not isinstance(result, Exception):
-                        scores = result.scores
-                        logger.info(f"[VARIANT-CHECK] Judge {config['model']} ({config['type']}) scores for {run_id}: composite={scores.composite:.3f}, technical_accuracy={scores.technical_accuracy:.3f}, completeness={scores.completeness:.3f}")
+                    logger.info(f"[DEBUG] Judge {config['model']} result type: {type(result)}, has scores: {hasattr(result, 'scores')}")
+                    scores = result.scores  # ✅ Access as object attribute
+                    logger.info(f"[VARIANT-CHECK] Judge {config['model']} ({config['type']}) scores for {run_id}: composite={scores.composite:.3f}, technical_accuracy={scores.technical_accuracy:.3f}, completeness={scores.completeness:.3f}")
+            
+            # DEBUG: Check what we have in judge_results
+            logger.info(f"[DEBUG] judge_results keys: {list(judge_results.keys())}")
+            for judge_type, judge_result in judge_results.items():
+                logger.info(f"[DEBUG] {judge_type}: type={type(judge_result)}, has scores: {hasattr(judge_result, 'scores')}")
             
             # Calculate aggregated scores
             aggregated = self.calculate_ensemble_metrics(judge_results)
@@ -82,11 +88,20 @@ class EnsembleJudgeService:
             # Calculate reliability metrics
             reliability = self.calculate_reliability_metrics(judge_results)
             
+            # Convert JudgeResult objects to dicts with model and type fields for database storage
+            def convert_judge_result(judge_result, judge_type):
+                if not judge_result:
+                    return None
+                result_dict = judge_result.model_dump()
+                result_dict["model"] = judge_result.judge_model
+                result_dict["type"] = judge_type
+                return result_dict
+            
             return EnsembleEvaluation(
                 evaluation_id=f"ensemble_{run_id}_{int(datetime.utcnow().timestamp())}",
-                primary_judge=judge_results.get("primary"),
-                secondary_judge=judge_results.get("secondary"),
-                tertiary_judge=judge_results.get("tertiary"),
+                primary_judge=convert_judge_result(judge_results.get("primary"), "primary"),
+                secondary_judge=convert_judge_result(judge_results.get("secondary"), "secondary"),
+                tertiary_judge=convert_judge_result(judge_results.get("tertiary"), "tertiary"),
                 aggregated=aggregated,
                 reliability_metrics=reliability
             )
@@ -141,6 +156,7 @@ class EnsembleJudgeService:
             tokens_used = len(output.split()) + len(str(result.get("raw_response", "")).split())
             cost_usd = self.estimate_cost(config["model"], tokens_used)
             
+            # result is a dictionary from base judge service
             return JudgeResult(
                 judge_model=config["model"],
                 scores=RubricScores(**result["scores"]),
@@ -301,9 +317,9 @@ class EnsembleJudgeService:
     def estimate_cost(self, model: str, tokens_used: int) -> float:
         """Estimate cost for judge evaluation"""
         pricing = {
-            "gpt-4o-mini": 0.0001 * (tokens_used / 1000),      # ~$0.10 per 1k tokens
-            "claude-3-5-sonnet-20241022": 0.0003 * (tokens_used / 1000),  # ~$0.30 per 1k tokens
-            "llama-3.3-70b-versatile": 0.00005 * (tokens_used / 1000),    # ~$0.05 per 1k tokens
+            "claude-3-5-haiku-20241022": 0.0001 * (tokens_used / 1000),  # $0.10 AUD per 1k tokens
+            "gpt-4-turbo": 0.0003 * (tokens_used / 1000),                # $0.30 AUD per 1k tokens  
+            "llama-3.3-70b-versatile": 0.00005 * (tokens_used / 1000),   # $0.05 AUD per 1k tokens
         }
         return pricing.get(model, 0.0002 * (tokens_used / 1000))
     

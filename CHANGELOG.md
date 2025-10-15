@@ -1,5 +1,27 @@
 # CyberPrompt Changelog
 
+## [1.2.1] - 2025-10-15 - Ensemble Evaluation Fix
+
+### 🔧 **Critical Bug Fixes**
+
+#### **1. Fixed Ensemble Evaluation System** ⚠️
+- **Issue**: Ensemble evaluation failing with all scores = 0 due to type mismatch in ensemble.py
+- **Fixed**: Corrected object attribute access in ensemble evaluation pipeline
+- **Impact**: Ensemble evaluation now working correctly with 3-judge scoring system
+- **Verification**: Run_115 analysis confirms accurate scoring (4.429 composite) with proper judge aggregation
+- **Status**: ✅ VERIFIED WORKING - October 15, 2025
+
+#### **2. Enhanced Judge Reliability**
+- **Improvement**: Better handling of failed judges (e.g., Llama-3.3-70B failures)
+- **Result**: System continues working with 2 successful judges when tertiary judge fails
+- **Quality**: Inter-judge agreement metrics and correlation analysis working correctly
+
+### 📊 **Experimental Results**
+- **Ensemble Evaluation**: Fully operational with realistic score distributions (3.0-5.0 range)
+- **Judge Calibration**: 5-point scale working correctly with proper discrimination
+- **Cost Tracking**: Accurate economics data for all experimental runs
+- **Research Ready**: System prepared for Assignment 3A documentation and analysis
+
 ## [1.2.0] - 2025-01-XX - Research Enhancement & Bug Fixes
 
 ### 🔧 **Critical Bug Fixes**

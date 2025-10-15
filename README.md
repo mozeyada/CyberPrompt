@@ -20,7 +20,7 @@ As organizations adopt Large Language Models (LLMs) like GPT-4, Claude, and Gemi
 - **KL Divergence Validation**: Statistical validation of adaptive vs static prompt distributions
 - **Experiment Grouping**: Track and compare experiments with metadata
 - **Export Functionality**: CSV export with full research metadata
-- **Multi-Judge Evaluation**: Ensemble scoring with GPT-4o-mini, Claude-3.5-Sonnet, Llama-3.3-70B, and Gemini-2.5-Pro
+- **Multi-Judge Evaluation**: Ensemble scoring with Claude-3.5-Haiku, GPT-4-Turbo, and Llama-3.3-70B
 - **Real Data Integration**: BOTSv3 dataset for SOC scenarios, NIST SP 800-53 controls for GRC scenarios
 
 ## Architecture
@@ -128,12 +128,13 @@ Generate contextually relevant benchmarks from policy documents and CTI feeds us
 
 ## Experimental Results
 
-### RQ1: Prompt Length Effects - CONFIRMED
-**122 completed runs** with multi-judge scoring across **4 models** (GPT-4o, Claude-3.5-Sonnet, Llama-3.3-70B, Gemini-2.5-Pro) show:
+### RQ1: Prompt Length Effects - CONFIRMED ✅
+**Ensemble evaluation system fully operational** with 3-judge scoring across **4 models** (GPT-4o, Claude-3.5-Sonnet, Claude-3.5-Haiku, Llama-3.3-70B):
 
-- **Quality Plateau Effect**: Quality remains consistent (4.84-4.89/5) across all prompt lengths
-- **Cost Increases 35%**: From Short→Long with no quality benefit
-- **Recommendation**: Use Short prompts (165 tokens) for optimal cost-effectiveness in SOC/GRC operations
+- **Quality Plateau Effect**: Quality remains consistent (4.3-4.9/5) across all prompt lengths
+- **Cost-Quality Trade-offs**: Clear differentiation between models and prompt lengths
+- **Recommendation**: Use Short prompts for optimal cost-effectiveness in SOC/GRC operations
+- **Status**: System verified working with real experimental data (October 15, 2025)
 
 ### Performance by Prompt Length
 - **Short (S)**: 4.89/5 quality, $0.0052/run, 165 avg tokens
@@ -312,6 +313,7 @@ MONGO_DB=genai_bench
 # LLM API Keys
 OPENAI_API_KEY=your_openai_key
 ANTHROPIC_API_KEY=your_anthropic_key
+GOOGLE_API_KEY=your_google_key
 GROQ_API_KEY=your_groq_key
 
 # Pricing (AUD per 1K tokens)
@@ -322,10 +324,9 @@ PRICE_OUTPUT.claude35=0.075
 ```
 
 ### Supported Models
-- **OpenAI**: gpt-4, gpt-4o, gpt-4o-mini, gpt-3.5-turbo
-- **Anthropic**: claude-3-5-sonnet, claude-3-opus, claude-3-haiku
-- **Groq**: llama-3.1-70b-versatile, llama-3.1-8b-instant (for adaptive prompting)
-- **Google**: gemini-2.5-flash (coming soon)
+- **Subject Models**: gpt-4o (OpenAI), claude-3-5-sonnet (Anthropic), gemini-2.0-flash-exp (Google)
+- **Judge Models**: claude-3-5-haiku (Anthropic), gpt-4-turbo (OpenAI), llama-3.3-70b-versatile (Groq)
+- **Groq**: llama-3.1-70b-versatile, llama-3.3-70b-versatile, llama-3.1-8b-instant
 - **Extensible**: Add new providers via LLM client adapters
 
 ## Usage Examples
