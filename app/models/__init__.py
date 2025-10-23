@@ -115,6 +115,7 @@ class EconomicsMetrics(SafeBaseModel):
 class RunSettings(BaseModel):
     temperature: float = 0.2
     seed: int = 42
+    max_tokens: int = 2000
 
 
 class JudgeConfig(BaseModel):
@@ -190,8 +191,6 @@ class Run(SafeBaseModel):
     economics: EconomicsMetrics | None = None
     output_blob_id: str | None = Field(None, description="Reference to OutputBlob.blob_id")
     output_ref: str | None = None  # Alternative reference field
-    judge: JudgeConfig
-    scores: RubricScores | None = None
     risk_metrics: RiskMetrics | None = None
     bias_controls: BiasControls = BiasControls()
     fsp_enabled: bool = True  # Track which scoring path was used
@@ -235,7 +234,6 @@ class RunPlanRequest(BaseModel):
     models: list[str]
     repeats: int = 1
     settings: RunSettings = RunSettings()
-    judge: JudgeConfig = JudgeConfig(type=JudgeType.LLM)
     bias_controls: BiasControls = BiasControls()
 
 

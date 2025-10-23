@@ -1,0 +1,65 @@
+services:
+  api:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    image: cyberprompt-api
+    ports:
+      - "8000:8000"
+    environment:
+      - APP_ENV=dev
+      - MONGO_URI=mongodb://mongo:27017
+      - MONGO_DB=genai_bench
+    env_file:
+      - .env
+    depends_on:
+      mongo:
+        condition: service_healthy
+    volumes:
+      - uploads_data:/app/uploads
+    networks:
+      - cyberprompt-network
+    container_name: cyberprompt-api-1
+    restart: unless-stopped
+
+  mongo:
+    image: mongo:7.0
+    container_name: cyberprompt-mongo-1
+    restart: always
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+      - ./docker/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+    networks:
+      - cyberprompt-network
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  mongo-express:
+    image: mongo-express:latest
+    container_name: cyberprompt-mongo-express-1
+    restart: always
+    ports:
+      - "8081:8081"
+    environment:
+      ME_CONFIG_MONGODB_SERVER: mongo
+      ME_CONFIG_MONGODB_PORT: 27017
+      ME_CONFIG_BASICAUTH_USERNAME: admin
+      ME_CONFIG_BASICAUTH_PASSWORD: admin123
+    depends_on:
+      - mongo
+    networks:
+      - cyberprompt-network
+
+networks:
+  cyberprompt-network:
+    driver: bridge
+
+volumes:
+  mongo_data:
+  uploads_data:

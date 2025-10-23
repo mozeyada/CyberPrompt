@@ -21,7 +21,7 @@ export function WizardLanding() {
         </p>
         <p className="text-lg text-gray-500 max-w-2xl mx-auto">
           Which AI is most reliable for SOC and compliance tasks, and at what cost? 
-          CyberPrompt provides systematic answers with research-grade reproducibility.
+          Test GPT-4o, Claude-3.5-Sonnet, and Gemini-2.0-Flash with research-grade reproducibility.
         </p>
       </div>
 
@@ -29,8 +29,9 @@ export function WizardLanding() {
       <div className="bg-blue-50 rounded-lg p-6">
         <h2 className="text-2xl font-semibold text-gray-900 mb-4">Research Problem</h2>
         <p className="text-gray-700 mb-4">
-          Organizations adopt LLMs like GPT-4 and Claude for incident analysis and compliance mapping, 
-          but lack systematic evaluation of cost-quality trade-offs in cybersecurity contexts.
+          Organizations adopt LLMs for incident analysis and compliance mapping, but lack systematic evaluation 
+          of cost-quality trade-offs. How do prompt length and generation method (static vs adaptive) affect 
+          model performance across different cybersecurity scenarios?
         </p>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="bg-white rounded p-4">
@@ -91,22 +92,36 @@ export function WizardLanding() {
 
       {/* Research Questions */}
       <div className="space-y-4">
-        <h2 className="text-2xl font-semibold text-gray-900">Research Questions</h2>
+        <h2 className="text-2xl font-semibold text-gray-900">Research Framework</h2>
         <div className="space-y-4">
           <div className="border-l-4 border-blue-500 pl-4">
-            <h3 className="font-semibold text-lg">RQ1: Prompt Length Effects</h3>
+            <h3 className="font-semibold text-lg">RQ1: Prompt Length Effects on Cost-Quality Trade-offs</h3>
             <p className="text-gray-600">
-              How does prompt length influence LLM cost-quality trade-offs in cybersecurity operations?
+              How does prompt length (Short/Medium/Long) influence LLM performance across cybersecurity scenarios?
             </p>
-            <Badge variant="outline" className="mt-2">300 prompts with S+M+L variants</Badge>
+            <div className="flex gap-2 mt-2">
+              <Badge variant="outline">300 Static Prompts</Badge>
+              <Badge variant="outline">3 Length Variants</Badge>
+              <Badge variant="outline">3 Models Tested</Badge>
+            </div>
           </div>
           <div className="border-l-4 border-green-500 pl-4">
-            <h3 className="font-semibold text-lg">RQ2: Adaptive vs Static Benchmarking</h3>
+            <h3 className="font-semibold text-lg">RQ2: Static vs Adaptive Prompt Generation</h3>
             <p className="text-gray-600">
-              Can adaptive benchmarking from policy documents improve evaluation coverage?
+              Do LLM-generated prompts from real policy documents improve evaluation coverage and realism?
             </p>
-            <Badge variant="outline" className="mt-2">KL divergence validation</Badge>
+            <div className="flex gap-2 mt-2">
+              <Badge variant="outline">Policy Documents</Badge>
+              <Badge variant="outline">LLM Generation</Badge>
+              <Badge variant="outline">Coverage Analysis</Badge>
+            </div>
           </div>
+        </div>
+        <div className="bg-gray-50 rounded-lg p-4 mt-4">
+          <p className="text-sm text-gray-600">
+            <strong>Integrated Approach:</strong> Both RQ1 and RQ2 use the same evaluation framework with 
+            Claude-3.5-Haiku, GPT-4-Turbo, and Llama-3.3-70B as judges for unbiased assessment.
+          </p>
         </div>
       </div>
 
@@ -116,22 +131,28 @@ export function WizardLanding() {
           to="/rq1" 
           className="p-6 border border-gray-200 rounded-lg hover:border-blue-300"
         >
-          <h3 className="text-lg font-semibold text-blue-600">🔍 RQ1: Prompt Length Effects</h3>
+          <h3 className="text-lg font-semibold text-blue-600">🔍 RQ1: Prompt Length Analysis</h3>
           <p className="text-gray-600 mt-2">
-            Explore how prompt length influences LLM cost-quality trade-offs
+            Analyze how Short/Medium/Long prompts affect model performance and costs
           </p>
-          <Badge className="mt-3">300 Research Prompts</Badge>
+          <div className="flex gap-2 mt-3">
+            <Badge>300 Static Prompts</Badge>
+            <Badge variant="outline">3 Models</Badge>
+          </div>
         </Link>
         
         <Link 
           to="/rq2" 
           className="p-6 border border-gray-200 rounded-lg hover:border-green-300"
         >
-          <h3 className="text-lg font-semibold text-green-600">🔄 RQ2: Adaptive Benchmarking</h3>
+          <h3 className="text-lg font-semibold text-green-600">🔄 RQ2: Adaptive Generation</h3>
           <p className="text-gray-600 mt-2">
-            Compare static vs adaptive benchmarking effectiveness
+            Generate and evaluate prompts from real policy documents
           </p>
-          <Badge className="mt-3">15% Coverage Improvement</Badge>
+          <div className="flex gap-2 mt-3">
+            <Badge>Policy Documents</Badge>
+            <Badge variant="outline">LLM Generation</Badge>
+          </div>
         </Link>
       </div>
 
@@ -156,9 +177,9 @@ export function WizardLanding() {
       {/* Research Impact */}
       <div className="bg-gray-50 rounded-lg p-6 text-center">
         <p className="text-gray-700 italic">
-          "CyberPrompt enables the first systematic study of prompt length effects on LLM 
-          cost-quality trade-offs in cybersecurity operations, making cost-performance benchmarking 
-          as rigorous as penetration testing in modern SOC workflows."
+          "CyberPrompt enables systematic evaluation of GPT-4o, Claude-3.5-Sonnet, and Gemini-2.0-Flash 
+          across prompt length variations and generation methods, providing the first rigorous framework 
+          for cost-quality benchmarking in cybersecurity AI operations."
         </p>
       </div>
     </div>

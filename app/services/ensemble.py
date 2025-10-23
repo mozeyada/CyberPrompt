@@ -227,11 +227,31 @@ class EnsembleJudgeService:
                 std_scores[dim] = 0.0
                 ci_95[dim] = (mean_scores[dim], mean_scores[dim])
         
-        # Composite score aggregation - include ALL dimension scores (zeros are valid)
-        eligible_scores = list(mean_scores.values())
-        mean_scores["composite"] = safe_float(np.mean(eligible_scores)) if eligible_scores else 0.0
-        # Use sample std (ddof=1) for small sample size
-        std_scores["composite"] = safe_float(np.std(eligible_scores, ddof=1)) if len(eligible_scores) > 1 else 0.0
+        # Composite score aggregation - calculate from individual judge composite scores
+        composite_scores = []
+        for judge_type in ["primary", "secondary", "tertiary"]:
+            if judge_type in judge_results and judge_results[judge_type]:
+                # Only include successful judges
+                if not judge_results[judge_type].evaluation_failed:
+                    composite_score = getattr(judge_results[judge_type].scores, "composite", 0)
+                    composite_scores.append(composite_score)
+        
+        if len(composite_scores) >= 2:
+            mean_scores["composite"] = safe_float(np.mean(composite_scores))
+            # Use sample std (ddof=1) for small sample size
+            std_scores["composite"] = safe_float(np.std(composite_scores, ddof=1))
+            
+            # VERIFICATION: Log composite std calculation details
+            logger.info(f"[STD-CHECK] Composite scores: {composite_scores}, std={std_scores['composite']:.3f}")
+            
+            # Sanity check: std should not exceed score range
+            score_range = max(composite_scores) - min(composite_scores)
+            if std_scores["composite"] > score_range:
+                logger.warning(f"[STD-CHECK] Composite std ({std_scores['composite']:.3f}) exceeds range ({score_range:.3f})")
+        else:
+            # Fallback if insufficient scores
+            mean_scores["composite"] = safe_float(composite_scores[0] if composite_scores else 0)
+            std_scores["composite"] = 0.0
         
         ci_95["composite"] = (
             safe_float(mean_scores["composite"] - 1.96 * std_scores["composite"]),

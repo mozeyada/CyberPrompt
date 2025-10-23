@@ -1,0 +1,218 @@
+APPENDIX B: METHODOLOGY DETAILS
+
+This appendix provides comprehensive details about the CyberPrompt benchmarking platform, evaluation framework, and quality assessment methodology.
+
+B1: Complete 7-Dimension Scoring Rubric
+========================================
+
+The quality assessment framework employs a calibrated 5-point Likert scale across seven dimensions specifically designed for cybersecurity operations:
+
+1. TECHNICAL ACCURACY (Factual Correctness)
+   Score 1: Major technical errors, incorrect terminology, dangerous recommendations
+   Score 2: Several technical inaccuracies, some correct elements
+   Score 3: Generally accurate with minor technical errors
+   Score 4: Highly accurate with verified technical details
+   Score 5: Exceptional accuracy with specific commands, configurations, and references
+
+2. ACTIONABILITY (Practical Applicability)
+   Score 1: Vague, theoretical, no actionable steps
+   Score 2: Some actionable elements but lacking specificity
+   Score 3: Generally actionable with clear steps
+   Score 4: Highly actionable with specific commands and procedures
+   Score 5: Exceptional actionability with complete playbooks and specific commands
+
+3. COMPLETENESS (Comprehensive Coverage)
+   Score 1: Incomplete, missing critical elements
+   Score 2: Partially complete, some gaps
+   Score 3: Generally complete coverage
+   Score 4: Comprehensive coverage with good detail
+   Score 5: Exceptional completeness with exhaustive coverage
+
+4. COMPLIANCE ALIGNMENT (Regulatory Adherence)
+   Score 1: No compliance considerations
+   Score 2: Basic compliance awareness
+   Score 3: Good compliance alignment
+   Score 4: Strong compliance with specific frameworks
+   Score 5: Exceptional compliance with detailed regulatory mapping
+
+5. RISK AWARENESS (Threat Identification)
+   Score 1: No risk identification
+   Score 2: Basic risk awareness
+   Score 3: Good risk identification
+   Score 4: Strong risk awareness with mitigation strategies
+   Score 5: Exceptional risk awareness with comprehensive threat analysis
+
+6. RELEVANCE (Task-Specific Focus)
+   Score 1: Irrelevant to task requirements
+   Score 2: Partially relevant
+   Score 3: Generally relevant
+   Score 4: Highly relevant to specific task
+   Score 5: Exceptional relevance with perfect task alignment
+
+7. CLARITY (Communication Effectiveness)
+   Score 1: Unclear, confusing communication
+   Score 2: Some clarity issues
+   Score 3: Generally clear communication
+   Score 4: Clear and well-structured
+   Score 5: Exceptional clarity with perfect communication
+
+B2: Judge Training and Calibration Process
+==========================================
+
+1. Judge Selection:
+   - Primary Judge: Claude-3.5-Haiku (calibrated prompt version)
+   - Secondary Judge: GPT-4-Turbo (standard evaluation)
+   - Tertiary Judge: Llama-3.3-70B-Versatile (validation)
+
+2. Calibration Process:
+   - Initial training on 50 sample responses
+   - Inter-judge agreement analysis
+   - Calibration adjustments for consistent scoring
+   - Validation on additional 25 samples
+
+3. Evaluation Instructions:
+   - Each judge evaluates independently
+   - Scores provided for all 7 dimensions
+   - Detailed notes required for scores 4-5
+   - Raw responses preserved for audit
+
+B3: Focus Sentence Prompting (FSP) Implementation
+================================================
+
+FSP addresses potential length bias by evaluating individual sentences within longer outputs while maintaining full document context.
+
+1. FSP Trigger Conditions:
+   - Output length >400 words
+   - Automatic activation for longer prompts
+   - Manual override available for specific cases
+
+2. FSP Processing Steps:
+   a) Sentence Segmentation:
+      - Natural language processing to identify sentence boundaries
+      - Preservation of context markers and references
+   
+   b) Individual Sentence Evaluation:
+      - Each sentence evaluated with full document context
+      - Contextual understanding maintained throughout
+   
+   c) Score Aggregation:
+      - Weighted averaging based on sentence importance
+      - Context-dependent weighting factors
+      - Final composite score calculation
+
+3. FSP Quality Assurance:
+   - Validation against manual sentence-level evaluation
+   - Consistency checks across different output lengths
+   - Bias detection and correction mechanisms
+
+B4: Quality Assurance Procedures
+===============================
+
+1. Automated Validation:
+   - Token count compliance verification
+   - Task consistency checks
+   - Methodology adherence validation
+   - Random sampling for quality assurance
+
+2. Manual Quality Checks:
+   - Expert review of sample evaluations
+   - Inter-judge reliability monitoring
+   - Bias detection and correction
+   - Systematic error handling
+
+3. Data Integrity:
+   - Comprehensive audit logs
+   - Version control for all changes
+   - Reproducibility verification
+   - Error tracking and resolution
+
+B5: CyberPrompt Platform Architecture
+====================================
+
+1. Backend Infrastructure:
+   - FastAPI framework (Python 3.9+)
+   - MongoDB for data storage
+   - Docker containerization
+   - Microservices architecture
+
+2. Frontend Interface:
+   - React-based user interface
+   - Real-time experiment monitoring
+   - Configuration management
+   - Results visualization
+
+3. Data Collection:
+   - Automated prompt generation
+   - LLM interaction management
+   - Response collection and storage
+   - Quality score aggregation
+
+4. Analysis Pipeline:
+   - Statistical analysis automation
+   - Effect size calculations
+   - Reliability analysis
+   - Report generation
+
+B6: Experimental Controls
+========================
+
+1. Variable Isolation:
+   - Prompt length as sole independent variable
+   - Identical task requirements across conditions
+   - Consistent evaluation criteria
+   - Controlled experimental environment
+
+2. Bias Mitigation:
+   - Random assignment to conditions
+   - Blinded evaluation process
+   - Multiple judge validation
+   - FSP length bias correction
+
+3. Reproducibility:
+   - Detailed experimental logs
+   - Version-controlled code
+   - Shared data and analysis scripts
+   - Transparent methodology reporting
+
+B7: Statistical Analysis Framework
+=================================
+
+1. Assumption Testing:
+   - Shapiro-Wilk normality tests
+   - Levene's homogeneity of variance
+   - Non-parametric alternatives when needed
+   - Robustness checks
+
+2. Multiple Comparison Control:
+   - Bonferroni corrections (α = 0.05/7 = 0.0071)
+   - Family-wise error rate control
+   - Post-hoc analysis procedures
+   - Effect size reporting
+
+3. Effect Size Calculations:
+   - Cohen's d for pairwise comparisons
+   - 95% confidence intervals
+   - Eta-squared for overall effects
+   - Practical significance interpretation
+
+B8: Data Management and Storage
+==============================
+
+1. Database Schema:
+   - Runs collection: experimental data
+   - Prompts collection: input variations
+   - Output_blobs collection: LLM responses
+   - Audits collection: quality assurance logs
+
+2. Data Export Procedures:
+   - JSON format for analysis
+   - CSV format for statistical software
+   - Comprehensive metadata inclusion
+   - Privacy and anonymization protocols
+
+3. Version Control:
+   - Dataset versioning (v4)
+   - Methodology version tracking
+   - Analysis script versioning
+   - Reproducibility documentation
+

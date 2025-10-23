@@ -23,7 +23,7 @@ class Settings(BaseSettings):
     groq_api_key: str = ""
 
     # Judge settings
-    default_judge_model: str = "gpt-4o-mini"
+    default_judge_model: str = "claude-3-5-haiku-20241022"
     judge_prompt_version: str = "optimized"  # Single optimized prompt
 
     # Security

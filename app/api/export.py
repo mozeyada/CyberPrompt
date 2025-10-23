@@ -74,7 +74,7 @@ async def export_runs_csv(
             "ensemble_evaluation", "aud_cost", "experiment_id", "dataset_version", "source",
             "input_tokens", "output_tokens", "technical_accuracy", "actionability", "completeness", 
             "compliance_alignment", "risk_awareness", "relevance", "clarity", 
-            "fsp_enabled", "temperature", "seed", "judge_model", "judge_prompt_ver", "latency_ms", "created_at"
+            "fsp_enabled", "temperature", "seed", "latency_ms", "created_at"
         ]
         writer.writerow(headers)
         
@@ -85,7 +85,6 @@ async def export_runs_csv(
             tokens = run.get("tokens", {}) or {}
             settings = run.get("settings", {}) or {}
             bias_controls = run.get("bias_controls", {}) or {}
-            judge = run.get("judge", {}) or {}
             
             # Check if ensemble evaluation exists
             has_ensemble = bool(run.get("ensemble_evaluation"))
@@ -116,8 +115,6 @@ async def export_runs_csv(
                 bias_controls.get("fsp", False),
                 settings.get("temperature", ""),
                 settings.get("seed", ""),
-                judge.get("judge_model", ""),
-                judge.get("prompt_ver", ""),
                 economics.get("latency_ms", ""),
                 run.get("created_at", "")
             ]

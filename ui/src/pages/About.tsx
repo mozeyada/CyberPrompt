@@ -116,7 +116,7 @@ export function About() {
             <div className="text-2xl font-bold text-green-600">⚖️</div>
             <div>
               <h3 className="font-semibold text-gray-800">Ensemble Evaluation</h3>
-              <p className="text-gray-600">Multi-judge scoring with GPT-4o-mini, Claude-3.5-Sonnet, Llama-3.3-70B, and Gemini-2.5-Pro for enhanced reliability and reduced variance.</p>
+              <p className="text-gray-600">Multi-judge scoring with Claude-3.5-Haiku, GPT-4-Turbo, and Llama-3.3-70B for enhanced reliability and reduced variance.</p>
             </div>
           </div>
           <div className="flex items-start space-x-3">
@@ -157,7 +157,7 @@ export function About() {
               <div className="bg-white rounded-lg p-4 text-center">
                 <div className="text-2xl font-bold text-purple-600">4</div>
                 <div className="text-sm text-gray-600">Models Tested</div>
-                <div className="text-xs text-gray-500">GPT-4o, Claude, Llama, Gemini</div>
+                <div className="text-xs text-gray-500">GPT-4o, Claude-3.5-Sonnet, Gemini-2.0-Flash</div>
               </div>
             </div>
             <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">

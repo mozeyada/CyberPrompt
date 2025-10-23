@@ -2,9 +2,8 @@ import { useFilters } from '../../state/useFilters'
 
 const AVAILABLE_MODELS = [
   'gpt-4o',
-  'llama-3.3-70b-versatile',
-      'gemini-2.5-pro',
-  'claude-3-5-sonnet'
+  'claude-3-5-sonnet',
+  'gemini-2.0-flash-exp'
 ]
 
 export function ModelSelect() {

@@ -1,0 +1,145 @@
+CyberPrompt Platform Architecture
+================================
+
+Research Platform for Benchmarking Generative AI Token Use in Cybersecurity Operations
+
+SYSTEM OVERVIEW
+===============
+CyberPrompt is a web-based benchmarking platform designed for controlled experimental 
+research on prompt length optimization in cybersecurity operations.
+
+ARCHITECTURE DIAGRAM
+===================
+
+┌─────────────────────────────────────────────────────────────────┐
+│                    CYBERPROMPT PLATFORM                        │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  ┌─────────────────┐    ┌─────────────────┐    ┌──────────────┐ │
+│  │   React UI      │    │   FastAPI       │    │   MongoDB    │ │
+│  │   Frontend      │◄──►│   Backend       │◄──►│   Database   │ │
+│  │                 │    │                 │    │              │ │
+│  │ • Experiment    │    │ • API Endpoints │    │ • Prompts    │ │
+│  │   Management    │    │ • Data Models   │    │ • Results    │ │
+│  │ • Results       │    │ • Services      │    │ • Analytics  │ │
+│  │   Visualization │    │ • Auth & Val    │    │ • Metadata   │ │
+│  └─────────────────┘    └─────────────────┘    └──────────────┘ │
+│           │                       │                              │
+│           └───────────────────────┼──────────────────────────────┘
+│                                   │
+│  ┌─────────────────────────────────▼─────────────────────────────┐ │
+│  │              EXTERNAL INTEGRATIONS                           │ │
+│  │                                                               │ │
+│  │  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────┐  │ │
+│  │  │   OpenAI    │  │  Anthropic  │  │   BOTSv3 Dataset    │  │ │
+│  │  │   GPT APIs  │  │  Claude API │  │   Integration       │  │ │
+│  │  └─────────────┘  └─────────────┘  └─────────────────────┘  │ │
+│  └───────────────────────────────────────────────────────────────┘ │
+└─────────────────────────────────────────────────────────────────┘
+
+COMPONENT DETAILS
+================
+
+Frontend (React + TypeScript)
+-----------------------------
+- Experiment Management Interface
+- Results Visualization Dashboard  
+- Quality Assessment Framework
+- User Authentication & Authorization
+- Responsive Design (Tailwind CSS)
+
+Backend (FastAPI + Python)
+--------------------------
+- RESTful API with async/await patterns
+- Data validation using Pydantic models
+- Background task processing (Celery)
+- Authentication & API key management
+- Database abstraction layer
+
+Database (MongoDB)
+------------------
+- Document-based storage for flexible data structures
+- Academic dataset storage with metadata
+- Experimental results and analytics
+- User accounts and permissions
+- Audit logging and version control
+
+External Integrations
+---------------------
+- OpenAI GPT Models (GPT-3.5, GPT-4)
+- Anthropic Claude Models
+- BOTSv3 Dataset (SANS cybersecurity dataset)
+- Token counting and validation (tiktoken)
+
+DEPLOYMENT ARCHITECTURE
+======================
+
+┌─────────────────────────────────────────────────────────────────┐
+│                    DOCKER CONTAINERS                           │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  ┌──────────────┐  ┌──────────────┐  ┌─────────────────────┐  │
+│  │ cyberprompt- │  │ cyberprompt- │  │ cyberprompt-mongo   │  │
+│  │ ui           │  │ app          │  │                     │  │
+│  │              │  │              │  │ • MongoDB 6.0+      │  │
+│  │ • React App  │  │ • FastAPI    │  │ • Persistent Volume │  │
+│  │ • Port 3000  │  │ • Port 8000  │  │ • Port 27017        │  │
+│  │ • Nginx      │  │ • Uvicorn    │  │ • Data Persistence  │  │
+│  └──────────────┘  └──────────────┘  └─────────────────────┘  │
+│                                                                 │
+│  ┌─────────────────────────────────────────────────────────────┐ │
+│  │                 mongo-express                               │ │
+│  │              Database Administration                        │ │
+│  │                  Port 8081                                  │ │
+│  └─────────────────────────────────────────────────────────────┘ │
+└─────────────────────────────────────────────────────────────────┘
+
+RESEARCH INTEGRATION
+===================
+
+Academic Dataset Management
+---------------------------
+- 300-prompt controlled experimental dataset
+- S/M/L length variants with identical tasks
+- BOTSv3 integration for authentic data
+- Version control and reproducibility
+
+Quality Assessment Framework
+---------------------------
+- 7-dimension evaluation rubric
+- Multi-judge evaluation system
+- Automated scoring and analytics
+- Statistical analysis integration
+
+Experimental Execution
+----------------------
+- Controlled experiment management
+- Automated LLM interaction
+- Response logging and analysis
+- Cost-quality trade-off calculations
+
+SECURITY & COMPLIANCE
+====================
+
+Authentication & Authorization
+------------------------------
+- API key-based authentication
+- Role-based access control
+- Session management
+- Audit logging
+
+Data Protection
+---------------
+- Environment variable configuration
+- Secure API key management
+- Database access controls
+- Input validation and sanitization
+
+Academic Standards
+------------------
+- Research data integrity
+- Reproducible experiments
+- Open methodology documentation
+- Ethical AI research practices
+
+Generated for Assignment 3A Research Outputs Portfolio

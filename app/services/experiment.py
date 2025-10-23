@@ -116,11 +116,6 @@ class ExperimentService:
                     for _repeat in range(plan_request.repeats):
                         run_id = await get_next_run_id()
 
-                        # Ensure judge has a valid model
-                        judge_config = plan_request.judge.model_copy()
-                        if not judge_config.judge_model:
-                            judge_config.judge_model = "gpt-4o-mini"
-                        
                         # Map prompt source to run source
                         run_source = "adaptive" if prompt.source == "adaptive" else "static"
                         
@@ -129,7 +124,6 @@ class ExperimentService:
                             prompt_id=prompt.prompt_id,
                             model=model,
                             settings=plan_request.settings,
-                            judge=judge_config,
                             bias_controls=plan_request.bias_controls,
                             status=RunStatus.QUEUED,
                             dataset_version=current_dataset_version,

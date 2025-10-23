@@ -107,8 +107,12 @@ export function ViewResponseModal({ runId, isOpen, onClose }: ViewResponseModalP
                       <span className="font-medium">{data.run.tokens?.total || 0}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-gray-600">Cost (AUD):</span>
-                      <span className="font-medium">${data.run.economics?.aud_cost?.toFixed(4) || '0.0000'}</span>
+                      <span className="text-gray-600">Input Tokens:</span>
+                      <span className="font-medium">{data.run.tokens?.input || 0}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Output Tokens:</span>
+                      <span className="font-medium">{data.run.tokens?.output || 0}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-600">Quality Score:</span>

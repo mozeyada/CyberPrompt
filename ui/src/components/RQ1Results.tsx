@@ -64,8 +64,8 @@ export function RQ1Results({ experimentResults }: RQ1ResultsProps) {
             <div className="text-sm text-gray-600">Successful Runs</div>
           </div>
           <div className="bg-white rounded p-4 text-center">
-            <div className="text-2xl font-bold text-green-600">${totalCost.toFixed(4)}</div>
-            <div className="text-sm text-gray-600">Total Cost (AUD)</div>
+            <div className="text-2xl font-bold text-blue-600">{runs.reduce((sum, run) => sum + (run.tokens?.total || 0), 0).toLocaleString()}</div>
+            <div className="text-sm text-gray-600">Total Tokens</div>
           </div>
           <div className="bg-white rounded p-4 text-center">
             <div className="text-2xl font-bold text-purple-600">{avgQuality.toFixed(1)}/5.0</div>
@@ -90,7 +90,6 @@ export function RQ1Results({ experimentResults }: RQ1ResultsProps) {
                   <th className="text-left py-3 px-4 font-medium text-gray-600">Quality Score</th>
                   <th className="text-left py-3 px-4 font-medium text-gray-600">Length</th>
                   <th className="text-left py-3 px-4 font-medium text-gray-600">Tokens</th>
-                  <th className="text-left py-3 px-4 font-medium text-gray-600">Cost</th>
                   <th className="text-left py-3 px-4 font-medium text-gray-600">Time</th>
                 </tr>
               </thead>
@@ -134,11 +133,6 @@ export function RQ1Results({ experimentResults }: RQ1ResultsProps) {
                         </span>
                       </td>
                       <td className="py-3 px-4">
-                        <span className="text-sm text-gray-900">
-                          ${(run.economics?.aud_cost || 0).toFixed(4)}
-                        </span>
-                      </td>
-                      <td className="py-3 px-4">
                         <span className="text-sm text-gray-500">
                           {formatDateTime(run.created_at)}
                         </span>
@@ -157,11 +151,11 @@ export function RQ1Results({ experimentResults }: RQ1ResultsProps) {
         <h3 className="text-lg font-semibold text-blue-800 mb-3">Key Insights from Your RQ1 Experiment</h3>
         <div className="space-y-2 text-blue-700">
           <p>• Tested {runs.length} different model-prompt combinations</p>
-          <p>• Average cost per run: ${runs.length > 0 ? (totalCost / runs.length).toFixed(4) : '0.0000'} AUD</p>
+          <p>• Average tokens per run: {runs.length > 0 ? Math.round((runs.reduce((sum, run) => sum + (run.tokens?.total || 0), 0) / runs.length)).toLocaleString() : '0'} tokens</p>
           <p>• Quality scores range from {Math.min(...runs.map(r => r.scores?.composite || 0)).toFixed(1)} to {Math.max(...runs.map(r => r.scores?.composite || 0)).toFixed(1)}</p>
           {runs.length > 0 && (
-            <p>• Most cost-effective model: {runs.reduce((best, run) => 
-              (run.economics?.aud_cost || 0) < (best.economics?.aud_cost || Infinity) ? run : best
+            <p>• Highest quality model: {runs.reduce((best, run) => 
+              (run.scores?.composite || 0) > (best.scores?.composite || 0) ? run : best
             ).model}</p>
           )}
         </div>

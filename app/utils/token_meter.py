@@ -9,12 +9,14 @@ MODEL_ENCODINGS = {
     "gpt-4": "cl100k_base",
     "gpt-4o": "cl100k_base",
     "gpt-4o-mini": "cl100k_base",
+    "gpt-4-turbo": "cl100k_base",
     "gpt-3.5-turbo": "cl100k_base",
     "claude-3-5-sonnet": "cl100k_base",  # Approximation
+    "claude-3-5-haiku": "cl100k_base",  # Approximation
     "claude-3-opus": "cl100k_base",  # Approximation
-    "claude-3-haiku": "cl100k_base",  # Approximation
+    "claude-3-haiku": "cl100k_base",  # Approximation (legacy)
     "llama-3.3-70b-versatile": "cl100k_base",  # Groq model
-    "gemini-2.5-pro": "cl100k_base",  # Google model
+    "gemini-2.0-flash-exp": "cl100k_base",  # Approximation
 }
 
 
@@ -42,6 +44,10 @@ class TokenMeter:
         """Count tokens in text for given model"""
         # Simple approximation for Claude models (4 chars per token)
         if "claude" in model.lower():
+            return len(text) // 4
+        
+        # Simple approximation for Gemini models (4 chars per token)
+        if "gemini" in model.lower():
             return len(text) // 4
             
         try:

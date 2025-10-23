@@ -46,7 +46,7 @@ export function Insights() {
   // Fetch runs and calculate filtered stats (same as CombinedLengthAnalysis)
   const { data: runsData } = useQuery({
     queryKey: ['runs-length-combined'],
-    queryFn: () => runsApi.list({ limit: 200 }),
+    queryFn: () => runsApi.list({ limit: 500 }),
     staleTime: 30000,
     enabled: selectedView === 'rq1'
   })
@@ -154,7 +154,7 @@ export function Insights() {
   // Fetch prompts data for experiment metrics
   const { data: allPrompts } = useQuery({
     queryKey: ['all-prompts'],
-    queryFn: () => runsApi.list({ limit: 200 }), // Using runsApi to get prompts - max limit is 200
+    queryFn: () => runsApi.list({ limit: 500 }), // Using runsApi to get prompts - raised to 500
     enabled: selectedView === 'rq1' && !!selectedExperiment
   })
 
@@ -266,14 +266,14 @@ export function Insights() {
   const { data: allRunsData, isLoading: runsLoading } = useQuery({
     queryKey: ['runs-all-runs'],
     queryFn: () => runsApi.list({
-      limit: 200  // Fetch all data like RQ1 tab
+      limit: 500  // Fetch all data like RQ1 tab
     }),
     enabled: selectedView === 'all-runs'
   })
 
   // Client-side filtering for All Runs tab (same approach as RQ1)
   const filteredAllRunsData = React.useMemo(() => {
-    if (!allRunsData?.runs) return { runs: [], page: 1, limit: 200, count: 0 }
+    if (!allRunsData?.runs) return { runs: [], page: 1, limit: 500, count: 0 }
     
     let runs = allRunsData.runs
     console.log('DEBUG: Total runs before filtering:', runs.length)
@@ -292,13 +292,26 @@ export function Insights() {
       console.log('DEBUG: Runs after model filtering:', runs.length)
     }
     
-    console.log('DEBUG: Final filtered runs count:', runs.length)
+    // Apply pagination
+    const limit = 20 // Items per page
+    const startIndex = (page - 1) * limit
+    const endIndex = startIndex + limit
+    const paginatedRuns = runs.slice(startIndex, endIndex)
+    
+    console.log('DEBUG: Final filtered runs count:', runs.length, 'Page:', page, 'Showing:', paginatedRuns.length)
     return {
       ...allRunsData,
-      runs: runs,
-      count: runs.length
+      runs: paginatedRuns,
+      count: runs.length,
+      page: page,
+      limit: limit
     }
-  }, [allRunsData, selectedScenario, selectedModels])
+  }, [allRunsData, selectedScenario, selectedModels, page])
+
+  // Reset page to 1 when filters change
+  React.useEffect(() => {
+    setPage(1)
+  }, [selectedScenario, selectedModels])
 
   const handleDownloadCSV = async () => {
     const runs = filteredAllRunsData?.runs || []
@@ -535,7 +548,7 @@ export function Insights() {
                       <div className="mt-2">
                         {experimentMetrics.modelsUsed.map(model => (
                           <Badge key={model} variant="secondary" className="mr-1 mb-1 text-xs">
-                            {model.replace('llama-3.3-70b-versatile', 'Llama 3.3 70B').replace('claude-3-5-sonnet', 'Claude 3.5 Sonnet').replace('gpt-4o', 'GPT-4o').replace('gemini-2.5-pro', 'Gemini 2.5 Pro')}
+                            {model.replace('llama-3.3-70b-versatile', 'Llama 3.3 70B').replace('claude-3-5-sonnet', 'Claude 3.5 Sonnet').replace('claude-3-5-haiku', 'Claude 3.5 Haiku').replace('gpt-4o', 'GPT-4o')}
                           </Badge>
                         ))}
                       </div>
@@ -960,7 +973,7 @@ export function Insights() {
                         variant="outline"
                         size="sm"
                         onClick={() => setPage(p => p + 1)}
-                        disabled={filteredAllRunsData?.runs?.length < limit}
+                        disabled={page * 20 >= (filteredAllRunsData?.count || 0)}
                       >
                         Next
                       </Button>

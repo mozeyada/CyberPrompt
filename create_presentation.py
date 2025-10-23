@@ -164,7 +164,7 @@ Models Tested:
 • GPT-4o: 48 runs
 • Claude-3.5-Sonnet: 36 runs
 • Llama-3.3-70B: 36 runs
-• Gemini-2.5-Pro: 2 runs
+• Gemini-2.0-Flash: 2 runs
 
 Balanced Length Distribution:
 • S: 41 runs | M: 42 runs | L: 39 runs

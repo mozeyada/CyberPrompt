@@ -43,7 +43,6 @@ export function BenchmarkRunner() {
     currentRun: number
     logs: Array<{id: string, message: string, type: 'info' | 'success' | 'error', timestamp: string}>
     results: Array<{run_id: string, status: string, model: string, cost?: number, quality?: number, error?: string}>
-    individualRuns: Array<{run_id: string, status: 'pending' | 'running' | 'succeeded' | 'failed', model: string, prompt_id?: string}>
   }>({
     isRunning: false,
     totalRuns: 0,
@@ -51,8 +50,7 @@ export function BenchmarkRunner() {
     failedRuns: 0,
     currentRun: 0,
     logs: [],
-    results: [],
-    individualRuns: []
+    results: []
   })
 
   const addLog = (message: string, type: 'info' | 'success' | 'error' = 'info') => {
@@ -75,7 +73,7 @@ export function BenchmarkRunner() {
         run_id: result.run_id,
         status: result.status,
         model: result.model || 'unknown',
-        cost: result.economics?.aud_cost,
+        tokens: result.tokens?.total,
         quality: result.scores?.composite,
         error: result.error
       }))
@@ -106,8 +104,8 @@ export function BenchmarkRunner() {
       })
       
       if (successCount > 0) {
-        const totalCost = results.reduce((sum: number, r: any) => sum + (r.cost || 0), 0)
-        addLog(`Total cost: $${totalCost.toFixed(4)} AUD`, 'info')
+        const totalTokens = results.reduce((sum: number, r: any) => sum + (r.tokens || 0), 0)
+        addLog(`Total tokens: ${totalTokens.toLocaleString()}`, 'info')
       }
     },
     onError: (error) => {
@@ -118,53 +116,82 @@ export function BenchmarkRunner() {
 
   const executeEnsembleMutation = useMutation({
     mutationFn: runsApi.executeBatchEnsemble,
-    onSuccess: (data) => {
-      // Store experiment_id for polling
-      if (data.experiment_id && (window as any).currentProgressInterval) {
-        (window as any).currentExperimentId = data.experiment_id
+    onSuccess: (data: any) => {
+      console.log('[DEBUG] Batch response - experiment_id:', data.experiment_id)
+      
+      if (!data.experiment_id) {
+        console.error('[ERROR] No experiment_id in response!')
+        addLog('Error: No experiment_id returned', 'error')
+        setExecutionStatus(prev => ({ ...prev, isRunning: false }))
+        return
       }
       
-      const results = data.results.map((result: any) => ({
-        run_id: result.run_id,
-        status: result.status,
-        model: result.model || 'unknown',
-        cost: result.economics?.aud_cost,
-        quality: result.ensemble_evaluation?.aggregated?.mean_scores?.composite || result.scores?.composite,
-        error: result.error,
-        ensembleEnabled: !!result.ensemble_evaluation
-      }))
-      
-      const successCount = results.filter((r: any) => r.status === 'succeeded').length
-      const failCount = results.filter((r: any) => r.status === 'failed').length
-      
-      // Clear progress interval
-      if ((window as any).currentProgressInterval) {
-        clearInterval((window as any).currentProgressInterval)
-        delete (window as any).currentProgressInterval
-        delete (window as any).currentExperimentId
-      }
-      
-      setExecutionStatus(prev => ({
-        ...prev,
-        isRunning: false,
-        completedRuns: successCount,
-        failedRuns: failCount,
-        currentRun: prev.totalRuns, // Mark as completed
-        results
-      }))
-      
-      addLog(`Completed: ${successCount} successful, ${failCount} failed`, successCount > 0 ? 'success' : 'error')
-      addLog(`Ensemble evaluation: ${data.ensemble_enabled ? 'enabled' : 'disabled'}`, 'info')
-      
-      // Log specific errors for failed runs
-      results.filter(r => r.status === 'failed').forEach(result => {
-        addLog(`Failed run ${result.run_id}: ${result.error || 'Unknown error'}`, 'error')
-      })
-      
-      if (successCount > 0) {
-        const totalCost = results.reduce((sum: number, r: any) => sum + (r.cost || 0), 0)
-        addLog(`Total cost: $${totalCost.toFixed(4)} AUD`, 'info')
-      }
+      // NOW start polling with experiment_id
+      (window as any).currentProgressInterval = setInterval(async () => {
+        try {
+          const runsData = await runsApi.list({ 
+            experiment_id: data.experiment_id, 
+            limit: 200 
+          })
+          
+          const runs = runsData.runs || []
+          console.log('[DEBUG] Polling - fetched', runs.length, 'runs for', data.experiment_id)
+          
+          const succeededCount = runs.filter((r: any) => r.status === 'succeeded').length
+          const failedCount = runs.filter((r: any) => r.status === 'failed').length
+          const runningCount = runs.filter((r: any) => r.status === 'running').length
+          
+          const currentRun = succeededCount + failedCount + Math.min(runningCount, 1)
+          
+          setExecutionStatus(prev => ({
+            ...prev,
+            completedRuns: succeededCount,
+            failedRuns: failedCount,
+            currentRun: Math.min(currentRun, prev.totalRuns)
+          }))
+          
+          // Stop polling when all complete
+          if (succeededCount + failedCount >= runs.length) {
+            if ((window as any).currentProgressInterval) {
+              clearInterval((window as any).currentProgressInterval)
+              delete (window as any).currentProgressInterval
+            }
+            
+            // Process final results
+            const finalResults = runs.map((run: any) => ({
+              run_id: run.run_id,
+              status: run.status,
+              model: run.model || 'unknown',
+              tokens: run.tokens?.total,
+              quality: run.ensemble_evaluation?.aggregated?.mean_scores?.composite || run.scores?.composite,
+              error: run.error,
+              ensembleEnabled: !!run.ensemble_evaluation
+            }))
+            
+            setExecutionStatus(prev => ({
+              ...prev,
+              isRunning: false,
+              results: finalResults
+            }))
+            
+            // Only log ONCE when complete
+            addLog(`Completed: ${succeededCount} successful, ${failedCount} failed`, succeededCount > 0 ? 'success' : 'error')
+            addLog(`Ensemble evaluation: enabled`, 'info')
+            
+            // Log errors
+            runs.filter((r: any) => r.status === 'failed').forEach((run: any) => {
+              addLog(`Failed run ${run.run_id}: ${run.error || 'Unknown error'}`, 'error')
+            })
+            
+            if (succeededCount > 0) {
+              const totalTokens = runs.reduce((sum: number, r: any) => sum + (r.tokens?.total || 0), 0)
+              addLog(`Total tokens: ${totalTokens.toLocaleString()}`, 'info')
+            }
+          }
+        } catch (error) {
+          console.error('[DEBUG] Polling error:', error)
+        }
+      }, 2000)
     },
     onError: (error) => {
       addLog(`Ensemble experiment failed: ${error}`, 'error')
@@ -202,64 +229,17 @@ export function BenchmarkRunner() {
       failedRuns: 0,
       currentRun: 0,
       logs: [],
-      results: [],
-      individualRuns: []
+      results: []
     })
     
     // Generate experiment metadata for reproducibility
     const metadata = generateExperimentMetadata()
     
     addLog(`Starting experiment with ${totalRuns} runs...`, 'info')
-    
-    // Store experiment_id for polling (will be set from API response)
-    let currentExperimentId: string | null = null
-    
-    // Poll for real-time progress (using experiment_id if available)
-    const progressInterval = setInterval(async () => {
-      try {
-        // Get experiment_id from window if set by mutation response
-        const expId = (window as any).currentExperimentId || currentExperimentId
-        
-        const queryParams = expId
-          ? { experiment_id: expId, limit: 200 }
-          : { limit: Math.max(totalRuns, 200) }
-        
-        const runsData = await runsApi.list(queryParams)
-        const relevantRuns = runsData.runs || []
-        
-        const succeededCount = relevantRuns.filter((r: any) => r.status === 'succeeded').length
-        const failedCount = relevantRuns.filter((r: any) => r.status === 'failed').length
-        const runningCount = relevantRuns.filter((r: any) => r.status === 'running').length
-        
-        // currentRun = completed + currently running (cap at 1 for display)
-        const currentRun = succeededCount + failedCount + Math.min(runningCount, 1)
-        
-        setExecutionStatus(prev => ({
-          ...prev,
-          completedRuns: succeededCount,
-          failedRuns: failedCount,
-          currentRun: Math.min(currentRun, totalRuns),
-          individualRuns: relevantRuns.map((run: any) => ({
-            run_id: run.run_id,
-            status: run.status,
-            model: run.model,
-            prompt_id: run.prompt_id
-          }))
-        }))
-        
-        // Stop polling when all complete
-        if (succeededCount + failedCount >= totalRuns) {
-          clearInterval(progressInterval)
-        }
-      } catch (error) {
-        console.error('Progress polling error:', error)
-      }
-    }, 2000) // Poll every 2 seconds
-    
-    // Store interval reference to clear it when mutation completes
-    ;(window as any).currentProgressInterval = progressInterval
     addLog(`Config: ${experimentConfig.repeats} repeats, seed ${experimentConfig.seed}`, 'info')
     addLog(`Metadata: Hash ${metadata.configHash}, Cost ~$${metadata.estimatedCost.toFixed(4)}`, 'info')
+    
+    // Polling will start in onSuccess handler after we have experiment_id
     
     const mutation = enableEnsemble ? executeEnsembleMutation : executeBatchMutation
     
@@ -275,7 +255,7 @@ export function BenchmarkRunner() {
         },
         settings: {
           temperature: experimentConfig.temperature,
-          max_output_tokens: experimentConfig.maxTokens,
+          max_tokens: experimentConfig.maxTokens,
         },
         repeats: experimentConfig.repeats
       })
@@ -290,7 +270,7 @@ export function BenchmarkRunner() {
         },
         settings: {
           temperature: experimentConfig.temperature,
-          max_output_tokens: experimentConfig.maxTokens,
+          max_tokens: experimentConfig.maxTokens,
         },
         repeats: experimentConfig.repeats
       })
@@ -563,34 +543,6 @@ export function BenchmarkRunner() {
                 </div>
               </div>
 
-              {/* Individual Run Status Cards */}
-              {executionStatus.individualRuns.length > 0 && (
-                <div className="mt-4">
-                  <h4 className="font-medium text-gray-900 mb-2">Individual Runs</h4>
-                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
-                    {executionStatus.individualRuns.map((run, idx) => (
-                      <div 
-                        key={run.run_id}
-                        className={`p-2 rounded border text-xs ${
-                          run.status === 'succeeded' ? 'bg-green-50 border-green-300' :
-                          run.status === 'running' ? 'bg-blue-50 border-blue-300 animate-pulse' :
-                          run.status === 'failed' ? 'bg-red-50 border-red-300' :
-                          'bg-gray-50 border-gray-200'
-                        }`}
-                      >
-                        <div className="font-medium">Run {idx + 1}</div>
-                        <div className="text-gray-600 truncate">{run.prompt_id}</div>
-                        <div className="flex items-center mt-1">
-                          {run.status === 'succeeded' && <span className="text-green-600">✓ Done</span>}
-                          {run.status === 'running' && <span className="text-blue-600">⏳ Running...</span>}
-                          {run.status === 'failed' && <span className="text-red-600">✗ Failed</span>}
-                          {run.status === 'queued' && <span className="text-gray-500">○ Queued</span>}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
           
               {/* Results Summary */}
               {executionStatus.results.length > 0 && (
@@ -626,7 +578,7 @@ export function BenchmarkRunner() {
                         {result.status === 'succeeded' && (
                           <div className="text-xs text-gray-600">
                             {result.quality && <div>Quality: {result.quality.toFixed(1)}/5.0</div>}
-                            {result.cost && <div>Cost: ${result.cost.toFixed(4)} AUD</div>}
+                            {result.tokens && <div>Tokens: {result.tokens.toLocaleString()}</div>}
                           </div>
                         )}
                         {result.status === 'failed' && result.error && (

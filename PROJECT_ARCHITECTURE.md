@@ -204,9 +204,10 @@ OutputBlob
 - **Recharts**: Data visualization library
 
 ### External Integrations
-- **OpenAI API**: GPT models (gpt-4o, gpt-4o-mini, gpt-3.5-turbo)
-- **Anthropic API**: Claude models (claude-3-5-sonnet, claude-3-opus)
-- **Groq API**: Llama models (llama-3.1-70b-versatile, llama-3.1-8b-instant) for cost-effective adaptive prompting
+- **OpenAI API**: GPT models (gpt-4o subject, gpt-4-turbo judge)
+- **Anthropic API**: Claude models (claude-3-5-sonnet subject, claude-3-5-haiku judge)
+- **Google API**: Gemini models (gemini-2.5-flash subject)
+- **Groq API**: Llama models (llama-3.3-70b-versatile judge) for cost-effective adaptive prompting
 - **Token Counting**: tiktoken for accurate token measurement
 - **Cost Calculation**: Real-time AUD pricing per 1K tokens
 
@@ -284,6 +285,7 @@ MONGO_DB=genai_bench
 # LLM API Keys
 OPENAI_API_KEY=your_openai_key
 ANTHROPIC_API_KEY=your_anthropic_key
+GOOGLE_API_KEY=your_google_key
 GROQ_API_KEY=your_groq_key
 
 # Pricing (AUD per 1K tokens)

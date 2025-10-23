@@ -231,7 +231,7 @@ def create_judge(judge_config: dict[str, Any], llm_client=None) -> BaseJudge:
     judge_type = judge_config.get("type", "llm")
 
     if judge_type == "llm":
-        judge_model = judge_config.get("judge_model", "gpt-4o-mini")
+        judge_model = judge_config.get("judge_model", "claude-3-5-haiku-20241022")
         return LLMJudge(judge_model, llm_client)
     elif judge_type == "human":
         return HumanJudge()

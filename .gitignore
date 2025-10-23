@@ -1,8 +1,24 @@
-# Python
+# CyberPrompt Research Repository .gitignore
+
+# Data files (too large for GitHub)
+*.json
+*.csv
+*.db
+*.sqlite
+*.sqlite3
+
+# MongoDB exports
+runs_export.json
+prompts_export.json
+output_blobs_export.json
+
+# Analysis results (can be regenerated)
+statistical_results_detailed.json
+
+# Python cache
 __pycache__/
 *.py[cod]
 *$py.class
-**/__pycache__/
 *.so
 .Python
 build/
@@ -11,6 +27,7 @@ dist/
 downloads/
 eggs/
 .eggs/
+lib/
 lib64/
 parts/
 sdist/
@@ -20,94 +37,61 @@ wheels/
 .installed.cfg
 *.egg
 
-# Testing
-.pytest_cache/
-.coverage
-htmlcov/
-.tox/
-.cache
-nosetests.xml
-coverage.xml
-*.cover
-.hypothesis/
-
-# Linting
-.ruff_cache/
-.mypy_cache/
-.dmypy.json
-dmypy.json
-
-# Environment & Secrets
-.env
-.env.local
-.env.production
-.venv
-env/
+# Virtual environments
 venv/
+env/
 ENV/
-env.bak/
-venv.bak/
 
-# API Keys (Security)
-**/api_keys.txt
-**/*secret*
-**/*key*
-!**/requirements.txt
-
-# IDEs
+# IDE files
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
 
-# Frontend
-ui/node_modules/
-ui/dist/
-ui/.vite/
-ui/.env.local
-ui/.env.development.local
-ui/.env.test.local
-ui/.env.production.local
+# OS files
+.DS_Store
+Thumbs.db
+
+# Docker
+.dockerignore
 
 # Logs
 *.log
 logs/
 
-# Database
-*.db
-*.sqlite
+# Temporary files
+*.tmp
+*.temp
 
-# OS
-.DS_Store
-Thumbs.db
+# Large files that shouldn't be in repo
+*.zip
+*.tar.gz
+*.rar
 
-# Personal/Research Files
-.amazonq/
-*.md.backup
-**/personal_*
-**/research_notes*
-temp_cybersoc/
+# API keys and secrets
+.env
+.env.local
+.env.production
+secrets.json
+config.json
 
-# Temporary documentation (not for GitHub)
-INSIGHTS_REDESIGN.md
-INSIGHTS_REDESIGN_SUMMARY.md
-EFFICIENCY_METRIC_EXPLAINED.md
-INSIGHTS_PAGE_ACADEMIC_EVALUATION.md
-RESEARCH_NOTES.md
-README-SETUP.md
-q-dev-chat-2025-10-02.md
-test_fsp_fix.py
-test_length_invariance.py
-data/prompts_backup_old.json
+# Node modules (if any)
+node_modules/
 
-# Large datasets (users generate/download separately)
-datasets/
-cysecbench-data/Dataset/
+# Jupyter notebooks checkpoints
+.ipynb_checkpoints/
 
-# Keep these for reproducibility:
-# !scripts/generate_academic_prompts.py
-# !data/prompts.json
-# !cysecbench-data/README.md
-# !cysecbench-data/CySecBench_paper.pdf
-research/
+# Coverage reports
+htmlcov/
+.coverage
+.coverage.*
+coverage.xml
+
+# Pytest
+.pytest_cache/
+
+# MyPy
+.mypy_cache/
+.dmypy.json
+dmypy.json

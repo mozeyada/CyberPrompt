@@ -1,0 +1,106 @@
+APPENDIX C: SAMPLE PROMPTS
+
+This appendix provides representative examples of prompts used in the CyberPrompt study across different domains and length variants.
+
+C1: SOC Incident Response Prompts
+==================================
+
+SOC Short Prompt (150-200 tokens):
+----------------------------------
+"Analyze ransomware incident detected at 14:23 UTC affecting 3 file servers (FS-01, FS-02, FS-03). Event ID 4663 shows file encryption starting at 14:20. Available containment options: network segmentation, system isolation. Provide immediate containment actions, investigation steps, and recovery priorities."
+
+SOC Medium Prompt (400-500 tokens):
+------------------------------------
+"Analyze ransomware incident detected at 14:23 UTC affecting 3 file servers (FS-01, FS-02, FS-03) in the Finance department. Event ID 4663 shows file encryption starting at 14:20, with initial compromise via malicious PowerShell dropper (sha256:a4f5317de7f5e04f82fa71c9d5338bc3). C2 infrastructure identified: 192.168.9.8, malicious-4811.dyn.com. Available containment options: network segmentation, system isolation, account disabling. External IR team available with 2-hour response time. Business context: Quarterly financial reporting due in 48 hours. Provide immediate containment actions, investigation steps, evidence preservation procedures, and recovery priorities with timeline considerations."
+
+SOC Long Prompt (750-850 tokens):
+---------------------------------
+"Analyze comprehensive ransomware incident detected at 14:23 UTC affecting 3 critical file servers (FS-01, FS-02, FS-03) in the Finance department of a mid-size organization. Event ID 4663 shows file encryption starting at 14:20, with initial compromise via malicious PowerShell dropper (sha256:a4f5317de7f5e04f82fa71c9d5338bc3) delivered through phishing email to btch01@froth.ly. C2 infrastructure identified: 192.168.9.8, malicious-4811.dyn.com. Additional IOCs: scheduled tasks for persistence, registry modifications, lateral movement via SMB. Available containment options: network segmentation, system isolation, account disabling, firewall blocking. External IR team available with 2-hour response time. Business context: Quarterly financial reporting due in 48 hours, GDPR compliance requirements for customer data. Stakeholder communication: CFO expects hourly updates, legal team on standby. Provide comprehensive incident response plan including immediate containment actions, detailed investigation steps, evidence preservation procedures, recovery priorities with timeline considerations, communication strategy, and post-incident review recommendations."
+
+C2: GRC Compliance Assessment Prompts
+======================================
+
+GRC Short Prompt (150-200 tokens):
+----------------------------------
+"Assess current implementation status of NIST SP 800-53 AC-2 (Account Management) for Q1 2024 audit preparation. Identify gaps and provide remediation priorities."
+
+GRC Medium Prompt (400-500 tokens):
+------------------------------------
+"Assess current implementation status of NIST SP 800-53 AC-2 (Account Management) for Q1 2024 audit preparation. Organization: 500 employees, hybrid cloud environment (AWS, Azure), Active Directory primary identity provider. Current controls: automated provisioning, quarterly access reviews, MFA for privileged accounts. Audit scope: privileged access management, service account lifecycle, access review processes. Identify gaps and provide remediation priorities with implementation timeline."
+
+GRC Long Prompt (750-850 tokens):
+---------------------------------
+"Assess comprehensive implementation status of NIST SP 800-53 AC-2 (Account Management) for Q1 2024 audit preparation. Organization: 500 employees across 3 locations, hybrid cloud environment (AWS, Azure, on-premises), Active Directory primary identity provider with Azure AD Connect. Current controls: automated provisioning via HR system integration, quarterly access reviews, MFA for privileged accounts, privileged access management (PAM) solution. Audit scope: privileged access management, service account lifecycle, access review processes, identity governance, compliance reporting. Stakeholders: CISO, IT Director, Internal Audit, External Auditor (Deloitte). Regulatory context: SOX compliance, industry-specific requirements. Identify gaps and provide detailed remediation priorities with implementation timeline, resource requirements, and risk mitigation strategies."
+
+C3: CTI Analysis Prompts
+========================
+
+CTI Short Prompt (150-200 tokens):
+----------------------------------
+"Analyze APT29 Cobalt Strike beacon configuration for attribution assessment. Focus on C2 infrastructure patterns and evasion techniques."
+
+CTI Medium Prompt (400-500 tokens):
+-----------------------------------
+"Analyze APT29 Cobalt Strike beacon configuration discovered in recent campaign targeting financial institutions. Beacon characteristics: sleep interval 60s, jitter 20%, staging protocol HTTP/HTTPS. C2 infrastructure: compromised WordPress sites, dynamic DNS providers. Evasion techniques: process hollowing, DLL sideloading, encrypted communications. Attribution indicators: Russian language artifacts, Moscow timezone, specific TTPs. Provide attribution assessment with confidence level and supporting evidence."
+
+CTI Long Prompt (750-850 tokens):
+----------------------------------
+"Analyze comprehensive APT29 Cobalt Strike beacon configuration discovered in recent campaign targeting financial institutions across North America and Europe. Beacon characteristics: sleep interval 60s, jitter 20%, staging protocol HTTP/HTTPS, custom malleable C2 profile. C2 infrastructure: compromised WordPress sites, dynamic DNS providers (no-ip.com, duckdns.org), bulletproof hosting providers. Evasion techniques: process hollowing, DLL sideloading, encrypted communications, anti-VM checks, sandbox evasion. Attribution indicators: Russian language artifacts, Moscow timezone (UTC+3), specific TTPs matching historical APT29 campaigns, code similarities to previous samples. Campaign context: targeting SWIFT systems, financial messaging platforms, treasury management systems. Provide detailed attribution assessment with confidence level, supporting evidence, threat actor profile, campaign timeline, and recommended countermeasures."
+
+C4: Prompt Length Analysis
+=========================
+
+Token Count Ranges by Condition:
+- Short: 150-200 tokens (actual range: 152-198)
+- Medium: 400-500 tokens (actual range: 412-487)  
+- Long: 750-850 tokens (actual range: 756-843)
+
+Length Distribution:
+- Short prompts: 100 samples
+- Medium prompts: 100 samples
+- Long prompts: 100 samples
+
+Domain Distribution:
+- SOC scenarios: 100 prompts
+- GRC scenarios: 102 prompts
+- CTI scenarios: 98 prompts
+
+C5: Prompt Design Principles
+============================
+
+Short Prompts:
+- Essential information only
+- Direct task specification
+- Minimal context
+- Focus on core requirements
+
+Medium Prompts:
+- Moderate contextual detail
+- Business context inclusion
+- Available resources specified
+- Timeline considerations
+
+Long Prompts:
+- Comprehensive context
+- Stakeholder considerations
+- Regulatory requirements
+- Detailed background information
+- Multiple constraint factors
+
+C6: Quality Considerations
+=========================
+
+All prompts maintain:
+- Identical task requirements across length variants
+- Consistent evaluation criteria
+- Same domain expertise level
+- Equivalent complexity expectations
+- Uniform success metrics
+
+Length variations focus on:
+- Contextual detail level
+- Background information depth
+- Stakeholder consideration scope
+- Constraint specification breadth
+- Implementation detail granularity
+

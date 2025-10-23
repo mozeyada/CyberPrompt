@@ -1,0 +1,58 @@
+================================================================================
+STATISTICAL ANALYSIS SUMMARY
+================================================================================
+Analysis Date: 2025-10-21 15:44:17
+
+1. DATA VERIFICATION
+--------------------
+Total experimental runs: 300
+Domain distribution: {'GRC': 102, 'SOC': 100, 'CTI': 98}
+
+2. ANOVA/KRUSKAL-WALLIS RESULTS
+------------------------------
+Test type: Kruskal-Wallis
+H-statistic: 7.0741
+P-value: 0.029099011450862577
+
+Assumption Testing:
+  S: ✗ Normal (p=0.0255)
+  M: ✓ Normal (p=0.1136)
+  L: ✗ Normal (p=0.0069)
+  Homogeneity: ✗ (p=0.0218)
+
+3. EFFECT SIZES (COHEN'S D)
+-------------------------
+L_vs_M:
+  Cohen's d: 0.1305
+  95% CI: [-0.1470, 0.4080]
+  Group means: 4.6155 vs 4.5912
+  Sample sizes: 100 vs 100
+
+L_vs_S:
+  Cohen's d: 0.4010
+  95% CI: [0.1210, 0.6810]
+  Group means: 4.6155 vs 4.5305
+  Sample sizes: 100 vs 100
+
+M_vs_S:
+  Cohen's d: 0.2988
+  95% CI: [0.0201, 0.5776]
+  Group means: 4.5912 vs 4.5305
+  Sample sizes: 100 vs 100
+
+
+4. CEILING EFFECTS ANALYSIS
+-------------------------
+Mean quality score: 4.5791
+Maximum score: 4.9524
+Skewness: -0.3176
+Kurtosis: -0.4683
+Scores near maximum: 69.7%
+Potential ceiling effect: Yes
+
+5. INTER-JUDGE RELIABILITY
+-------------------------
+ICC: TO_BE_CALCULATED
+Cronbach's alpha: TO_BE_CALCULATED
+Mean correlation: TO_BE_CALCULATED
+Note: Requires detailed output_blobs structure analysis

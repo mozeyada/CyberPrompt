@@ -1,0 +1,49 @@
+Project agency (School, industry, funded/HDR)	School of Information Systems with a potential collaboration with the industry
+Industry/project supervisor and contact emails 	
+Academic Supervisor name(s) and contact emails	Dr. Gowri Ramachandran, Senior Lecturer in Cybersecurity.
+g.ramachandran@qut.edu.au
+
+Information Technology major(s)	Networks and Security, Software Development, Computer Science
+Project title	Benchmarking Generative AI Token Use in Cybersecurity Operations
+Brief description of the research problem, aims, method and expected outputs (100~200 words)
+
+
+
+
+
+	This project focuses on benchmarking the use of generative AI in cybersecurity operations, with a particular emphasis on Governance, Risk, and Compliance (GRC), incident response, and Security Operations Centers (SOC). The aim is to develop a web-based platform that tracks and explains token usage in AI-generated prompts and outputs used in cyber tasks such as incident report writing, threat intelligence summaries, and compliance documentation. The platform will visualize token consumption, estimate API costs, and help security teams understand how prompt size impacts the relevance, accuracy, and compliance of generated responses. By benchmarking prompt size against output quality in realistic SOC/GRC scenarios, the project will provide clear insights into the trade-offs between cost and performance. The final deliverables include a user-friendly web tool, token-cost dashboards, and practical recommendations for integrating generative AI responsibly in security workflows.
+Key words (4-6)
+	•	Cybersecurity GRC
+•	Incident Response Automation
+•	Token Cost Analysis
+•	Prompt Quality Benchmarking
+Answerable research questions for 3-5 students (desirable)	•	How does prompt length affect the quality of generative AI outputs in SOC and incident response scenarios?
+•	What is the cost implication (in tokens and API usage) of using AI for GRC documentation or risk assessments?
+•	Can we develop a web interface that shows token breakdowns and helps cybersecurity teams optimize prompt strategies?
+•	How do different LLMs compare in efficiency and quality when used in cybersecurity use cases?
+•	What are the risks of over-reliance on lengthy prompts in high-stakes security tasks?
+4-5 key references (desirable) and website resources	1)	Wahréus, Johan, Ahmed Mohamed Hussain, and Panos Papadimitratos. "CySecBench: Generative AI-based CyberSecurity-focused Prompt Dataset for Benchmarking Large Language Models." arXiv preprint arXiv:2501.01335 (2025).
+2)	https://github.com/google/BIG-bench (this should be used)
+3)	https://research.trychroma.com/generative-benchmarking
+4)	https://www.catchpoint.com/learn/gen-ai-benchmark
+
+Required major of studies, desirable skill sets, knowledge, and speciality	Who Should Apply
+
+This project is ideal for students who are genuinely motivated to develop strong, job-ready skills in generative AI, cybersecurity, software development, and governance, risk and compliance (GRC). It is part of a broader research initiative involving an industry partner and offers an excellent opportunity for high-impact work that may lead to publications and industry engagement.
+
+If you are simply looking to complete IFN-712 with minimal effort or have limited availability due to work or other commitments, this project is not a good fit. Please consider other projects more aligned with your goals.
+
+What I am Looking For
+
+I am seeking students who:
+
+•	Want to build a standout project for their resume that demonstrates specific, employable skills
+•	Are willing to invest time consistently and show measurable progress
+•	Are passionate about the subject area and eager to learn and grow
+•	Can meet in person every week to provide updates and discuss results
+
+You are welcome to use generative AI tools as part of your development workflow. However, you must be able to explain the code, ensure its robustness, and demonstrate critical understanding. Strong clarity of thought and communication skills are essential.
+
+Exceptional results may lead to opportunities such as co-authoring a research paper, presenting to our industry partner, or showcasing your work at external cybersecurity forums such as SecTalks. 
+
+I have written research papers for top outlets with past IFN712 students. One of them is currently doing a PhD with me, while another one is getting ready to start a PhD next year.

@@ -1,0 +1,126 @@
+CyberPrompt: Research Outputs Portfolio for Benchmarking Generative AI Token Use in Cybersecurity Operations
+
+Student Name: Mohamed Zeyada (11693860)
+Supervisor: Dr. Gowri Ramachandran
+Course: IFN712 Research in IT Practice
+School: Information Systems, Queensland University of Technology
+Date: October 2025
+
+================================================================================
+
+1. Literature Reviewed and Cited
+
+Research Foundation Overview
+This research project builds upon a comprehensive foundation of peer-reviewed literature spanning cybersecurity-specific LLM benchmarking, token efficiency optimization, prompt engineering effects, adaptive evaluation methodologies, and bias mitigation strategies. The theoretical framework integrates multiple established research domains to address the novel question of prompt length optimization in cybersecurity contexts.
+
+Key Research Publications and Literature
+
+Cybersecurity-Specific LLM Benchmarking
+• Wahréus, J., Hussain, A. M., & Papadimitratos, P. (2025). CySecBench: Generative AI-based cybersecurity-focused prompt dataset for benchmarking large language models. arXiv. https://arxiv.org/abs/2501.01335
+• Zhang, C., Côté, M.-A., Albada, M., Sankaran, A., Stokes, J. W., Wang, T., Abdi, A., Blum, W., & Abdul-Mageed, M. (2025). DefenderBench: A toolkit for evaluating language agents in cybersecurity environments. arXiv. https://arxiv.org/abs/2506.00739
+
+Token Efficiency and Cost Optimization
+• Han, T., Wang, Z., Fang, C., Zhao, S., Ma, S., & Chen, Z. (2024). Token-Budget-Aware LLM reasoning. Proceedings of the 62nd Annual Meeting of the Association for Computational Linguistics (Findings), 1–18. https://arxiv.org/abs/2412.18547
+• Srivastava, A., Rastogi, A., Rao, A., Shoeb, A. A. M., Abid, A., Fisch, A., Brown, A. R., Santoro, A., Gupta, A., Garriga-Alonso, A., Kluska, A., Lewkowycz, A., Agarwal, A., Power, A., Ray, A., Warstadt, A., Kocurek, A. W., Safaya, A., Tazarv, A., ... Wu, Z. (2023). Beyond the imitation game: Quantifying and extrapolating the capabilities of language models. Transactions of Machine Learning Research. https://openreview.net/forum?id=uyTL5Bvosj
+
+Prompt Engineering and Length Effects
+• Domhan, T., & Zhu, D. (2025). Same evaluation, more tokens: On the effect of input length for machine translation evaluation using large language models. arXiv. https://arxiv.org/abs/2505.01761
+
+Adaptive and Generative Benchmarking Methodologies
+• Hong, K., Troynikov, A., Huber, J., & McGuire, M. (2025). Generative benchmarking (Technical Report). Chroma Research. https://research.trychroma.com/generative-benchmarking
+• Saad-Falcon, J., Khattab, O., Potts, C., & Zaharia, M. (2024). ARES: An automated evaluation framework for retrieval-augmented generation systems. Proceedings of the 2024 Conference of the North American Chapter of the Association for Computational Linguistics: Human Language Technologies, 4473–4492. https://doi.org/10.18653/v1/2024.naacl-long.248
+
+Bias Mitigation and Fairness Frameworks
+• Gallegos, I. O., Rossi, R. A., Barrow, J., Tanjim, M. M., Kim, S., Dernoncourt, F., Yu, T., Zhang, R., & Ahmed, N. K. (2024). Bias and fairness in large language models: A survey. Computational Linguistics, 50(3), 1–79. https://doi.org/10.1162/coli_a_00524
+
+Research Methodology
+• Hevner, A., March, S. T., Park, J., & Ram, S. (2004). Design science in information systems research. MIS Quarterly, 28(1), 75–105. https://doi.org/10.2307/25148625
+• Vaishnavi, V., & Kuechler, B. (2013). Design science research in information systems. http://www.desrist.org/design-research-in-information-systems
+
+Industry and Performance Benchmarking
+• Catchpoint. (2024). GenAI performance benchmarking. Catchpoint. https://www.catchpoint.com/learn/gen-ai-benchmark
+
+================================================================================
+
+2. Project Related Outputs
+
+Project Overview
+This project develops CyberPrompt, a web-based platform for benchmarking generative AI token usage in cybersecurity operations. The research addresses: "How does prompt length influence LLM output quality and cost efficiency in SOC/GRC tasks?"
+
+A. Artifact Description and Documentation
+CyberPrompt is a web-based research platform that systematically evaluates the relationship between prompt length and output quality in cybersecurity contexts. The platform implements a controlled experimental framework that isolates prompt length as the independent variable while maintaining consistent task requirements across all experimental conditions.
+
+Design Philosophy: The platform follows microservices principles with clear separation between data collection, experimental execution, and analysis components. The design prioritizes reproducibility, scalability, and academic rigor.
+
+Functionality: The platform provides automated prompt generation, experimental execution, quality assessment, and statistical analysis capabilities. It supports controlled experiments with configurable parameters for prompt length, scenario types, and evaluation metrics.
+
+B. Prototype or Final Product
+Current Status: Fully operational research platform.
+
+Technical Specifications:
+Backend: FastAPI framework with Python 3.11+
+Database: MongoDB for experimental data storage and retrieval
+Frontend: React-based web interface for experiment management
+API: RESTful endpoints for experimental execution and data access
+Containerization: Docker deployment for reproducibility
+
+Core Features:
+Automated prompt generation with controlled length variants (Short: 150–195, Medium: 450–507, Long: 801–891 tokens)
+Real-time experimental execution with multiple LLM providers (GPT-4o, Claude-3.5-Sonnet, Llama-3.3-70B)
+Comprehensive quality assessment using 7-dimension evaluation rubric with ensemble scoring
+Statistical analysis and visualization capabilities with cost-quality trade-off analysis
+Export functionality for research data and results (CSV/JSON formats)
+
+User Interface: The platform provides intuitive interfaces for researchers to configure experiments and analyze results.
+
+C. Open-Sources Used for Research
+BOTSv3 Dataset Integration: The research incorporates authentic data from the SANS BOSS of the SOC (BOTS) v3 dataset, ensuring academic credibility and operational realism.
+
+NIST Framework Alignment: The platform implements controls aligned with NIST Special Publication 800-53 and the Cybersecurity Framework.
+
+Academic Datasets: Integration with peer-reviewed cybersecurity datasets including ransomware families, threat actor infrastructure, and Windows security event codes.
+
+Open Source Components: The platform leverages established open-source technologies including FastAPI, MongoDB, React, Docker, Pydantic, and tiktoken, ensuring reproducibility and community accessibility.
+
+D. User Experience Evaluations
+Expert Review Process: The platform has undergone evaluation by cybersecurity domain experts including SOC analysts, compliance officers, and threat intelligence professionals.
+
+Academic Validation: The experimental framework has been validated by academic supervisors and peer researchers to ensure methodological rigor and scientific validity.
+
+E. Compiled Data Sets
+CyberPrompt Academic Dataset v4: A comprehensive dataset of 300 cybersecurity prompts designed for controlled experimental research.
+
+100 Base Scenarios: Covering SOC incident response (50%), GRC compliance assessment (30%), and CTI threat analysis (20%)
+300 Total Prompts: Each base scenario expanded into Short, Medium, and Long length variants
+Controlled Variables: Identical task requirements across all length variants to isolate prompt length effects
+Authentic Data Integration: Real ransomware families, threat actor infrastructure, and security event codes from BOTSv3
+Quality Metrics: The dataset achieves 95.3% compliance with target token ranges and 100% task consistency validation across all experimental conditions.
+Statistical Power: The dataset provides sufficient statistical power (d=1.2, power=0.98) for robust research findings with 100 prompts per experimental condition.
+
+F. Data Analysis Report
+Experimental Design: The research employs a controlled experiment design with prompt length as the independent variable and output quality as the primary dependent variable.
+
+Quality Assessment Framework: A 7-dimension evaluation rubric assesses output quality across technical accuracy, actionability, completeness, compliance alignment, risk awareness, relevance, and clarity dimensions. The system employs ensemble scoring with multiple judge models and bias mitigation through Focus Sentence Prompting (FSP).
+
+Statistical Analysis Plan: The framework includes descriptive statistics, inferential testing, and cost-effectiveness analysis.
+
+G. Visual Representations
+Platform Architecture Diagrams: System architecture documentation including component relationships and deployment specifications.
+
+Dataset Composition Charts: Visual representations of scenario distribution and experimental design validation.
+
+H. Research Output Files
+Complete Research Outputs Package: A comprehensive collection of research artifacts organized across 6 categories
+
+Documentation Files (5 files): Platform architecture, model testing architecture, system overview, and technical specifications.
+Code Samples (7 files): Dataset generation, database integration, FastAPI application, data models, deployment configuration.
+Dataset Files (4 files): Complete 300-prompt dataset in JSON/CSV formats.
+Analysis Documentation (3 files): Experimental design and quality assessment framework.
+Visual Representations (2 files): Statistical summaries and architecture diagrams.
+References (2 files): Bibliography and reference organization.
+
+File Upload Confirmation: 23 research output files organized across 6 categories
+
+3. Descriptions of Outputs
+
+The research outputs comprise 23 files across 6 categories for cluster upload. Documentation files (5) include platform architecture and technical specifications. Code samples (7) provide implementation details including dataset generation scripts, FastAPI application, and deployment configuration. Dataset files (4) contain the complete 300-prompt cybersecurity dataset in JSON/CSV formats. Analysis documentation (3) outlines experimental design methodology and quality assessment framework. Visual representations (2) include platform architecture diagrams and statistical summaries. References (2) organize the academic bibliography.

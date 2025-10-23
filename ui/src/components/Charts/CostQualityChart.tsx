@@ -4,9 +4,8 @@ import { analyticsApi } from '../../api/client'
 
 const MODEL_COLORS = {
   'gpt-4o': '#3B82F6',
-  'llama-3.3-70b-versatile': '#10B981', 
   'claude-3-5-sonnet': '#8B5CF6',
-      'gemini-2.5-pro': '#F59E0B'
+  'gemini-2.0-flash-exp': '#F97316'
 }
 
 export function useCostQualityData() {
